@@ -1,16 +1,16 @@
 ---
 name: skills-catalog-governance
-description: "Use when cleaning skills catalog: archive, merge, verify. Governs merging duplicate skill families into ONE survivor via council + loss-check + G0-G3 gates + safe promote. Self-contained as one packaged folder; package completeness is verified before use. v2.1.0-draft adds: semantic security gate, non-git resume path, promotion rollback, timeout/escalation discipline."
-version: "2.1.0-draft"
+description: "Use when cleaning skills catalog: archive, merge, verify. Governs merging duplicate skill families into ONE survivor via council + loss-check + G0-G3 gates + safe promote. v3.0 adds the full LIFECYCLE: discovery (detect-skills), grouping (detect-groups), council, golden-output gate, master-build, benchmark (G2), promotion. Self-contained as one packaged folder; package completeness is verified before use."
+version: "3.0.0"
 author: Coder CEO
 license: MIT
 platforms: [windows, linux, macos]
 metadata:
-  status: draft
-  base_version: "2.0.0"
-  drafted: 2026-08-10
-  source: gap-analysis + external NotebookLM review
-  promotion_status: "NOT PROMOTED — pending G0 dir-rename, human review, no G2 validation run on new gates"
+  status: released
+  base_version: "2.1.0-draft"
+  released: 2026-08-10
+  source: gap-analysis + external NotebookLM review + first full lifecycle pilot run (commit family)
+  promotion_status: "PROMOTED — v3.0 lifecycle pipeline piloted end-to-end on commit family (M1-M6), promoted to live"
 ---
 
 # Skills Catalog Governance
@@ -41,6 +41,100 @@ sibling `skills-archive/` directory.
 > (1) this file sits in a directory literally named `skills-catalog-governance` (current
 > staging path breaks the G0 name==dir check), (2) a human read-through, (3) ideally one
 > real run of each `[NEW]` gate with literal output captured.
+
+> **v3.0 RELEASE NOTE (2026-08-10):** this revision adds the full LIFECYCLE pipeline —
+> M1 discovery → M2 grouping → M3 council → M3.5 golden-output gate → M4 master-build →
+> M5 benchmark → M6 promotion — implemented in `scripts/catalog_governance.py` as the
+> `detect-skills` and `detect-groups` subcommands, piloted end-to-end on the commit-message
+> skill family, and PROMOTED to live. Pilot evidence: 211 skills discovered (0 errors),
+> 19 suggested groups, council verdict (two survivors), golden-output 6/6 match,
+> G2 benchmark 36/36 cells PASS (3 runs/cell, 4 conditions incl. no-skill baseline).
+> All new phases carry literal command outputs in `docs/` (see References).
+
+## Lifecycle Pipeline (v3.0, BINDING for new merges)
+
+The v3.0 pipeline extends the legacy archive/merge workflow. For a NEW group being
+consolidated, run these phases IN ORDER. Each phase is gated by the orchestrator (lead),
+never by the writer.
+
+### M1 — Discovery (`detect-skills`)
+
+Scan skill stores and emit a tagged inventory. Stdlib-only, fail-closed.
+
+```bash
+python scripts/catalog_governance.py detect-skills --output inventory.json
+```
+
+- Default stores (only when present): `~/.agents/skills` (master), `~/.pi/agent/skills`
+  (pi), `~/.hermes/skills` (hermes). Explicit `--stores` paths are tagged `external`
+  with `read_only: true` regardless of location (conservative).
+- Junction/symlink handling: skip symlink/reparse-point skill DIRECTORIES (mirrors);
+  dedupe by canonical path (same real skill appears once, first-seen store wins);
+  BUT resolve a store ROOT that is itself a symlink/junction and scan its real target.
+- Output schema per entry: `{store, path, name, description, sha256}`. `name` from
+  frontmatter with dir-name fallback; `description` empty-string fallback; sha256 over
+  exact raw SKILL.md bytes.
+- Frontmatter: YAML-style `---` block only. Plain-scalar continuation lines join with a
+  single space; `|` literal block scalars preserve `\n` (YAML-spec-conformant — do NOT
+  flatten them; downstream consumers must normalize whitespace before comparing).
+- Fail-closed: unreadable/malformed file → error entry, never a guess. Status FAIL if
+  any error, PASS otherwise.
+
+### M2 — Grouping (`detect-groups`)
+
+All-pairs similarity over the M1 inventory. Candidates only — NEVER a merge decision.
+
+```bash
+python scripts/catalog_governance.py detect-groups --inventory inventory.json --threshold 0.30
+```
+
+- Method (paper-verified, arXiv:2603.22447 SkillClone): flat TF-IDF cosine + word-overlap
+  (|intersection| / min lens). Stdlib-only (no sklearn/numpy).
+- Over-flag bias: default threshold 0.30 (false positive = one wasted read; false
+  negative = a missed group, worse). Flag if cosine >= threshold OR overlap >= 0.50.
+- Output: candidates (a, b, cosine, word_overlap, flagged_by) + `suggested_groups`
+  (connected components) — a SUGGESTION for M3 scope, not a decision.
+- Pilot: 211 skills → 22,155 pairs → 89 candidates → 19 groups (commit, tdd, caveman,
+  ponytail, ios, deployment, context families all surfaced correctly).
+
+### M3 — Council review (per group)
+
+For each suggested group: 5 advisors → 5 anonymous peer reviews → chairman synthesis.
+MANDATORY — never skippable (see Embedded Council Procedure). Every line of every source
+read. Output = RECOMMENDATION + provenance table + portability covenant. The council
+decides GROUPING (may recategorize members, e.g. "generator vs executor") before any merge.
+
+### M3.5 — Golden-output gate
+
+For generated-output skills (formatters, generators, style systems): feed 2-3 fixed
+inputs through each source, then through ONE candidate master contract, and verify the
+single parameterized contract reproduces every source output byte-for-byte (modulo
+whitespace). 6/6 pairs = ABSORPTION AUTHORIZED. This converts the council's
+shared-core premise from assertion to evidence. Pilot: commit-family 6/6 match.
+
+### M4 — Master build (staged)
+
+Delegate synthesis to a sub-agent; stage the draft OUTSIDE the live root in a REAL
+top-level directory (never a junction target — verify `os.path.islink()` first).
+G0 (name==dir, desc ≤1024, no XML brackets, <500 lines), G1 security scan, G3 version
+discipline (QUOTED SemVer + `merged-from:` provenance list). Portability covenant:
+no AskUserQuestion, no `/ce-*`, no `$GSTACK_BIN`, no telemetry.
+
+### M5 — Live benchmark (G2)
+
+Head-to-head vs EACH source: master must win or tie every cell AND beat the best source
+overall. ≥3 runs per cell (LLM nondeterminism); include a no-skill baseline. Judge =
+format conformance + content completeness. Record `benchmark.json` with run counts.
+Single-pass is indicative, NOT proof — the ≥3-run confirmation is the standing gate.
+Pilot: 36/36 cells PASS, master strict superset of both sources.
+
+### M6 — Promotion
+
+git init the governing repo (or explicit no-VCS snapshot+sha256 fallback); snapshot →
+promote → archive my-store sources → commit, each with literal output. Post-promotion
+re-audit: re-verify the LIVE file hash matches the draft, frontmatter parses,
+detect-skills still passes over the whole catalog. External/vendored sources are NEVER
+edited — absorb content in, leave the parent tree whole.
 
 ## Phase 1 Hardening Toolkit (authoritative execution contracts)
 
@@ -374,6 +468,18 @@ All supporting evidence and historical analysis documents are stored in the `ref
 - `references/skill-dedup-manifest-2026-08.md` — Planning sheet for duplicate-family merges.
 - `references/skill-evaluation-orphan-detection-2026-08.md` — Multi-layered scan for true orphan skills.
 - `references/skill-merge-manifest-omp-2026-08.md` — Execution manifest for the merge phase.
+
+**v3.0 pilot evidence (docs/):**
+- `docs/PROJECT.md` — Project spine: decisions D1-D6, milestones M1-M7, status.
+- `docs/defect-report-m1-20260810.md` — M1 discovery defects D1-D6 (closed/reclassified).
+- `docs/spec-m2-grouping-20260810.md` — M2 grouping method spec (paper-verified).
+- `docs/council-brief-commit-family-20260810.md` — M3 framed question + full sources.
+- `docs/council-verdict-commit-family-20260810.md` — M3 council transcript (5 advisors, 5 reviews, chairman).
+- `docs/golden-output-experiment-brief-20260810.md` / `-results.md` — M3.5 gate (6/6 match).
+- `docs/m4-build-brief-20260810.md` — M4 staged-draft brief.
+- `docs/benchmark-m5-20260810.md` + `docs/benchmark.json` + `docs/benchmark-g2-d1..d3.json` — M5 G2 evidence (36/36 cells).
+- `docs/g2-confirmation-brief-20260810.md` — M5b confirmation-run brief.
+- `skills-merge-drafts/` — staged drafts (never promoted until gates clear).
 
 **`[NEW]`** No dedicated reference doc exists yet for G1b, G3.5, G4, or the Timeout &
 Escalation Discipline — argued inline above from the NotebookLM review + this gap analysis,
