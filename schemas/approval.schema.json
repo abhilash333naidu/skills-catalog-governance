@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skills-catalog-approval-1",
+  "type": "object",
+  "required": ["draft", "draft_sha256", "reviewed_by", "decision", "approval_text", "approved_at_utc"],
+  "properties": {
+    "draft": {"type": "string"},
+    "draft_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "reviewed_by": {"type": "string", "minLength": 1},
+    "decision": {"const": "APPROVE"},
+    "approval_text": {"type": "string", "minLength": 1},
+    "approved_at_utc": {"type": "string", "format": "date-time"},
+    "major_bump_review": {"type": "boolean"}
+  },
+  "additionalProperties": true
+}

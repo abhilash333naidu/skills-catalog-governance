@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skills-catalog-manifest-1",
+  "type": "object",
+  "required": ["archive", "merge", "merge_survivors"],
+  "properties": {
+    "archive": {
+      "type": "object",
+      "description": "Map logical names to absolute PATH VALUES.",
+      "additionalProperties": {"type": "string"}
+    },
+    "merge": {"type": "array", "items": {"type": "object"}},
+    "merge_survivors": {"type": "array", "items": {"type": "string"}},
+    "merge_sources": {"type": "array", "items": {"type": "string"}},
+    "nested_duplicates": {"type": "array", "items": {"type": "string"}},
+    "protected": {"type": "array", "items": {"type": "string"}},
+    "keep": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

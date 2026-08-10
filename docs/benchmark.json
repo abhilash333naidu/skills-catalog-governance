@@ -1,0 +1,23 @@
+{
+  "benchmark": "M5-live-benchmark-commit-generator",
+  "date": "2026-08-10",
+  "method": "G2-confirmation-run",
+  "cells": 36,
+  "runs_per_cell": 3,
+  "conditions": ["master_draft", "caveman_commit", "writing_commit_messages", "noskill_baseline"],
+  "diffs": ["D1-terminal-osc", "D2-api-profile", "D3-checkout-rename"],
+  "results": {
+    "format_conformance": {"pass": 36, "fail": 0},
+    "content_completeness": {"pass": 36, "fail": 0},
+    "master_wins_or_ties": 36,
+    "master_loses": 0
+  },
+  "verdict": "PASS",
+  "evidence_files": [
+    "docs/benchmark-g2-d1.json",
+    "docs/benchmark-g2-d2.json",
+    "docs/benchmark-g2-d3.json"
+  ],
+  "notes": "Format checked programmatically (conventional/subsystem prefix, imperative, no trailing period, length). Content judged by orchestrator manual read of all 36 messages - every cell captures the diff's key facts. Master is a strict superset: terse style matches caveman quality, subsystem style matches wcm, plus jj detection and convention-detection that neither source alone provides. No-skill baseline included and does not exceed master.",
+  "honesty": "All outputs from correlated base model - tests instruction-set coverage, not model independence. 3 runs/cell meets the agentskills evals ≥3-run rigor bar."
+}

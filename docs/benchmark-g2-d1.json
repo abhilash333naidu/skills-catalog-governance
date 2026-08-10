@@ -1,0 +1,76 @@
+{
+  "cells": [
+    {
+      "diff": "D1",
+      "condition": "master",
+      "run": 1,
+      "message": "fix(terminal): guard truncated OSC sequences\n\nHandleOSC crashed on sequences shorter than the escape\nprefix. Length check now rejects truncated input before\nprefix matching."
+    },
+    {
+      "diff": "D1",
+      "condition": "master",
+      "run": 2,
+      "message": "fix(osc): reject short OSC input\n\nPrefix-only guard let sequences under three bytes through,\npanicking HandleOSC. Added len(seq) < 3 rejection."
+    },
+    {
+      "diff": "D1",
+      "condition": "master",
+      "run": 3,
+      "message": "fix(terminal/osc): stop crash on truncated sequences\n\nGuard now requires both the escape prefix and a minimum\nlength, so malformed input errors out instead of crashing."
+    },
+    {
+      "diff": "D1",
+      "condition": "caveman",
+      "run": 1,
+      "message": "fix(terminal): guard truncated OSC sequences\n\nTruncated input crashed HandleOSC; minimum length check\nnow errors before prefix match."
+    },
+    {
+      "diff": "D1",
+      "condition": "caveman",
+      "run": 2,
+      "message": "fix(osc): reject truncated OSC input\n\nlen < 3 slipped past prefix check, crashing handler. Length\nguard added."
+    },
+    {
+      "diff": "D1",
+      "condition": "caveman",
+      "run": 3,
+      "message": "fix(terminal): fix crash on short OSC input\n\nPrefix-only guard missed one- and two-byte sequences,\npanicking HandleOSC. Length check added."
+    },
+    {
+      "diff": "D1",
+      "condition": "wcm",
+      "run": 1,
+      "message": "terminal: guard truncated OSC sequences\n\nHandleOSC previously trusted the OSC escape prefix alone\nand crashed when the sequence was shorter than three bytes.\nThe guard now also checks sequence length, so truncated\ninput is rejected with an error instead of crashing."
+    },
+    {
+      "diff": "D1",
+      "condition": "wcm",
+      "run": 2,
+      "message": "terminal: reject malformed OSC input\n\nThe old check only verified the sequence started with the\nOSC escape; anything shorter than three bytes slipped\nthrough and crashed the handler. A minimum length check now\nrejects those sequences before prefix matching, returning\nthe usual error."
+    },
+    {
+      "diff": "D1",
+      "condition": "wcm",
+      "run": 3,
+      "message": "terminal/osc: stop crash on truncated sequences\n\nPreviously HandleOSC matched only the escape prefix, so\none- and two-byte sequences reached operations they were\ntoo short for and crashed. The guard now combines the\nprefix check with a length check, returning an error for\ntruncated input."
+    },
+    {
+      "diff": "D1",
+      "condition": "noskill",
+      "run": 1,
+      "message": "fix(terminal): handle truncated OSC sequences without crashing\n\nHandleOSC only checked the escape prefix, so sequences\nshorter than 3 bytes crashed the terminal. Added a length\nguard that rejects truncated input with the existing\n\"not an OSC sequence\" error."
+    },
+    {
+      "diff": "D1",
+      "condition": "noskill",
+      "run": 2,
+      "message": "fix: prevent crash on truncated OSC sequences\n\nThe prefix check in HandleOSC passed for one- and two-byte\ninput, which then crashed downstream. Now the guard also\nrequires len(seq) >= 3 before treating input as an OSC\nsequence, returning an error for anything shorter."
+    },
+    {
+      "diff": "D1",
+      "condition": "noskill",
+      "run": 3,
+      "message": "fix(osc): validate sequence length before processing\n\nTruncated OSC sequences slipped past the HasPrefix check\nand crashed HandleOSC. The combined condition rejects them\nup front with the standard error."
+    }
+  ]
+}

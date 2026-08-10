@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skills-catalog-provenance-1",
+  "type": "object",
+  "required": ["schema", "campaign_id", "operation", "status", "created_at_utc"],
+  "properties": {
+    "schema": {"const": "skills-catalog-provenance-1"},
+    "campaign_id": {"type": "string", "minLength": 1},
+    "operation": {"enum": ["ARCHIVE", "MERGE", "PROMOTE", "REVERT"]},
+    "status": {"enum": ["PLANNED", "APPROVED", "APPLIED", "BLOCKED", "REVERTED"]},
+    "created_at_utc": {"type": "string", "format": "date-time"},
+    "manifest_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "draft_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "snapshot_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "approval": {"type": "string"},
+    "journal": {"type": "string"},
+    "notes": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

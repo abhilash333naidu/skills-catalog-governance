@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skills-catalog-loss-check-1",
+  "type": "object",
+  "required": ["schema", "status", "draft", "checks", "manual_review_required"],
+  "properties": {
+    "schema": {"const": "skills-catalog-loss-check-1"},
+    "status": {"enum": ["PASS", "REVIEW", "FAIL"]},
+    "draft": {"type": "string"},
+    "manual_review_required": {"const": true},
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source", "source_sha256", "draft_sha256", "word_overlap", "missing_headings", "missing_commands", "status"],
+        "properties": {
+          "source": {"type": "string"},
+          "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "draft_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "word_overlap": {"type": "number", "minimum": 0, "maximum": 1},
+          "minimum_overlap": {"type": "number", "minimum": 0, "maximum": 1},
+          "missing_headings": {"type": "array", "items": {"type": "string"}},
+          "missing_commands": {"type": "array", "items": {"type": "string"}},
+          "status": {"enum": ["PASS", "REVIEW"]}
+        }
+      }
+    }
+  }
+}

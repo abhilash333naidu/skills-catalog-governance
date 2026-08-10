@@ -1,0 +1,76 @@
+{
+  "cells": [
+    {
+      "diff": "D2",
+      "condition": "master",
+      "run": 1,
+      "message": "feat(api): add profile endpoint\n\nMobile client needs profile data without the full user\npayload to reduce LTE bandwidth on cold-launch screens."
+    },
+    {
+      "diff": "D2",
+      "condition": "master",
+      "run": 2,
+      "message": "feat(api): add GET /users/{id}/profile\n\nReturns a compact profile instead of the full user record;\nthe mobile client only needs this subset on cold launch."
+    },
+    {
+      "diff": "D2",
+      "condition": "master",
+      "run": 3,
+      "message": "feat(api): add lightweight profile endpoint\n\nThe mobile client previously fetched the entire user payload\nto render a profile screen. The new route serves only profile\nfields, cutting bandwidth on LTE connections."
+    },
+    {
+      "diff": "D2",
+      "condition": "caveman",
+      "run": 1,
+      "message": "feat(api): add user profile route\n\nMobile client needs profile data without the full user\npayload; the lighter response saves LTE bandwidth on cold\nlaunch."
+    },
+    {
+      "diff": "D2",
+      "condition": "caveman",
+      "run": 2,
+      "message": "feat(api): add slim profile endpoint\n\nFull user record is overkill for the profile screen; the\ncompact response reduces bandwidth for mobile clients."
+    },
+    {
+      "diff": "D2",
+      "condition": "caveman",
+      "run": 3,
+      "message": "feat(api): add GET /users/{id}/profile\n\nProfile screen renders only a subset of the user record;\nserving the full payload wastes mobile bandwidth."
+    },
+    {
+      "diff": "D2",
+      "condition": "wcm",
+      "run": 1,
+      "message": "api: add profile endpoint\n\nThe mobile client previously pulled the full user record to\nrender a profile screen. The new GET /users/{id}/profile\nroute returns a compact profile payload, so cold-launch\nscreens use less bandwidth on LTE."
+    },
+    {
+      "diff": "D2",
+      "condition": "wcm",
+      "run": 2,
+      "message": "api: add GET /users/{id}/profile\n\nBefore this change the profile screen loaded the complete\nuser object, which is heavier than what it displays. The\nnew route serves only the profile fields the screen needs,\ncutting transferred bytes for mobile clients on slow\nconnections."
+    },
+    {
+      "diff": "D2",
+      "condition": "wcm",
+      "run": 3,
+      "message": "api: add lightweight profile endpoint\n\nThe profile screen renders a small subset of the user\nrecord, yet the mobile client was fetching the entire\npayload. This route returns just the profile data, which\ntrims bandwidth usage when the app cold-launches over LTE."
+    },
+    {
+      "diff": "D2",
+      "condition": "noskill",
+      "run": 1,
+      "message": "feat(api): add user profile endpoint\n\nAdds GET /users/{id}/profile returning profile data only.\nThe mobile client needs this on cold launch; serving the\nfull user payload wastes LTE bandwidth."
+    },
+    {
+      "diff": "D2",
+      "condition": "noskill",
+      "run": 2,
+      "message": "feat(api): add profile endpoint for mobile clients\n\nThe mobile client fetches profile data without needing the\nrest of the user record. This new route returns a compact\nprofile payload, reducing bandwidth usage on slow mobile\nconnections."
+    },
+    {
+      "diff": "D2",
+      "condition": "noskill",
+      "run": 3,
+      "message": "feat(api): add compact profile route\n\nPreviously the mobile app had to request the complete user\nrecord to display a profile. The new GET /users/{id}/profile\nendpoint returns only profile fields, lowering data\ntransferred during cold launch."
+    }
+  ]
+}

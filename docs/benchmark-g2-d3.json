@@ -1,0 +1,76 @@
+{
+  "cells": [
+    {
+      "diff": "D3",
+      "condition": "master",
+      "run": 1,
+      "message": "feat(api)!: rename orders route to /v1/checkout\n\nBREAKING CHANGE: /v1/orders is replaced by /v1/checkout\nfor POST createOrder. Clients must migrate before\n2026-06-01; after that date the old route returns 410."
+    },
+    {
+      "diff": "D3",
+      "condition": "master",
+      "run": 2,
+      "message": "feat(api)!: move POST /v1/orders to /v1/checkout\n\nBREAKING CHANGE: the order creation endpoint now lives at\n/v1/checkout. Migrate clients before 2026-06-01; /v1/orders\nreturns 410 afterwards."
+    },
+    {
+      "diff": "D3",
+      "condition": "master",
+      "run": 3,
+      "message": "feat(api)!: switch create order route to /v1/checkout\n\nBREAKING CHANGE: clients calling POST /v1/orders must switch\nto /v1/checkout by 2026-06-01. The old route returns 410\nafter that date."
+    },
+    {
+      "diff": "D3",
+      "condition": "caveman",
+      "run": 1,
+      "message": "feat(api)!: rename orders endpoint to checkout\n\nBREAKING CHANGE: migrate /v1/orders to /v1/checkout before\n2026-06-01; old route returns 410 after that date."
+    },
+    {
+      "diff": "D3",
+      "condition": "caveman",
+      "run": 2,
+      "message": "feat(api)!: replace /v1/orders with /v1/checkout\n\nBREAKING CHANGE: POST /v1/orders is dropped after\n2026-06-01. Point clients at /v1/checkout before then."
+    },
+    {
+      "diff": "D3",
+      "condition": "caveman",
+      "run": 3,
+      "message": "feat(api)!: retarget createOrder to /v1/checkout\n\nBREAKING CHANGE: /v1/orders returns 410 after 2026-06-01;\nmigrate to /v1/checkout before that date."
+    },
+    {
+      "diff": "D3",
+      "condition": "wcm",
+      "run": 1,
+      "message": "api: rename orders endpoint to checkout\n\nPOST /v1/orders previously registered the createOrder\nhandler; it now lives at POST /v1/checkout. Clients that\nstill call the old route receive 410 Gone after the\n2026-06-01 migration deadline, so update callers to the new\npath before then."
+    },
+    {
+      "diff": "D3",
+      "condition": "wcm",
+      "run": 2,
+      "message": "api: replace orders route with checkout route\n\nThe createOrder handler is now bound to POST /v1/checkout\ninstead of POST /v1/orders. The previous path is removed\nand returns 410 Gone from 2026-06-01 onward; existing\nclients must migrate to the new endpoint ahead of that\ndate."
+    },
+    {
+      "diff": "D3",
+      "condition": "wcm",
+      "run": 3,
+      "message": "api: move create order route to /v1/checkout\n\ncreateOrder was registered at POST /v1/orders and is now\nserved at POST /v1/checkout. Old-route callers get 410 Gone\nafter the 2026-06-01 deadline, so switch clients to the new\npath before migration day."
+    },
+    {
+      "diff": "D3",
+      "condition": "noskill",
+      "run": 1,
+      "message": "feat(api)!: rename /v1/orders to /v1/checkout\n\nBREAKING CHANGE: POST /v1/orders is replaced by POST\n/v1/checkout. All clients must migrate by 2026-06-01,\nafter which the old endpoint returns 410 Gone."
+    },
+    {
+      "diff": "D3",
+      "condition": "noskill",
+      "run": 2,
+      "message": "feat(api)!: change order creation endpoint to /v1/checkout\n\nBREAKING CHANGE: the order creation route moves from\n/v1/orders to /v1/checkout. Update clients before\n2026-06-01; the old path returns 410 after that date."
+    },
+    {
+      "diff": "D3",
+      "condition": "noskill",
+      "run": 3,
+      "message": "refactor(api)!: move createOrder to /v1/checkout route\n\nBREAKING CHANGE: /v1/orders is deprecated in favor of\n/v1/checkout. Migrate all POST /v1/orders callers by\n2026-06-01; the old route returns 410 Gone afterwards."
+    }
+  ]
+}

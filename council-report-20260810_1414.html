@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Council Report — skill_gov Design Review</title>
+<style>
+  :root {
+    --ink: #1a1d21;
+    --muted: #5b6470;
+    --line: #e3e6ea;
+    --bg: #ffffff;
+    --soft: #f7f8fa;
+    --accent: #4f6ef7;
+    --accent-soft: #eef1fe;
+    --green: #1a7f4e;
+    --green-soft: #e8f6ef;
+    --red: #b3403a;
+    --red-soft: #fceae9;
+    --amber: #9a6700;
+    --amber-soft: #fcf3e3;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--soft);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 32px 20px 64px; }
+  .masthead {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .kicker { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  h1 { font-size: 26px; margin: 6px 0 10px; line-height: 1.25; }
+  .meta { color: var(--muted); font-size: 13px; }
+  .verdict {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .verdict h2 { margin-top: 0; font-size: 18px; }
+  .callout {
+    background: var(--accent-soft);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 16px;
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 14px 0 4px; }
+  .advisor-card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+  .advisor-card .name { font-weight: 600; font-size: 14px; }
+  .advisor-card .stance { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .yml { background: var(--green-soft); color: var(--green); }
+  .yc { background: var(--amber-soft); color: var(--amber); }
+  .yno { background: var(--red-soft); color: var(--red); }
+  section.block { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 24px 28px; margin-bottom: 20px; }
+  section.block h2 { margin-top: 0; font-size: 17px; }
+  h3 { font-size: 14px; margin: 18px 0 6px; }
+  ul, ol { padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  .tag { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--accent); }
+  details { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; background: var(--soft); }
+  summary { cursor: pointer; padding: 12px 16px; font-weight: 600; font-size: 14px; }
+  details .body-in { padding: 0 16px 16px; white-space: pre-wrap; font-size: 13.5px; color: #2b3038; }
+  .step { font-weight: 600; color: var(--accent); }
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 24px; }
+  @media (max-width: 560px) { .masthead, .verdict, section.block { padding: 20px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="kicker">LLM Council &middot; Full Design Review</div>
+    <h1>skills-catalog-governance (skill_gov) — is the governance design trustworthy?</h1>
+    <div class="meta">Counciled 2026-08-10 14:14 &middot; 5 advisors &middot; 5 anonymous peer reviews &middot; 1 chairman<br>
+    Method: LLM Council (Karpathy adaptation) — 5 thinking-style lenses on one underlying model</div>
+  </div>
+
+  <div class="verdict">
+    <h2>Chairman's Verdict</h2>
+    <div class="callout">Trust the mechanics. Do not trust the promotion claim — yet. Do not approve or apply anything until the loss-check&rarr;repair-brief&rarr;approval handoff is mechanical.</div>
+    <p><strong>Is it trustworthy for moving/merging user skill dirs?</strong> The <em>apply path</em> — yes, provisionally. Hash re-verification, destination locking, move-only, append-only logging, symlink refusal, fail-closed semantics: the right bones, and the 71-vs-72 incident shows the design catches the mutation class it targets. The <em>governance layer</em> (council &rarr; loss-check &rarr; approval) is not yet trustworthy: enforcement is advisory, closure was blown once on the tool's own package, judgment is single-model.</p>
+    <p><strong>Single weakest point?</strong> The loss-check &rarr; repair-brief &rarr; approval handoff — the one link that empirically dropped defect class #6 (6 found, 5 shipped). The judgment monoculture is the ceiling; the brief is the floor that already collapsed. Fix the floor first.</p>
+    <p><strong>Cosmetic, or real?</strong> Not cosmetic. Self-violated rules on one's own package (17 missing references, 680-line SKILL.md, committed <code>__pycache__</code>) are behavioral evidence of advisory-only enforcement. Cheaply fixable; and the failing check-package correctly blocks promotion today (fail-closed working) — but that is proof of advisory governance until the gates are hard.</p>
+    <p style="margin-bottom:0"><strong>The one thing to do first:</strong> make the pre-approval gate re-run loss-check against the live tree and hard-refuse unless the detected-condition set (class IDs + counts) exactly equals what the brief recorded in the journal — <em>approve the state, not the draft.</em> One mechanical gate closes both demonstrated failures (5-of-6 drop + 71-vs-72 mutation).</p>
+  </div>
+
+  <section class="block">
+    <h2>Advisor Alignment</h2>
+    <p style="color:var(--muted);font-size:13px;margin-top:0">4 of 5 advisors: trust the mechanics, don't trust the paperwork. 5 of 5 peer reviews independently flagged the Expansionist's promote-and-license framing as the biggest blind spot.</p>
+    <div class="grid">
+      <div class="advisor-card"><div class="name">Contrarian</div><div class="stance yno">Not yet — fixes first</div></div>
+      <div class="advisor-card"><div class="name">First Principles</div><div class="stance yno">No — single-model is fatal</div></div>
+      <div class="advisor-card"><div class="name">Expansionist</div><div class="stance yml">Yes — promote &amp; license</div></div>
+      <div class="advisor-card"><div class="name">Outsider</div><div class="stance yno">No — approve state, not draft</div></div>
+      <div class="advisor-card"><div class="name">Executor</div><div class="stance yc">Split — mechanics yes, promotion no</div></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Where the Council Agreed</h2>
+    <ol>
+      <li><strong>Mechanical core is sound</strong> — unanimous. Move-only (never deletes), per-source sha256 re-verify at apply, destination lock, symlink/junction refusal, append-only JSONL journal. Low destructive risk. The strongest independent convergence in the record.</li>
+      <li><strong>Judgment layer is monocultural and structural</strong> — five personas, one model; loss-check, G2 judge, council, peer review share blind spots. The #6 escape is the fixed point of the design, not an anomaly. Even the Expansionist concedes a provider-swappable &ge;2-model judge is required before any certification claim.</li>
+      <li><strong>The empirically demonstrated weakest link is the loss-check&rarr;repair-brief&rarr;approval handoff</strong> — 6 defect classes found, the brief carried 5, #6 shipped. Every actionable fix converges on mechanically closing this handoff (Contrarian's 1:1 checklist, Executor's class-ID stamping, Outsider's "approve the state").</li>
+      <li><strong>Self-violations are not cosmetic</strong> — 4/5 advisors + all 5 reviews read the missing references, 680-line body, committed <code>__pycache__</code> as evidence the gates run advisory or not at all. Unenforced rules are documentation.</li>
+      <li><strong>Two distinct trust questions</strong> — "Is the apply path safe to run?" yes. "Is the promotion claim ready?" no. Trust the mechanics, distrust the paperwork.</li>
+    </ol>
+  </section>
+
+  <section class="block">
+    <h2>Where the Council Clashed</h2>
+    <ul>
+      <li><strong>Expansionist vs. the other four</strong> — the same evidence read as "demo reel / proof the thesis works" vs. "threat model falsified from inside." All 5 reviews named this the biggest blind spot. Chairman sides with the majority: promoting while check-package fails contradicts known state.</li>
+      <li><strong>Monoculture (ceiling) vs. brief handoff (floor)</strong> — both are critical; the monoculture caps any future certification claim, the brief handoff already failed in production. Fix the floor first (demonstrated, cheap, mechanical), then raise the ceiling with one independent anchor on the final re-audit.</li>
+      <li><strong>"Never deletes": safety property or legalistic comfort?</strong> — a wrong move scatters a skill worse than a delete. Reframe: reducer-of-blast-radius, not guarantee-of-correctness.</li>
+      <li><strong>Is check-package failing fail-closed working, or proof enforcement is advisory?</strong> — Executor: self-limiting, promotion blocked. Others: advisory-by-design, blocking was coincidental. Testable; that test is the first action.</li>
+    </ul>
+  </section>
+
+  <section class="block">
+    <h2>Blind Spots the Council Caught</h2>
+    <p style="color:var(--muted);font-size:13px;margin-top:0">Only emerged through the peer-review round — missed by all five individual advisors.</p>
+    <ol>
+      <li><strong>Apply atomicity &amp; crash recovery</strong> — journal logs; it does not restore. Append-only &ne; recoverable. Platform reality: file locks, MAX_PATH, OneDrive sync.</li>
+      <li><strong>The merge half is entirely unaudited</strong> — conflict resolution, winner arbitration, non-commutative outcomes. Only "moving" was validated; "merging" exists nowhere.</li>
+      <li><strong>Journal integrity is unverified</strong> — nothing hash-chains entries or detects rewrites.</li>
+      <li><strong>Every fix presumes a diligent human</strong> — this is an agent skill, likely run unattended.</li>
+      <li><strong>G2's 15/15-vs-9/15 stat never interrogated</strong> — n=15, single run, judged by the same model.</li>
+      <li><strong>No ground-truth fixtures/test suite</strong> for the gates themselves.</li>
+      <li><strong>Meta:</strong> this review panel is the same single model — correlated judgment, not independent corroboration. Hence verdict weights incident-derived convergence over preference convergence.</li>
+    </ol>
+  </section>
+
+  <section class="block">
+    <h2>Advisor Responses</h2>
+    <details>
+      <summary>The Contrarian</summary>
+      <div class="body-in">Fatal flaw not mechanics — judgment monoculture. Loss-check, repair-brief, post-audit: same underlying model, shared blind spots. #6 shipped missing precisely because writer+checker+auditor think alike. Post-audit caught it — but post-audit runs on same model. Admission of correlated judgment is not mitigation. Every "thinking" step has one failure mode; mechanical gates can't catch semantic omission.
+
+Second: self-violations not cosmetic. Package fails own check-package, violates own &lt;500-line G0, ships __pycache__ — still packaged for use. Evidence gates aspirational, not enforced. "Fail-closed" claim, not observed behavior. Tool governing user skill dirs has broken own dir.
+
+Third: "never deletes — moves only" legalistic comfort. Wrong move worse than delete — scatters skill across tree, journal happily records. G3.5 dangling-reference scrub PROPOSED only; own package has dangling references TODAY. Governs exact fragility it exhibits.
+
+Weakest point, fix first: repair-brief closure loop. Make it mechanical. Loss-check emits per-defect numbered checklist; promotion blocked until every defect accepted 1:1. Never let prose summary close numbered list — that's exactly how #6 escaped. Then independent verifier (different model or human) on final re-audit.
+
+Verdict: not trustworthy for user dirs yet. Mechanical core (hash, sha256, append-only journal) sound. Judgment layer monoculture + self-violated rules = governance theater. Fix closure loop, enforce own gates on itself, then re-judge.</div>
+    </details>
+    <details>
+      <summary>The First Principles Thinker</summary>
+      <div class="body-in">The wrong question first. "Trustworthy for moving directories?" — the moves are the safest part of this whole system. Hash-verified sources, append-only JSONL, no deletes, symlink refusal: that mechanical core is well-engineered. The actual trust question is the *quality gates* — and there the answer is no.
+
+Single weakest point: one model in a costume. The 5-advisor council is 5 personas of the same weights. Anonymous peer review anonymizes the same model. Loss-check judge, G2 judge, same model. This isn't a correlation limitation — it's the load-bearing wall, and it's made of jelly. Any systematic under-detection (a defect class the model doesn't recognize) propagates unfiltered through every gate. The 6th defect class shipping missing isn't an anomaly; it's the system's fixed point. Mechanical gates bind humans to artifacts; semantic gates bind the model to itself. Self-reference yields zero independent confidence by construction.
+
+Incomplete package, violated rules: not cosmetic — behavioral evidence. The system exists to catch name==dir, line limits, missing references. Then it shipped 680 lines, 17 missing files, __pycache__ committed. Either gates never ran on the shipping artifact, or they ran advisory. Both are fatal: governance you can walk around is fiction. The 71-vs-72 rogue write confirms it — a post-final subagent write bypassed the entire pipeline. You govern a moment, not a flow.
+
+Fix before trust: gates must be executable, blocking, and runtime-enforced — fail-closed means the CLI refuses when G0 fails, not warns. And decouple judgment: one external anchor (human sign-off, different model, ground-truth fixtures) per semantic claim. Until then: use the mechanical moves, ignore the council.</div>
+    </details>
+    <details>
+      <summary>The Expansionist</summary>
+      <div class="body-in">The governance machinery is the product, not the skill. This is a certification layer for the emerging agent-skill economy — every org running Claude Code, opencode, or Codex is accumulating a skill/prompt/agent registry with zero audit discipline. That's a horizontal platform: skill governance, prompt governance, MCP-config governance, agent-memory governance. You're sitting on the compliance standard the whole market lacks.
+
+The undervalued asset is the incident history. Real integrity failures — the 71-vs-72 count catching a rogue post-final subagent write, the 6th defect class found but never shipped — is empirical proof the thesis works. The tool caught its own violations. That isn't embarrassment; that's the demo reel.
+
+So the "incomplete package" is mostly cosmetic for the move/merge trust question: the operations are mechanically bound by hashes, lockfiles, append-only journals, and fail-closed semantics — content completeness doesn't affect move safety. What it DOES affect is promotion readiness, and that's where the value lives. Nobody pays for a draft.
+
+Weakest point to fix before relying on it: the single-model council/judge. Correlated judgment caps the certification claim — an auditor certified by its own auditor is folklore, not assurance. Fix: make the judge provider-swappable and require ≥2 independent models for loss-check and approval binding. That one change transforms this from a useful script into a defensible standard.
+
+And the G2 stat — 15/15 vs 9/15, a 67% uplift — is your sales collateral. Dogfood it, promote v2.1.0, then license the pattern.</div>
+    </details>
+    <details>
+      <summary>The Outsider</summary>
+      <div class="body-in">Zero context, first read. This machine weighs its own meat.
+
+A governance pipeline that fails its own check-package (17 missing files), violates its own &lt;500-line rule (680), and ships a defect its own loss-check found — because the repair brief carried only 5 of 6 classes — is not governed. It's aspirational. That 5-of-6 incident isn't cosmetic; it's the threat model falsified from inside. The exact failure class this design exists to prevent (incomplete handoff) occurred inside the governance layer.
+
+Trustworthy for user skill directories: no — yet. The mechanical bones are sound: moves-only, never deletes, per-source sha256 re-verify, append-only journal, symlink/junction refusal. Destructive risk is genuinely low. But the written-approval binding is only as strong as the human who transcribed the brief. Weakest point: approval is a paper handoff, not a mechanical closure. The 6th defect shipped because nothing forced the approval artifact to enumerate all six findings. Fix that: verify-approval must diff the approval record against the live set of detected conditions — not just the draft hash. A hash binds version; it binds nothing about completeness. The 71-vs-72 count discrepancy proves state mutates after "final" — so approve the state, not the draft.
+
+Committed __pycache__ and self-violated rules aren't cosmetic either. Rules with no enforcement are documentation, and this tool's enforcement is advisory by design. Until it passes its own gates on its own repo, don't point it at anyone's live skills.
+
+Trust the mechanics. Don't trust the paperwork.</div>
+    </details>
+    <details>
+      <summary>The Executor</summary>
+      <div class="body-in">Verdict: trust the *mechanics*, don't trust the *promotion claim*. The fail-closed apply path — re-verify manifest hash, per-tree sha256, destination lock, append-only journal, refuse symlinks, move-only, never delete — is the right architecture for moving user directories. The 71-vs-72 rogue-write incident is evidence the design catches exactly the failure it's built to catch. But that's "safe to apply," not "ready to promote." The broken package and self-violated rules are promotion blockers, not evidence the apply path is untrustworthy — provided the gates are hard-enforced.
+
+Single weakest point: the repair-brief handoff. Loss-check surfaced 6 defect classes; the human brief carried 5; the 6th shipped. Every other link re-verifies mechanically at apply. The brief is the one unverified, uncounted, provenance-free handoff in the chain. Fix: machine-stamp loss-check output — class IDs plus count — into the journal, then make the pre-apply gate re-run loss-check and assert current class set equals the brief's recorded set. A dropped class then fails the gate instead of shipping. Cost: one afternoon. Until that lands, the weakest link is an untyped human copy-paste.
+
+Cosmetic question: partially. Incomplete package is real but self-limiting — check-package fails, so promotion is blocked today. That's fail-closed working, not hypocrisy. But 680-line SKILL.md and committed __pycache__ are trust erosion you can fix in minutes: enforce the &lt;500 rule as a hard G0 check or change the rule; delete the cache, add .gitignore.
+
+Monday checklist: (1) confirm apply-moves refuses while check-package fails — if not, make it; (2) count-stamp loss-check classes into the brief and assert at apply; (3) fix the hygiene items. Done. Then rely on it.</div>
+    </details>
+  </section>
+
+  <section class="block">
+    <h2>Peer Review Highlights</h2>
+    <details>
+      <summary>Review 1 — strongest: Outsider; blind spot: Expansionist</summary>
+      <div class="body-in">A hash binds version; it binds nothing about completeness." The approval binds a stale or incomplete artifact, not verified state. Expansionist's "demo reel" framing of the shipped 6th defect is falsification, not validation — and recommending promotion while check-package fails is operationally wrong. All missed: multi-tree apply is not transactional, and the journal cannot restore a bad move (append-only &ne; recoverable).</div>
+    </details>
+    <details>
+      <summary>Review 2 — strongest: First Principles; blind spot: Expansionist</summary>
+      <div class="body-in">Monoculture is the root, not a symptom; self-violations are behavioral evidence that gates are advisory. Expansionist inverted the evidence and answered a market question, not the governance question. All missed: the merge half of "moving/merging" — conflict resolution, non-commutative outcomes, no pre-apply snapshot or rollback. And this is an agent skill, likely run unattended — paper handoffs presume human attention that may never exist.</div>
+    </details>
+    <details>
+      <summary>Review 3 — strongest: Outsider; blind spot: Expansionist</summary>
+      <div class="body-in">The most implementable failure: approval binds a draft hash, not completeness. "Approve the state, not the draft." 71-vs-72 proves state mutates post-final. Expansionist: a governance layer failing its own gates cannot certify anyone else's. All missed: recovery and atomicity on win32 — file locks, MAX_PATH, OneDrive sync — plus no ground-truth fixtures to test the gates.</div>
+    </details>
+    <details>
+      <summary>Review 4 — strongest: Contrarian; blind spot: Expansionist</summary>
+      <div class="body-in">Most calibrated: mechanical core sound, judgment monocultural, self-violations behavioral — and it named the demonstrably failed link (brief carried 5 of 6) with a mechanical fix (1:1 closure). Expansionist called the 5-of-6 escape "the demo reel" and urged promoting v2.1.0 — which check-package currently blocks. All missed the merge half; and noted the meta-case: this panel is one correlated model, so "consensus" is not independent corroboration.</div>
+    </details>
+    <details>
+      <summary>Review 5 — strongest: Contrarian; blind spot: Expansionist</summary>
+      <div class="body-in">Only response framing both tiers correctly and adding the "moves-only is legalistic comfort" insight (a wrong move scatters a skill). Expansionist inverts the anchor incident — a delivery failure became demo-reel collateral. All missed: apply atomicity / crash recovery semantics, and journal integrity is unverified — nothing hash-chains entries or detects rewrites. G2's n=15 single-run uplift was never statistically questioned.</div>
+    </details>
+    <p style="color:var(--muted);font-size:13px;margin:10px 0 0">Anonymization mapping was revealed in the full transcript: A = First Principles &middot; B = Executor &middot; C = Contrarian &middot; D = Outsider &middot; E = Expansionist.</p>
+  </section>
+
+  <footer>LLM Council &middot; counciled 2026-08-10 14:14 &middot; full design review of skills-catalog-governance (skill_gov) &middot; method: Karpathy LLM Council adaptation</footer>
+</div>
+</body>
+</html>
