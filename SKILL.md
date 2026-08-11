@@ -1,7 +1,7 @@
 ---
 name: skills-catalog-governance
-description: "Use when cleaning skills catalog: archive, merge, verify. Governs merging duplicate skill families into ONE survivor via council + loss-check + G0-G3 gates + safe promote. v3.0 adds the full LIFECYCLE: discovery (detect-skills), grouping (detect-groups), council, golden-output gate, master-build, benchmark (G2), promotion. Self-contained as one packaged folder; package completeness is verified before use."
-version: "3.0.0"
+description: "Use when cleaning skills catalog: archive, merge, verify. Governs merging duplicate skill families into ONE survivor via council + loss-check + G0-G3 gates + safe promote. v3.1 fixes: over-grouping (strong-pair + group-size cap), usage-aware discovery. Self-contained as one packaged folder; package completeness is verified before use."
+version: "3.1.0"
 author: Coder CEO
 license: MIT
 platforms: [windows, linux, macos]
@@ -94,8 +94,14 @@ python scripts/catalog_governance.py detect-groups --inventory inventory.json --
   negative = a missed group, worse). Flag if cosine >= threshold OR overlap >= 0.50.
 - Output: candidates (a, b, cosine, word_overlap, flagged_by) + `suggested_groups`
   (connected components) — a SUGGESTION for M3 scope, not a decision.
-- Pilot: 211 skills → 22,155 pairs → 89 candidates → 19 groups (commit, tdd, caveman,
-  ponytail, ios, deployment, context families all surfaced correctly).
+- GROUPING RULE (v3.1): suggested_groups are built from STRONG pairs ONLY — both
+  signals must agree (cosine AND overlap). Single-signal pairs, even high-cosine,
+  share vocabulary not function (e.g. caveman-commit vs ce-commit at 0.68 are
+  generator vs executor — a council-decided split) and never bridge groups.
+  `--max-group-size` (default 8) caps groups; oversized components are reported in
+  `oversized_groups` for manual review, never treated as clean merge groups.
+- Pilot: 211 skills → 22,155 pairs → 89 candidates → 7 clean groups (v3.1; the
+  v3.0 24-member mega-group chaining ce-*/design-*/ios-*/qa is eliminated).
 
 ### M3 — Council review (per group)
 
@@ -116,9 +122,12 @@ shared-core premise from assertion to evidence. Pilot: commit-family 6/6 match.
 
 Delegate synthesis to a sub-agent; stage the draft OUTSIDE the live root in a REAL
 top-level directory (never a junction target — verify `os.path.islink()` first).
-G0 (name==dir, desc ≤1024, no XML brackets, <500 lines), G1 security scan, G3 version
-discipline (QUOTED SemVer + `merged-from:` provenance list). Portability covenant:
-no AskUserQuestion, no `/ce-*`, no `$GSTACK_BIN`, no telemetry.
+- G0 (name==dir, desc ≤1024, no XML brackets, <500 lines), G1 security scan, G3 version
+  discipline (QUOTED SemVer + `merged-from:` provenance list). Portability covenant:
+  no AskUserQuestion, no `/ce-*`, no `$GSTACK_BIN`, no telemetry.
+  NOTE: G0's name==dir check is against the INSTALLED directory. The published repo
+  (skills-catalog-governance) passes; a dev copy under a differently-named folder
+  (e.g. skill_gov) fails the check until renamed — that is expected and documented.
 
 ### M5 — Live benchmark (G2)
 

@@ -353,7 +353,7 @@ class GovernanceCliTests(unittest.TestCase):
             ])
             report = self.run_cli("detect-groups", "--inventory", inventory)
             self.assertEqual(report["status"], "PASS")
-            self.assertEqual(report["counts"], {"skills": 2, "pairs": 1, "candidates": 1})
+            self.assertEqual(report["counts"], {"skills": 2, "pairs": 1, "candidates": 1, "groups": 1})
             pair = report["candidates"][0]
             self.assertAlmostEqual(pair["cosine"], 1.0, delta=0.05)
             self.assertGreaterEqual(pair["word_overlap"], 0.80)
@@ -392,8 +392,25 @@ class GovernanceCliTests(unittest.TestCase):
                 self.make_inventory_entry("beta", "testing workflow validation checks automation"),
                 self.make_inventory_entry("gamma", "testing workflow validation checks repeatable"),
             ])
-            report = self.run_cli("detect-groups", "--inventory", inventory, "--threshold", "0.99")
+            report = self.run_cli("detect-groups", "--inventory", inventory, "--threshold", "0.40")
             self.assertEqual(report["suggested_groups"], [["alpha", "beta", "gamma"]])
+
+    def test_detect_groups_weak_single_signal_does_not_bridge_groups(self):
+        # Two cohesive families (A: ios-*, B: ce-*) with one WEAK bridge pair
+        # (ios-sync <-> ce-report-bug share a single generic word "process").
+        # The bridge flags cosine-only (overlap < 0.50) and must NOT chain the
+        # families into a mega-group (the v3.1 over-grouping fix).
+        with tempfile.TemporaryDirectory() as raw:
+            base = Path(raw)
+            inventory = self.write_inventory(base, [
+                self.make_inventory_entry("ios-clean", "ios app cleanup remove build artifacts"),
+                self.make_inventory_entry("ios-sync", "ios app sync regenerate build artifacts process"),
+                self.make_inventory_entry("ce-report-bug", "ce report bug tracker issue triage process"),
+                self.make_inventory_entry("ce-release-notes", "ce report bug tracker assign owner"),
+            ])
+            report = self.run_cli("detect-groups", "--inventory", inventory, "--threshold", "0.20")
+            self.assertEqual(report["counts"]["groups"], 2)
+            self.assertEqual(report["suggested_groups"], [["ce-release-notes", "ce-report-bug"], ["ios-clean", "ios-sync"]])
 
     def test_detect_groups_empty_inventory_passes(self):
         with tempfile.TemporaryDirectory() as raw:
@@ -401,9 +418,10 @@ class GovernanceCliTests(unittest.TestCase):
             inventory = self.write_inventory(base, [])
             report = self.run_cli("detect-groups", "--inventory", inventory)
             self.assertEqual(report["status"], "PASS")
-            self.assertEqual(report["counts"], {"skills": 0, "pairs": 0, "candidates": 0})
+            self.assertEqual(report["counts"], {"skills": 0, "pairs": 0, "candidates": 0, "groups": 0})
             self.assertEqual(report["candidates"], [])
             self.assertEqual(report["suggested_groups"], [])
+            self.assertEqual(report["oversized_groups"], [])
 
     def test_detect_groups_multiline_description_tokenizes(self):
         with tempfile.TemporaryDirectory() as raw:

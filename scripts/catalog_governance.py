@@ -202,14 +202,6 @@ def default_skill_stores() -> list[tuple[str, Path]]:
     return stores
 
 
-def explicit_store_tag(path: Path) -> str:
-    canonical = path.expanduser().resolve(strict=False)
-    for tag, known in default_skill_stores():
-        if canonical == known.expanduser().resolve(strict=False):
-            return tag
-    return "external"
-
-
 def iter_skill_files(root: Path) -> Iterable[Path]:
     """Yield SKILL.md files while never descending through linked directories."""
     pending = [root]
@@ -267,12 +259,39 @@ def scan_skill_store(store: str, root: Path) -> tuple[list[dict[str, Any]], list
     return [entry for _, entry in inventory], errors
 
 
+def load_usage_counts(store_root: Path) -> dict[str, int]:
+    """Best-effort .usage.json reader (Hermes-style per-skill counts).
+
+    Fail-open: a missing/unreadable usage file yields no counts, not an error.
+    Expected shape (any of these tolerated):
+      {"skill-name": N}  or  {"skills": {"skill-name": N}}
+    """
+    usage_path = store_root / ".usage.json"
+    try:
+        data = json.loads(usage_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    raw = data.get("skills", data)
+    if not isinstance(raw, dict):
+        return {}
+    counts: dict[str, int] = {}
+    for key, value in raw.items():
+        if isinstance(value, (int, float)):
+            counts[str(key)] = int(value)
+    return counts
+
+
 def cmd_detect_skills(args: argparse.Namespace) -> int:
     if args.stores:
         raw_stores = [item for group in args.stores for item in group]
         stores = [("external", Path(raw).expanduser()) for raw in raw_stores]
     else:
         stores = [(tag, path) for tag, path in default_skill_stores() if path.is_dir()]
+    usage: dict[str, int] = {}
+    if args.usage_dir:
+        usage = load_usage_counts(Path(args.usage_dir).expanduser())
     inventory: list[dict[str, Any]] = []
     errors: list[str] = []
     seen_paths: set[str] = set()
@@ -283,6 +302,8 @@ def cmd_detect_skills(args: argparse.Namespace) -> int:
             canonical = os.path.normcase(str(Path(entry["path"]).resolve(strict=False)))
             if canonical not in seen_paths:
                 seen_paths.add(canonical)
+                if usage and entry["name"] in usage:
+                    entry["usage"] = usage[entry["name"]]
                 inventory.append(entry)
     inventory.sort(key=lambda entry: (entry["store"], entry["path"]))
     counts: dict[str, int] = {store: 0 for store, _ in stores}
@@ -354,7 +375,23 @@ def group_cosine(left: dict[str, int], right: dict[str, int], idf: dict[str, flo
     return dot / (left_norm * right_norm)
 
 
-def connected_group_names(candidates: list[dict[str, Any]]) -> list[list[str]]:
+def connected_group_names(candidates: list[dict[str, Any]], max_size: int = 8) -> list[list[str]]:
+    """Build suggested groups from HIGH-CONFIDENCE pairs only, with a size cap.
+
+    A strong pair must be flagged by BOTH signals (cosine AND word overlap).
+    Single-signal pairs — even high-cosine ones — share vocabulary but not a
+    functional core (e.g. caveman-commit vs ce-commit both mention commit/git
+    at cosine 0.68 yet are generator vs executor, a council-decided split).
+    Weak pairs stay candidates but never bridge groups, so transitivity cannot
+    chain unrelated families into a mega-group (observed: 24-member component
+    chaining ce-*/design-*/ios-*/qa before this fix).
+
+    Groups over max_size are still returned but flagged for manual review (the
+    council cannot be asked to read N unrelated skills); callers mark them
+    oversized and do not treat them as clean merge groups.
+    """
+    # Both signals must agree: cosine above threshold AND word overlap >= 0.50.
+    strong = [p for p in candidates if len(p.get("flagged_by", [])) >= 2]
     parent: dict[str, str] = {}
 
     def find(name: str) -> str:
@@ -369,11 +406,13 @@ def connected_group_names(candidates: list[dict[str, Any]]) -> list[list[str]]:
         if left_root != right_root:
             parent[right_root] = left_root
 
-    for pair in candidates:
+    for pair in strong:
         union(pair["a"], pair["b"])
 
+    # Isolated skills (never part of a strong pair) are NOT groups.
+    member_names = {p["a"] for p in strong} | {p["b"] for p in strong}
     components: dict[str, list[str]] = {}
-    for name in parent:
+    for name in member_names:
         components.setdefault(find(name), []).append(name)
     return sorted((sorted(names) for names in components.values()), key=lambda names: names[0])
 
@@ -421,16 +460,21 @@ def cmd_detect_groups(args: argparse.Namespace) -> int:
                 "flagged_by": flagged_by,
             })
 
+    suggested = connected_group_names(candidates, args.max_group_size)
+    oversized = [names for names in suggested if len(names) > args.max_group_size]
     report = {
         "status": "PASS",
         "counts": {
             "skills": document_count,
             "pairs": document_count * (document_count - 1) // 2,
             "candidates": len(candidates),
+            "groups": len(suggested),
         },
         "threshold": args.threshold,
+        "max_group_size": args.max_group_size,
         "candidates": candidates,
-        "suggested_groups": connected_group_names(candidates),
+        "suggested_groups": suggested,
+        "oversized_groups": oversized,
     }
     return emit(report, args.output)
 
@@ -858,13 +902,15 @@ def parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="command", required=True)
     detect = sub.add_parser("detect-skills")
     detect.add_argument("--stores", nargs="+", action="append", metavar="PATH")
+    detect.add_argument("--usage-dir", help="optional dir containing .usage.json for usage enrichment")
     detect.add_argument("--output")
     detect.set_defaults(func=cmd_detect_skills)
-    groups = sub.add_parser("detect-groups")
-    groups.add_argument("--inventory", required=True)
-    groups.add_argument("--threshold", type=float, default=0.30)
-    groups.add_argument("--output")
-    groups.set_defaults(func=cmd_detect_groups)
+    grouping = sub.add_parser("detect-groups")
+    grouping.add_argument("--inventory", required=True)
+    grouping.add_argument("--threshold", type=float, default=0.30)
+    grouping.add_argument("--max-group-size", type=int, default=8)
+    grouping.add_argument("--output")
+    grouping.set_defaults(func=cmd_detect_groups)
     package = sub.add_parser("check-package")
     package.add_argument("--root", default=".")
     package.add_argument("--output")
