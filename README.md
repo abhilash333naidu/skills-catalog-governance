@@ -43,6 +43,30 @@ Non-negotiables:
 
 ## Install
 
+### One-liner (recommended)
+
+The installer detects the coding harnesses on your machine, lists them, and lets you
+pick which one(s) to install into (e.g. opencode, pi, claude, codex, omp, hermes).
+
+macOS / Linux (bash):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/abhilash333naidu/skills-catalog-governance/master/install.sh | bash
+```
+
+Windows (PowerShell):
+
+```powershell
+irm https://raw.githubusercontent.com/abhilash333naidu/skills-catalog-governance/master/install.ps1 | iex
+```
+
+The installer is interactive: it prints the detected harnesses and asks which to use
+(type the number, "all", or "custom path"). Pass `--target <name>` to skip the prompt.
+Re-running never overwrites without confirmation; `--yes` replaces after a timestamped
+backup.
+
+### Manual
+
 ```bash
 # Copy the whole folder into any harness's skills directory, e.g.:
 cp -r skills-catalog-governance ~/.claude/skills/

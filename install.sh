@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-liner: curl -fsSL https://raw.githubusercontent.com/abhilash333naidu/skills-catalog-governance/main/install.sh | bash
+# One-liner: curl -fsSL https://raw.githubusercontent.com/abhilash333naidu/skills-catalog-governance/master/install.sh | bash
 set -euo pipefail
 
 REPO_URL="https://github.com/abhilash333naidu/skills-catalog-governance.git"

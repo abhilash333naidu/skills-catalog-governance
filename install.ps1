@@ -1,4 +1,4 @@
-# One-liner: irm https://raw.githubusercontent.com/abhilash333naidu/skills-catalog-governance/main/install.ps1 | iex
+# One-liner: irm https://raw.githubusercontent.com/abhilash333naidu/skills-catalog-governance/master/install.ps1 | iex
 [CmdletBinding()]
 param(
     [Parameter(ValueFromRemainingArguments = $true)]
