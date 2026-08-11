@@ -75,6 +75,9 @@ Backlog source: docs/HANDOFF-20260811.md. P1 = hard bugs first; P2/P3 queued.
 | R6 real .usage.json | **DONE — bug found + fixed (v3.2.5, commit 09d63f6)** | REAL Hermes shape is nested objects ({"skill": {"use_count": N, ...}}) — loader only accepted flat ints → 163-entry real file yielded 0 counts (silent no-op). Fix reads use_count from nested objects; flat back-compat; fail-open kept. Verified: 40 tests (5 new), real file → 163 counts, detect-skills end-to-end enrichment works |
 | R7 G2 judge limitation | **DONE — rubric + loud note (commit 884c77f)** | references/g2-judge-rubric.md: scoring axes, cell verdicts, ≥3 runs/cell bar, cross-model judge procedure; SKILL.md M5 carries loud correlated-judge honesty note (mandatory in every benchmark artifact). benchmark.json already had an honesty field — now the gate itself documents it |
 | R8 council verdict schema | **DONE — commit 78c89e3 (v3.2.6)** | validate-council-verdict subcommand + schemas/council-verdict.schema.json (verdict enum MERGE/SPLIT/RECATEGORIZE/KEEP_SEPARATE/NO_MERGE, survivors[], recategorizations[], absorbed[], gates_passed[]); stdlib YAML-list parser; required_payload updated. Verified: 47 tests (7 new), check-package PASS, legacy prose verdict → clean machine-readable FAIL |
+| R9 oversized-group guidance | **DONE — commit 8c7cacd** | SKILL.md M3 now has explicit oversized-group handling: do not council a group over max-group-size; re-run with lower threshold; split along single-signal seams; only clean ≤max sub-groups go to council. Body trimmed to 499 lines for G0 |
+| R12 version reconciliation | **DONE — commit 8c7cacd** | SKILL.md frontmatter version 3.1.0 → 3.2.6; description updated. G0/G1/G3/G3.5 all PASS |
+| R11 real .usage.json fixture | **IN PROGRESS** | tests/fixtures/usage-real-shape.json committed (real Hermes shape, anonymized); test wiring delegated to FreeBuff |
 
 ## Open questions (non-blocking)
 
