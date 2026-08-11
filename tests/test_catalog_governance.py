@@ -59,6 +59,7 @@ class GovernanceCliTests(unittest.TestCase):
             report = self.run_cli("check-package", "--root", package, expected=1)
             self.assertEqual(report["status"], "FAIL")
             self.assertIn("scripts/catalog_governance.py", report["missing_files"])
+            self.assertIn("schemas/council-verdict.schema.json", report["missing_files"])
 
     def make_catalog(self, raw: str):
         base = Path(raw)
@@ -277,6 +278,76 @@ class GovernanceCliTests(unittest.TestCase):
 
     def run_usage_loader(self, store: Path):
         return GOVERNANCE.load_usage_counts(store)
+
+    def verdict_file(self, directory: Path, frontmatter: str) -> Path:
+        verdict = directory / "verdict.md"
+        verdict.write_text(frontmatter + "\n# Council notes\n", encoding="utf-8")
+        return verdict
+
+    def test_validate_council_verdict_valid_frontmatter(self):
+        with tempfile.TemporaryDirectory() as raw:
+            verdict = self.verdict_file(Path(raw), """---
+verdict: MERGE
+survivors:
+  - caveman-commit
+recategorizations:
+  - ce-commit
+absorbed:
+  - writing-commit-messages
+gates_passed:
+  - G0
+  - G1
+  - G3
+---""")
+            report = self.run_cli("validate-council-verdict", "--verdict", verdict)
+            self.assertEqual(report["status"], "PASS")
+            self.assertEqual(report["verdict"], "MERGE")
+            self.assertEqual(report["survivors"], ["caveman-commit"])
+            self.assertEqual(report["recategorizations"], ["ce-commit"])
+            self.assertEqual(report["absorbed"], ["writing-commit-messages"])
+            self.assertEqual(report["gates_passed"], ["G0", "G1", "G3"])
+
+    def test_validate_council_verdict_missing_verdict(self):
+        with tempfile.TemporaryDirectory() as raw:
+            verdict = self.verdict_file(Path(raw), "---\nsurvivors:\n  - survivor\n---")
+            report = self.run_cli("validate-council-verdict", "--verdict", verdict, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertIn("verdict", " ".join(report["errors"]))
+
+    def test_validate_council_verdict_rejects_unknown_verdict(self):
+        with tempfile.TemporaryDirectory() as raw:
+            verdict = self.verdict_file(Path(raw), "---\nverdict: MAYBE\nsurvivors:\n  - survivor\n---")
+            report = self.run_cli("validate-council-verdict", "--verdict", verdict, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertIn("MAYBE", " ".join(report["errors"]))
+
+    def test_validate_council_verdict_requires_survivors(self):
+        with tempfile.TemporaryDirectory() as raw:
+            verdict = self.verdict_file(Path(raw), "---\nverdict: MERGE\n---")
+            report = self.run_cli("validate-council-verdict", "--verdict", verdict, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertIn("survivors", " ".join(report["errors"]))
+
+    def test_validate_council_verdict_rejects_empty_survivors(self):
+        with tempfile.TemporaryDirectory() as raw:
+            verdict = self.verdict_file(Path(raw), "---\nverdict: MERGE\nsurvivors:\n---")
+            report = self.run_cli("validate-council-verdict", "--verdict", verdict, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertIn("survivors", " ".join(report["errors"]))
+
+    def test_validate_council_verdict_rejects_malformed_frontmatter(self):
+        with tempfile.TemporaryDirectory() as raw:
+            verdict = self.verdict_file(Path(raw), "---\nverdict: MERGE\nnot valid\n---")
+            report = self.run_cli("validate-council-verdict", "--verdict", verdict, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertIn("malformed", " ".join(report["errors"]))
+
+    def test_validate_council_verdict_requires_frontmatter(self):
+        with tempfile.TemporaryDirectory() as raw:
+            verdict = self.verdict_file(Path(raw), "Council notes only")
+            report = self.run_cli("validate-council-verdict", "--verdict", verdict, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertIn("no frontmatter block", " ".join(report["errors"]))
 
     def test_detect_skills_empty_store(self):
         with tempfile.TemporaryDirectory() as raw:

@@ -192,6 +192,96 @@ def skill_frontmatter(text: str) -> tuple[str | None, str | None]:
     return values.get("name"), values.get("description")
 
 
+def council_verdict_frontmatter(text: str) -> dict[str, str | list[str]]:
+    """Parse a simple YAML frontmatter block for council verdicts."""
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return {}
+    end = next((index for index, line in enumerate(lines[1:], 1) if line.strip() == "---"), None)
+    if end is None:
+        raise ValueError("frontmatter opening delimiter has no closing delimiter")
+
+    values: dict[str, str | list[str]] = {}
+    current_key: str | None = None
+    for line in lines[1:end]:
+        if not line.strip():
+            continue
+        match = re.match(r"^([A-Za-z_][\w.-]*)\s*:\s*(.*?)\s*$", line)
+        if match:
+            current_key = match.group(1)
+            if current_key in values:
+                raise ValueError(f"duplicate key in frontmatter: {current_key}")
+            values[current_key] = frontmatter_value(match.group(2))
+            continue
+        list_match = re.match(r"^\s+-\s+(.+?)\s*$", line)
+        if list_match:
+            if current_key is None:
+                raise ValueError(f"malformed frontmatter line: {line}")
+            if isinstance(values[current_key], list):
+                values[current_key].append(frontmatter_value(list_match.group(1)))
+            elif isinstance(values[current_key], str) and not values[current_key]:
+                values[current_key] = [frontmatter_value(list_match.group(1))]
+            else:
+                raise ValueError(f"malformed frontmatter line: {line}")
+            continue
+        raise ValueError(f"malformed frontmatter line: {line}")
+    return values
+
+
+def validate_council_verdict(file: Path) -> dict[str, Any]:
+    """Validate the machine-readable frontmatter of a council verdict."""
+    resolved_file = str(file.resolve())
+    try:
+        frontmatter = council_verdict_frontmatter(file.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return {
+            "status": "FAIL",
+            "file": resolved_file,
+            "verdict": "",
+            "survivors": [],
+            "recategorizations": [],
+            "absorbed": [],
+            "gates_passed": [],
+            "errors": [str(exc)],
+        }
+
+    errors: list[str] = []
+    if not frontmatter:
+        errors.append("no frontmatter block")
+
+    verdict = frontmatter.get("verdict", "")
+    allowed_verdicts = {"MERGE", "SPLIT", "RECATEGORIZE", "KEEP_SEPARATE", "NO_MERGE"}
+    if not isinstance(verdict, str) or not verdict:
+        errors.append("missing required key: verdict")
+    elif verdict not in allowed_verdicts:
+        errors.append(f"invalid verdict value: {verdict}")
+
+    survivors = frontmatter.get("survivors", [])
+    if not isinstance(survivors, list) or not survivors or not all(isinstance(item, str) and item for item in survivors):
+        errors.append("survivors must be a non-empty list of non-empty strings")
+
+    optional_lists: dict[str, list[str]] = {}
+    for key in ("recategorizations", "absorbed", "gates_passed"):
+        value = frontmatter.get(key, [])
+        if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+            errors.append(f"{key} must be a list of strings")
+            optional_lists[key] = []
+        else:
+            optional_lists[key] = value
+
+    report: dict[str, Any] = {
+        "status": "PASS" if not errors else "FAIL",
+        "file": resolved_file,
+        "verdict": verdict if isinstance(verdict, str) else "",
+        "survivors": survivors if isinstance(survivors, list) else [],
+        "recategorizations": optional_lists["recategorizations"],
+        "absorbed": optional_lists["absorbed"],
+        "gates_passed": optional_lists["gates_passed"],
+        "errors": errors,
+    }
+    return report
+
+
 def hermes_store_paths(home: Path) -> list[Path]:
     return [home / ".hermes" / "skills"]
 
@@ -502,6 +592,7 @@ def package_report(root: Path) -> dict[str, Any]:
         "schemas/loss-check.schema.json",
         "schemas/approval.schema.json",
         "schemas/provenance.schema.json",
+        "schemas/council-verdict.schema.json",
     ]
     required_files = sorted(set(references + required_payload))
     missing = [relative for relative in required_files if not (root / relative).is_file()]
@@ -1147,6 +1238,10 @@ def cmd_verify_approval(args: argparse.Namespace) -> int:
     return emit(report, args.output)
 
 
+def cmd_validate_council_verdict(args: argparse.Namespace) -> int:
+    return emit(validate_council_verdict(Path(args.verdict)), args.output)
+
+
 def parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__)
     sub = p.add_subparsers(dest="command", required=True)
@@ -1193,6 +1288,10 @@ def parser() -> argparse.ArgumentParser:
     loss.add_argument("--min-overlap", type=float, default=0.35)
     loss.add_argument("--output")
     loss.set_defaults(func=cmd_loss_check)
+    council_verdict = sub.add_parser("validate-council-verdict")
+    council_verdict.add_argument("--verdict", required=True)
+    council_verdict.add_argument("--output")
+    council_verdict.set_defaults(func=cmd_validate_council_verdict)
     approval = sub.add_parser("verify-approval")
     approval.add_argument("--draft", required=True)
     approval.add_argument("--approval", required=True)

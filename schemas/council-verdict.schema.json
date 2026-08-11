@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skills-catalog-council-verdict-1",
+  "type": "object",
+  "required": ["verdict", "survivors"],
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": ["MERGE", "SPLIT", "RECATEGORIZE", "KEEP_SEPARATE", "NO_MERGE"],
+      "minLength": 1
+    },
+    "survivors": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 1
+    },
+    "recategorizations": {
+      "type": "array",
+      "items": {"type": "string"},
+      "default": []
+    },
+    "absorbed": {
+      "type": "array",
+      "items": {"type": "string"},
+      "default": []
+    },
+    "gates_passed": {
+      "type": "array",
+      "items": {"type": "string"},
+      "default": []
+    }
+  },
+  "additionalProperties": true
+}
