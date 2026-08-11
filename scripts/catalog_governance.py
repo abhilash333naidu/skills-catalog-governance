@@ -266,6 +266,8 @@ def load_usage_counts(store_root: Path) -> dict[str, int]:
     Fail-open: a missing/unreadable usage file yields no counts, not an error.
     Expected shape (any of these tolerated):
       {"skill-name": N}  or  {"skills": {"skill-name": N}}
+      {"skill-name": {"use_count": N, ...}}
+      {"skills": {"skill-name": {"use_count": N, ...}}}
     """
     usage_path = store_root / ".usage.json"
     try:
@@ -281,6 +283,8 @@ def load_usage_counts(store_root: Path) -> dict[str, int]:
     for key, value in raw.items():
         if isinstance(value, (int, float)):
             counts[str(key)] = int(value)
+        elif isinstance(value, dict) and isinstance(value.get("use_count"), (int, float)):
+            counts[str(key)] = int(value["use_count"])
     return counts
 
 

@@ -1,4 +1,5 @@
 import hashlib
+import importlib.util
 import json
 import os
 import subprocess
@@ -11,6 +12,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 TOOL = ROOT / "scripts" / "catalog_governance.py"
 SCHEMAS = ROOT / "schemas"
+MODULE_SPEC = importlib.util.spec_from_file_location("catalog_governance", TOOL)
+assert MODULE_SPEC is not None and MODULE_SPEC.loader is not None
+GOVERNANCE = importlib.util.module_from_spec(MODULE_SPEC)
+MODULE_SPEC.loader.exec_module(GOVERNANCE)
 
 
 class GovernanceCliTests(unittest.TestCase):
@@ -227,6 +232,51 @@ class GovernanceCliTests(unittest.TestCase):
         skill_file = skill / "SKILL.md"
         skill_file.write_bytes((content or "---\nname: Demo\ndescription: A demo skill\n---\nbody\n").encode("utf-8"))
         return skill_file
+
+    def write_usage(self, store: Path, payload):
+        usage_file = store / ".usage.json"
+        usage_file.write_text(json.dumps(payload), encoding="utf-8")
+        return usage_file
+
+    def test_load_usage_counts_nested_objects(self):
+        with tempfile.TemporaryDirectory() as raw:
+            store = Path(raw)
+            self.write_usage(store, {
+                "skill-a": {"use_count": 7, "view_count": 3},
+                "skill-b": {"use_count": 0},
+            })
+            result = self.run_usage_loader(store)
+            self.assertEqual(result, {"skill-a": 7, "skill-b": 0})
+
+    def test_load_usage_counts_flat_values_remain_supported(self):
+        with tempfile.TemporaryDirectory() as raw:
+            store = Path(raw)
+            self.write_usage(store, {"skill-a": 7})
+            result = self.run_usage_loader(store)
+            self.assertEqual(result, {"skill-a": 7})
+
+    def test_load_usage_counts_skills_wrapper_supports_nested_objects(self):
+        with tempfile.TemporaryDirectory() as raw:
+            store = Path(raw)
+            self.write_usage(store, {"skills": {
+                "skill-a": {"use_count": 7, "view_count": 3},
+                "skill-b": {"use_count": 0},
+            }})
+            result = self.run_usage_loader(store)
+            self.assertEqual(result, {"skill-a": 7, "skill-b": 0})
+
+    def test_load_usage_counts_missing_file_fails_open(self):
+        with tempfile.TemporaryDirectory() as raw:
+            self.assertEqual(self.run_usage_loader(Path(raw)), {})
+
+    def test_load_usage_counts_invalid_json_fails_open(self):
+        with tempfile.TemporaryDirectory() as raw:
+            store = Path(raw)
+            (store / ".usage.json").write_text("{not-json", encoding="utf-8")
+            self.assertEqual(self.run_usage_loader(store), {})
+
+    def run_usage_loader(self, store: Path):
+        return GOVERNANCE.load_usage_counts(store)
 
     def test_detect_skills_empty_store(self):
         with tempfile.TemporaryDirectory() as raw:
