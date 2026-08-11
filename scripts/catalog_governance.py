@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import errno
 import hashlib
 import json
 import math
@@ -46,6 +47,7 @@ REF_RE = re.compile(r"`(references/[^`]+)`")
 HEADING_RE = re.compile(r"^#{1,6}\s+(.+?)\s*$")
 WORD_RE = re.compile(r"[a-z0-9][a-z0-9_.:/-]*")
 ABS_WIN_RE = re.compile(r"^[A-Za-z]:[\\/]")
+OVERLAP_THRESHOLD = 0.50
 
 
 def fail(message: str, details: list[str] | None = None) -> int:
@@ -533,6 +535,8 @@ def connected_group_names(candidates: list[dict[str, Any]], max_size: int = 8) -
 def cmd_detect_groups(args: argparse.Namespace) -> int:
     if not math.isfinite(args.threshold) or not 0 <= args.threshold <= 1:
         return fail("threshold must be a finite number between 0 and 1")
+    if not math.isfinite(args.overlap_threshold) or not 0 <= args.overlap_threshold <= 1:
+        return fail("overlap-threshold must be a finite number between 0 and 1")
     try:
         inventory = load_group_inventory(Path(args.inventory))
     except (OSError, ValueError) as exc:
@@ -558,7 +562,7 @@ def cmd_detect_groups(args: argparse.Namespace) -> int:
             flagged_by: list[str] = []
             if cosine >= args.threshold:
                 flagged_by.append("cosine")
-            if overlap >= 0.50:
+            if overlap >= args.overlap_threshold:
                 flagged_by.append("overlap")
             if not flagged_by:
                 continue
@@ -584,6 +588,7 @@ def cmd_detect_groups(args: argparse.Namespace) -> int:
             "groups": len(suggested),
         },
         "threshold": args.threshold,
+        "overlap_threshold": args.overlap_threshold,
         "max_group_size": args.max_group_size,
         "candidates": candidates,
         "suggested_groups": suggested,
@@ -802,6 +807,15 @@ def cmd_install(args: argparse.Namespace) -> int:
                         "check_package": {},
                         "errors": ["invalid or cancelled harness selection"],
                     }, args.output)
+            elif not args.yes:
+                return emit({
+                    "status": "FAIL",
+                    "installed": [],
+                    "check_package": {},
+                    "errors": [
+                        "non-interactive install requires --target or --yes; refusing to install into all detected harnesses"
+                    ],
+                }, args.output)
             else:
                 targets = detected
     except (OSError, ValueError) as exc:
@@ -1041,6 +1055,84 @@ def cmd_preflight_moves(args: argparse.Namespace) -> int:
     return emit(plan, args.plan)
 
 
+def create_move_lock(lock: Path, token: str) -> None:
+    fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    with os.fdopen(fd, "w", encoding="utf-8") as handle:
+        handle.write(token + "\n")
+
+
+def process_is_alive(pid: int) -> bool:
+    """Return false only when the OS proves that a process does not exist."""
+    if pid <= 0:
+        return False
+    if os.name == "nt":
+        # os.kill(pid, 0) is not a reliable existence probe on Windows.
+        import ctypes
+        import ctypes.wintypes
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.OpenProcess.argtypes = [ctypes.wintypes.DWORD, ctypes.wintypes.BOOL, ctypes.wintypes.DWORD]
+        kernel32.OpenProcess.restype = ctypes.wintypes.HANDLE
+        kernel32.CloseHandle.argtypes = [ctypes.wintypes.HANDLE]
+        kernel32.CloseHandle.restype = ctypes.wintypes.BOOL
+        handle = kernel32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+        if handle:
+            kernel32.CloseHandle(handle)
+            return True
+        # ERROR_INVALID_PARAMETER (87) means the PID does not exist; other
+        # failures are treated as alive so recovery remains fail-closed.
+        return ctypes.get_last_error() != 87
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    except OSError as exc:
+        if exc.errno in {errno.ESRCH, errno.ENOENT}:
+            return False
+        return True
+    return True
+
+
+def recover_stale_lock(lock: Path) -> bool:
+    """Remove a lock only when its recorded PID is provably no longer alive."""
+    content = lock.read_text(encoding="utf-8").strip()
+    try:
+        pid_text, _ = content.split(":", 1)
+        pid = int(pid_text)
+    except (ValueError, TypeError):
+        return False
+    if process_is_alive(pid):
+        return False
+    lock.unlink()
+    return True
+
+
+def move_tree(source: Path, destination: Path, expected_digest: str) -> None:
+    """Move atomically on one device, or verify a staged copy across devices."""
+    try:
+        os.rename(source, destination)
+        return
+    except OSError as exc:
+        if exc.errno != errno.EXDEV:
+            raise
+
+    staging = destination.with_name(f".{destination.name}.tmp-{uuid.uuid4().hex}")
+    try:
+        shutil.copytree(source, staging, symlinks=True)
+        if tree_digest(source) != expected_digest:
+            raise RuntimeError(f"source changed during cross-device copy: {source}")
+        if tree_digest(staging) != expected_digest:
+            raise RuntimeError(f"cross-device copy hash mismatch: {staging}")
+        staging.rename(destination)
+        shutil.rmtree(source)
+    except Exception:
+        if staging.exists() or staging.is_symlink():
+            shutil.rmtree(staging, ignore_errors=True)
+        raise
+
+
 def cmd_apply_moves(args: argparse.Namespace) -> int:
     if not args.apply or not args.yes:
         return fail("refusing to move: require both --apply and --yes")
@@ -1063,11 +1155,22 @@ def cmd_apply_moves(args: argparse.Namespace) -> int:
     lock = root.parent / f".{root.name}.catalog-governance.lock"
     token = f"{os.getpid()}:{uuid.uuid4()}"
     try:
-        fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-        with os.fdopen(fd, "w", encoding="utf-8") as handle:
-            handle.write(token + "\n")
+        create_move_lock(lock, token)
     except FileExistsError:
-        return fail(f"governance lock already exists: {lock}")
+        if not args.recover_stale_lock:
+            return fail(
+                f"governance lock already exists: {lock}; inspect it and retry with --recover-stale-lock if its owner is dead"
+            )
+        try:
+            recovered = recover_stale_lock(lock)
+        except OSError as exc:
+            return fail(f"cannot inspect governance lock {lock}: {exc}")
+        if not recovered:
+            return fail(f"governance lock is active or cannot be proven stale: {lock}")
+        try:
+            create_move_lock(lock, token)
+        except FileExistsError:
+            return fail(f"governance lock changed while recovering; refusing to move: {lock}")
     journal_path = Path(args.journal) if args.journal else Path(str(args.plan) + ".journal.jsonl")
     moved: list[dict[str, Any]] = []
     try:
@@ -1080,7 +1183,7 @@ def cmd_apply_moves(args: argparse.Namespace) -> int:
             destination.parent.mkdir(parents=True, exist_ok=True)
             if destination.exists() or destination.is_symlink():
                 raise RuntimeError(f"destination appeared after preflight: {destination}")
-            os.rename(source, destination)
+            move_tree(source, destination, current_digest)
             destination_digest = tree_digest(destination)
             if destination_digest != current_digest:
                 raise RuntimeError(f"post-move hash mismatch: {destination}")
@@ -1271,6 +1374,7 @@ def parser() -> argparse.ArgumentParser:
     grouping = sub.add_parser("detect-groups")
     grouping.add_argument("--inventory", required=True)
     grouping.add_argument("--threshold", type=float, default=0.30)
+    grouping.add_argument("--overlap-threshold", type=float, default=OVERLAP_THRESHOLD)
     grouping.add_argument("--max-group-size", type=int, default=8)
     grouping.add_argument("--output")
     grouping.set_defaults(func=cmd_detect_groups)
@@ -1299,6 +1403,11 @@ def parser() -> argparse.ArgumentParser:
     apply.add_argument("--journal")
     apply.add_argument("--apply", action="store_true")
     apply.add_argument("--yes", action="store_true")
+    apply.add_argument(
+        "--recover-stale-lock",
+        action="store_true",
+        help="remove the move lock only when its recorded PID is no longer alive",
+    )
     apply.set_defaults(func=cmd_apply_moves)
     loss = sub.add_parser("loss-check")
     loss.add_argument("--draft", required=True)

@@ -74,8 +74,9 @@ irm https://raw.githubusercontent.com/abhilash333naidu/skills-catalog-governance
 
 The installer is interactive: it prints the detected harnesses and asks which to use
 (type the number, "all", or "custom path"). Pass `--target <name>` to skip the prompt.
-Re-running never overwrites without confirmation; `--yes` replaces after a timestamped
-backup.
+In a noninteractive shell, pass `--target` or explicit `--yes`; otherwise installation
+fails closed rather than selecting every detected harness. Re-running never overwrites
+without confirmation; `--yes` replaces after a timestamped backup.
 
 ### Manual
 
@@ -99,7 +100,7 @@ python3 scripts/catalog_governance.py check-package --root .
 python3 scripts/catalog_governance.py detect-skills --output inventory.json
 
 # 2. Find similar families (candidates only — no decisions)
-python3 scripts/catalog_governance.py detect-groups --inventory inventory.json
+python3 scripts/catalog_governance.py detect-groups --inventory inventory.json --overlap-threshold 0.50
 
 # 3. For each suggested group, run the council (see SKILL.md M3)
 # 4. Build the staged master, benchmark it, promote (see SKILL.md M4-M6)
@@ -115,7 +116,8 @@ python3 scripts/catalog_governance.py detect-skills --stores ~/third-party/skill
 
 - `detect-skills`: junction/symlink-aware scan, YAML frontmatter parsing with
   dir-name fallback, exact-byte sha256, canonical-path dedup. Fail-closed.
-- `detect-groups`: all-pairs flat TF-IDF cosine + word-overlap (pure stdlib,
+- `detect-groups`: all-pairs flat TF-IDF cosine + word-overlap (pure stdlib; tune
+  `--threshold` and `--overlap-threshold`, both defaulting to 0.30 and 0.50),
   method from the SkillClone paper's own ablation — flat TF-IDF is F1 .881 without
   any ML training). Low threshold (0.30) biases toward over-flagging: a false
   positive costs one wasted read; a false negative misses a whole group.

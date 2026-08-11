@@ -41,10 +41,12 @@ A harness is DETECTED if any of its candidate skill dirs exists (is_dir).
 2. Detect all harnesses present. If none found: status FAIL with a helpful message
    ("no supported harness detected; create a skills dir or pass --target").
 3. If `--target <name>` given: use ONLY that harness; error if its dir doesn't exist.
-4. If interactive (no --yes and stdout is a tty):
+4. If interactive (no --yes and stdin and stdout are ttys):
    - Print a numbered list: "1) opencode  ~/.config/opencode/skills   [detected]"
    - Also always offer: "N) all" (install into every detected harness) and "N+1) custom path"
    - Prompt "select:" and read one line from stdin.
+   - If non-interactive, require `--target` or explicit `--yes`; otherwise fail closed
+     instead of selecting every detected harness.
 5. Copy the whole package (SKILL.md, references/, schemas/, scripts/, tests/, LICENSE, README.md)
    into `<harness-dir>/skills-catalog-governance/`.
 6. Idempotent + safe:
@@ -89,8 +91,9 @@ Rules:
   package present at <dir>/skills-catalog-governance/SKILL.md, check-package PASS.
 - T2: install when no harnesses detected → status FAIL, helpful message.
 - T3: install with --target to a NON-EXISTENT dir → status FAIL, clear error.
-- T4: install twice without --yes in non-interactive mode (stdin not a tty) →
-  second run reports exists, does NOT overwrite silently (or requires --yes).
+- T4: install without `--target` or `--yes` in non-interactive mode (stdin not a tty) →
+  status FAIL, no harness is modified, and the report explains how to opt in explicitly.
+  An explicit `--target` remains narrow; explicit `--yes` opts into all detected harnesses.
 - T5: install --yes over existing → backup created (timestamped .bak), new copy present.
 - T6: detection table — point HOME at a temp dir containing one harness skill dir,
   detect-skills-style probe returns that harness in the list.

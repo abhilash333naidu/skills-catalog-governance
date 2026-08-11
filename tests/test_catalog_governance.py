@@ -1,3 +1,5 @@
+import argparse
+import errno
 import hashlib
 import importlib.util
 import json
@@ -507,6 +509,17 @@ gates_passed:
             self.assertTrue((target / "skills-catalog-governance" / "SKILL.md").is_file())
             self.assertEqual(report["check_package"]["status"], "PASS")
 
+    def test_install_noninteractive_without_target_or_yes_fails_closed(self):
+        with tempfile.TemporaryDirectory() as raw:
+            home = Path(raw)
+            (home / ".claude" / "skills").mkdir(parents=True)
+            env = os.environ.copy()
+            env["HOME"] = str(home)
+            report = self.run_cli("install", expected=1, env=env)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertIn("requires --target or --yes", " ".join(report["errors"]))
+            self.assertFalse((home / ".claude" / "skills" / "skills-catalog-governance").exists())
+
     def test_install_fails_when_no_harness_is_detected(self):
         with tempfile.TemporaryDirectory() as raw:
             env = os.environ.copy()
@@ -646,6 +659,167 @@ gates_passed:
             self.assertEqual(report["counts"]["groups"], 2)
             self.assertEqual(report["suggested_groups"], [["ce-release-notes", "ce-report-bug"], ["ios-clean", "ios-sync"]])
 
+    def test_apply_recovers_a_provably_stale_lock(self):
+        with tempfile.TemporaryDirectory() as raw:
+            catalog, archive, source, manifest = self.make_catalog(raw)
+            plan = Path(raw) / "plan.json"
+            self.run_cli("preflight-moves", "--root", catalog, "--archive", archive, "--manifest", manifest, "--plan", plan)
+            lock = catalog.parent / f".{catalog.name}.catalog-governance.lock"
+            lock.write_text("-1:stale-token\n", encoding="utf-8")
+            report = self.run_cli("apply-moves", "--plan", plan, "--apply", "--yes", "--recover-stale-lock")
+            self.assertEqual(report["status"], "PASS")
+            self.assertFalse(lock.exists())
+            self.assertFalse(source.exists())
+
+    def test_apply_refuses_malformed_lock_even_with_recovery_requested(self):
+        with tempfile.TemporaryDirectory() as raw:
+            catalog, archive, source, manifest = self.make_catalog(raw)
+            plan = Path(raw) / "plan.json"
+            self.run_cli("preflight-moves", "--root", catalog, "--archive", archive, "--manifest", manifest, "--plan", plan)
+            lock = catalog.parent / f".{catalog.name}.catalog-governance.lock"
+            lock.write_text("not-a-lock\n", encoding="utf-8")
+            report = self.run_cli("apply-moves", "--plan", plan, "--apply", "--yes", "--recover-stale-lock", expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertTrue(lock.exists())
+            self.assertTrue(source.exists())
+
+    def test_apply_refuses_active_lock_even_with_recovery_requested(self):
+        with tempfile.TemporaryDirectory() as raw:
+            catalog, archive, source, manifest = self.make_catalog(raw)
+            plan = Path(raw) / "plan.json"
+            self.run_cli("preflight-moves", "--root", catalog, "--archive", archive, "--manifest", manifest, "--plan", plan)
+            lock = catalog.parent / f".{catalog.name}.catalog-governance.lock"
+            lock.write_text(f"{os.getpid()}:active-token\n", encoding="utf-8")
+            report = self.run_cli("apply-moves", "--plan", plan, "--apply", "--yes", "--recover-stale-lock", expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertTrue(lock.exists())
+            self.assertTrue(source.exists())
+
+    def test_move_tree_falls_back_after_cross_device_rename_error(self):
+        with tempfile.TemporaryDirectory() as raw:
+            base = Path(raw)
+            source = base / "source"
+            destination = base / "archive" / "source"
+            source.mkdir()
+            (source / "SKILL.md").write_text("content\n", encoding="utf-8")
+            expected_digest = GOVERNANCE.tree_digest(source)
+            original_rename = GOVERNANCE.os.rename
+            calls = 0
+
+            def raise_exdev_once(source_path, destination_path):
+                nonlocal calls
+                calls += 1
+                if calls == 1:
+                    raise OSError(errno.EXDEV, "cross-device link")
+                return original_rename(source_path, destination_path)
+
+            GOVERNANCE.os.rename = raise_exdev_once
+            try:
+                GOVERNANCE.move_tree(source, destination, expected_digest)
+            finally:
+                GOVERNANCE.os.rename = original_rename
+            self.assertFalse(source.exists())
+            self.assertEqual(GOVERNANCE.tree_digest(destination), expected_digest)
+
+    def test_move_tree_refuses_when_source_changes_during_cross_device_copy(self):
+        with tempfile.TemporaryDirectory() as raw:
+            base = Path(raw)
+            source = base / "source"
+            destination = base / "archive" / "source"
+            source.mkdir()
+            (source / "SKILL.md").write_text("content\n", encoding="utf-8")
+            original_rename = GOVERNANCE.os.rename
+            original_digest = GOVERNANCE.tree_digest
+
+            def raise_exdev(source_path, destination_path):
+                raise OSError(errno.EXDEV, "cross-device link")
+
+            def fake_digest(path):
+                if path == source:
+                    return "changed-during-copy"
+                return original_digest(path)
+
+            GOVERNANCE.os.rename = raise_exdev
+            GOVERNANCE.tree_digest = fake_digest
+            try:
+                with self.assertRaisesRegex(RuntimeError, "source changed"):
+                    GOVERNANCE.move_tree(source, destination, "expected")
+            finally:
+                GOVERNANCE.os.rename = original_rename
+                GOVERNANCE.tree_digest = original_digest
+            self.assertTrue(source.exists())
+            self.assertFalse(destination.exists())
+            self.assertEqual(list(destination.parent.glob(f".{destination.name}.tmp-*")), [])
+
+    def test_move_tree_refuses_when_staged_copy_hash_mismatches(self):
+        with tempfile.TemporaryDirectory() as raw:
+            base = Path(raw)
+            source = base / "source"
+            destination = base / "archive" / "source"
+            source.mkdir()
+            (source / "SKILL.md").write_text("content\n", encoding="utf-8")
+            expected_digest = GOVERNANCE.tree_digest(source)
+            original_rename = GOVERNANCE.os.rename
+            original_digest = GOVERNANCE.tree_digest
+            digest_calls = 0
+
+            def raise_exdev(source_path, destination_path):
+                raise OSError(errno.EXDEV, "cross-device link")
+
+            def fake_digest(path):
+                nonlocal digest_calls
+                digest_calls += 1
+                if digest_calls == 1:
+                    return expected_digest
+                return "staging-corrupted"
+
+            GOVERNANCE.os.rename = raise_exdev
+            GOVERNANCE.tree_digest = fake_digest
+            try:
+                with self.assertRaisesRegex(RuntimeError, "hash mismatch"):
+                    GOVERNANCE.move_tree(source, destination, expected_digest)
+            finally:
+                GOVERNANCE.os.rename = original_rename
+                GOVERNANCE.tree_digest = original_digest
+            self.assertTrue(source.exists())
+            self.assertFalse(destination.exists())
+            self.assertEqual(list(destination.parent.glob(f".{destination.name}.tmp-*")), [])
+
+    def test_process_is_alive_distinguishes_live_from_dead_pids(self):
+        self.assertTrue(GOVERNANCE.process_is_alive(os.getpid()))
+        self.assertFalse(GOVERNANCE.process_is_alive(2**31 - 1))
+
+    def test_apply_refuses_when_lock_is_recreated_during_recovery(self):
+        with tempfile.TemporaryDirectory() as raw:
+            catalog, archive, source, manifest = self.make_catalog(raw)
+            plan = Path(raw) / "plan.json"
+            self.run_cli(
+                "preflight-moves", "--root", catalog, "--archive", archive,
+                "--manifest", manifest, "--plan", plan,
+            )
+            lock = catalog.parent / f".{catalog.name}.catalog-governance.lock"
+            lock.write_text("-1:stale-token\n", encoding="utf-8")
+            original_create = GOVERNANCE.create_move_lock
+            create_calls = {"n": 0}
+
+            def racy_create(lock_path, token):
+                create_calls["n"] += 1
+                if create_calls["n"] > 1:
+                    original_create(lock_path, token)
+                    raise FileExistsError("lock recreated by a racer")
+                return original_create(lock_path, token)
+
+            GOVERNANCE.create_move_lock = racy_create
+            try:
+                code = GOVERNANCE.cmd_apply_moves(argparse.Namespace(
+                    plan=str(plan), apply=True, yes=True, recover_stale_lock=True, journal=None,
+                ))
+            finally:
+                GOVERNANCE.create_move_lock = original_create
+            self.assertEqual(code, 1)
+            self.assertTrue(lock.exists())
+            self.assertTrue(source.exists())
+
     def test_detect_groups_empty_inventory_passes(self):
         with tempfile.TemporaryDirectory() as raw:
             base = Path(raw)
@@ -676,6 +850,24 @@ gates_passed:
             self.run_cli("detect-skills", "--stores", store, "--output", inventory)
             report = self.run_cli("detect-groups", "--inventory", inventory)
             self.assertEqual(report["counts"]["candidates"], 1)
+
+    def test_detect_groups_overlap_threshold_is_configurable(self):
+        with tempfile.TemporaryDirectory() as raw:
+            inventory = self.write_inventory(Path(raw), [
+                self.make_inventory_entry("alpha", "shared workflow validation checks extra"),
+                self.make_inventory_entry("beta", "shared workflow validation checks different"),
+            ])
+            report = self.run_cli("detect-groups", "--inventory", inventory, "--threshold", "0.99", "--overlap-threshold", "0.80")
+            self.assertEqual(report["overlap_threshold"], 0.80)
+            self.assertEqual(report["counts"]["candidates"], 0)
+            relaxed = self.run_cli("detect-groups", "--inventory", inventory, "--threshold", "0.99", "--overlap-threshold", "0.50")
+            self.assertEqual(relaxed["counts"]["candidates"], 1)
+
+    def test_detect_groups_rejects_invalid_overlap_threshold(self):
+        with tempfile.TemporaryDirectory() as raw:
+            inventory = self.write_inventory(Path(raw), [])
+            report = self.run_cli("detect-groups", "--inventory", inventory, "--overlap-threshold", "1.1", expected=1)
+            self.assertIn("overlap-threshold", report["message"])
 
     def test_detect_groups_stricter_threshold_reduces_cosine_candidates(self):
         with tempfile.TemporaryDirectory() as raw:

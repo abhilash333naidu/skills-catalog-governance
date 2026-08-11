@@ -83,13 +83,14 @@ python scripts/catalog_governance.py detect-skills --output inventory.json
 All-pairs similarity over the M1 inventory. Candidates only — NEVER a merge decision.
 
 ```bash
-python scripts/catalog_governance.py detect-groups --inventory inventory.json --threshold 0.30
+python scripts/catalog_governance.py detect-groups --inventory inventory.json --threshold 0.30 --overlap-threshold 0.50
 ```
 
 - Method (paper-verified, arXiv:2603.22447 SkillClone): flat TF-IDF cosine + word-overlap
   (|intersection| / min lens). Stdlib-only (no sklearn/numpy).
-- Over-flag bias: default threshold 0.30 (false positive = one wasted read; false
-  negative = a missed group, worse). Flag if cosine >= threshold OR overlap >= 0.50.
+- Over-flag bias: default cosine threshold 0.30 and word-overlap threshold 0.50 (both
+  configurable; a false positive = one wasted read; a false negative = a missed group,
+  worse). Flag if cosine >= threshold OR overlap >= overlap-threshold.
 - Output: candidates (a, b, cosine, word_overlap, flagged_by) + `suggested_groups`
   (connected components) — a SUGGESTION for M3 scope, not a decision.
 - GROUPING RULE (v3.1): suggested_groups are built from STRONG pairs ONLY — both
@@ -171,6 +172,8 @@ disclosure). Bindings kept here — these are the hard boundaries:
   ARCHIVE → POST_AUDIT`. A failed or stuck state is never treated as complete.
 - `apply-moves` refuses collisions, symlinks/junctions, missing `SKILL.md`, and unexpected
   state changes; it never deletes or overwrites. Partial runs resume from the journal.
+  A pre-existing lock is never silently removed; retry with `--recover-stale-lock` only after
+  verifying its recorded PID is no longer alive.
 - **`[CHANGED]` verify-approval is bound to MECHANICAL STATE, not prose:** a supplied
   `--loss-report` makes it RE-RUN the loss-check live against draft + every source and
   refuses (`FAIL`) unless loss-check is `PASS`, every recorded draft hash equals the bound

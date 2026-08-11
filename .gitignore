@@ -4,3 +4,4 @@ run-record/
 skills-merge-drafts/
 *.lock
 *.journal.jsonl
+inventory-real.json

@@ -64,7 +64,26 @@ python3 scripts/catalog_governance.py apply-moves \
 `apply-moves` rechecks the manifest hash, every source tree hash, every destination,
 and the lock before each mutation. It refuses collisions, symlinks/junctions, missing
 `SKILL.md` files, and unexpected state changes. It records source, destination, and
-post-move tree hash for every successful move. It never deletes or overwrites.
+post-move tree hash for every successful move. It never deletes or overwrites. A pre-existing
+lock fails closed; `--recover-stale-lock` may be used only when the lock's recorded PID is
+provably no longer alive. Same-device moves use atomic rename; cross-device moves use a
+hash-verified staged copy before removing the source.
+
+**ACCEPTED LIMITATION (cross-device moves):** the EXDEV fallback verifies source and
+staged-copy tree hashes before publishing the destination and removes the source after
+publish, but it is NOT crash-transactional — if the process dies between destination
+publication and source removal, BOTH the source and destination exist. Recovery is manual:
+inspect the journal (`--journal`), reconcile the duplicate (both trees have the recorded
+hash), then remove the stale source. A crash before publication leaves only the staging
+dir (`.tmp-*`), which the next run ignores; the source is untouched. Single-device moves
+remain fully atomic.
+
+A related mutation window: between the final source-tree digest check and the source
+removal, an external edit to the source would be deleted unpublished. The governance lock
+excludes concurrent `apply-moves` runs, so only external filesystem actors (not another
+tool run) can hit this window. Recovery is the same manual journal reconciliation: if the
+mutation matters, rescue the unverified source edit first, then remove the source — the
+destination hash remains the journaled truth.
 
 ## Mechanical loss-check and approval
 
