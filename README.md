@@ -51,13 +51,13 @@ pick which one(s) to install into (e.g. opencode, pi, claude, codex, omp, hermes
 macOS / Linux (bash):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/abhilash333naidu/skills-catalog-governance/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/abhilash333naidu/skills-catalog-governance/main/install.sh | bash
 ```
 
 Windows (PowerShell):
 
 ```powershell
-irm https://raw.githubusercontent.com/abhilash333naidu/skills-catalog-governance/master/install.ps1 | iex
+irm https://raw.githubusercontent.com/abhilash333naidu/skills-catalog-governance/main/install.ps1 | iex
 ```
 
 The installer is interactive: it prints the detected harnesses and asks which to use
