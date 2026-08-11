@@ -14,6 +14,7 @@ import json
 import math
 import os
 import re
+import shutil
 import sys
 from collections import Counter
 import time
@@ -479,22 +480,267 @@ def cmd_detect_groups(args: argparse.Namespace) -> int:
     return emit(report, args.output)
 
 
-def cmd_check_package(args: argparse.Namespace) -> int:
-    root = Path(args.root).resolve()
+def package_report(root: Path) -> dict[str, Any]:
+    root = root.resolve()
     skill = root / "SKILL.md"
     if not skill.is_file():
-        return fail("package is missing SKILL.md", [str(skill)])
+        return {
+            "status": "FAIL",
+            "root": str(root),
+            "required_files": [],
+            "missing_files": ["SKILL.md"],
+            "message": "package is missing SKILL.md",
+        }
     references = referenced_files(skill)
-    required_payload = ["scripts/catalog_governance.py", "schemas/manifest.schema.json", "schemas/loss-check.schema.json", "schemas/approval.schema.json", "schemas/provenance.schema.json"]
+    required_payload = [
+        "scripts/catalog_governance.py",
+        "schemas/manifest.schema.json",
+        "schemas/loss-check.schema.json",
+        "schemas/approval.schema.json",
+        "schemas/provenance.schema.json",
+    ]
     required_files = sorted(set(references + required_payload))
     missing = [relative for relative in required_files if not (root / relative).is_file()]
-    report = {
+    return {
         "status": "PASS" if not missing else "FAIL",
         "root": str(root),
         "skill_sha256": sha256_file(skill),
         "required_files": required_files,
         "missing_files": missing,
         "message": "all required package files are present" if not missing else "required package files are missing",
+    }
+
+
+def cmd_check_package(args: argparse.Namespace) -> int:
+    return emit(package_report(Path(args.root)), args.output)
+
+
+INSTALL_HARNESSES = (
+    "opencode",
+    "pi",
+    "claude",
+    "codex",
+    "omp",
+    "hermes",
+    "master",
+    "gstack",
+)
+INSTALL_DIRS = ("references", "schemas", "scripts", "tests")
+INSTALL_FILES = ("SKILL.md", "LICENSE", "README.md")
+
+
+def install_user_home() -> Path:
+    """Resolve the user root for harness detection.
+
+    Order: HOME (explicit override — enables isolated tests and portable installs)
+    -> USERPROFILE (Windows) -> Path.home() fallback.
+    On POSIX Path.home() already honours HOME, but making the override explicit
+    keeps Windows behaviour identical so detection is testable on every OS.
+    """
+    raw = os.environ.get("HOME") or os.environ.get("USERPROFILE")
+    if raw:
+        return Path(raw)
+    return Path.home()
+
+
+def install_harness_candidates() -> list[tuple[str, Path]]:
+    """Return supported harness skill stores in the specification's order."""
+    user_root = install_user_home()
+    if os.name == "nt":
+        appdata = os.environ.get("APPDATA")
+        candidates: dict[str, list[Path]] = {
+            "opencode": [user_root / ".config" / "opencode" / "skills"],
+            "pi": [user_root / ".pi" / "agent" / "skills"],
+            "claude": [user_root / ".claude" / "skills"],
+            "codex": [user_root / ".codex" / "skills"],
+            "omp": [user_root / ".omp" / "skills"],
+            "hermes": [],
+            "master": [user_root / ".agents" / "skills"],
+            "gstack": [user_root / ".gstack" / "skills"],
+        }
+        if appdata:
+            candidates["hermes"] = sorted((Path(appdata) / "hermes" / "profiles").glob("*") )
+            candidates["hermes"] = [path / "skills" for path in candidates["hermes"]]
+    else:
+        home = user_root
+        candidates = {
+            "opencode": [home / ".config" / "opencode" / "skills"],
+            "pi": [home / ".pi" / "agent" / "skills"],
+            "claude": [home / ".claude" / "skills"],
+            "codex": [home / ".codex" / "skills"],
+            "omp": [home / ".omp" / "skills"],
+            "hermes": [home / ".hermes" / "skills"],
+            "master": [home / ".agents" / "skills"],
+            "gstack": [home / ".gstack" / "skills"],
+        }
+    return [
+        (harness, path)
+        for harness in INSTALL_HARNESSES
+        for path in candidates[harness]
+        if path.is_dir()
+    ]
+
+
+def install_target_candidates(raw_target: str) -> list[tuple[str, Path]]:
+    detected = install_harness_candidates()
+    if raw_target in INSTALL_HARNESSES:
+        matches = [(harness, path) for harness, path in detected if harness == raw_target]
+        if not matches:
+            raise ValueError(f"target harness directory does not exist: {raw_target}")
+        return matches
+    target = Path(raw_target).expanduser()
+    if not target.is_dir():
+        raise ValueError(f"target directory does not exist: {target}")
+    return [("custom", target)]
+
+
+def choose_install_targets(detected: list[tuple[str, Path]]) -> list[tuple[str, Path]] | None:
+    """Prompt on a real terminal; return None for an invalid/cancelled choice."""
+    all_number = len(detected) + 1
+    custom_number = all_number + 1
+    print("Detected supported harnesses:", file=sys.stderr)
+    for index, (harness, target) in enumerate(detected, 1):
+        print(f"{index}) {harness}  {target}   [detected]", file=sys.stderr)
+    print(f"{all_number}) all", file=sys.stderr)
+    print(f"{custom_number}) custom path", file=sys.stderr)
+    print("select: ", end="", file=sys.stderr, flush=True)
+    try:
+        selection = sys.stdin.readline().strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        return None
+    if selection == str(all_number) or selection == "all":
+        return detected
+    if selection == str(custom_number) or selection == "custom":
+        print("custom skills directory: ", end="", file=sys.stderr, flush=True)
+        try:
+            custom = sys.stdin.readline().strip()
+        except (EOFError, KeyboardInterrupt):
+            return None
+        if not custom:
+            return None
+        try:
+            return install_target_candidates(custom)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return None
+    try:
+        selected = int(selection)
+    except ValueError:
+        return None
+    if 1 <= selected <= len(detected):
+        return [detected[selected - 1]]
+    return None
+
+
+def install_package(source_root: Path, target_root: Path) -> None:
+    """Copy into a sibling staging directory, then publish it atomically."""
+    destination = target_root / "skills-catalog-governance"
+    if destination.exists() or destination.is_symlink():
+        raise FileExistsError(destination)
+    target_root.mkdir(parents=True, exist_ok=True)
+    staging = target_root / f".{destination.name}.tmp-{uuid.uuid4().hex}"
+    try:
+        staging.mkdir()
+        for directory in INSTALL_DIRS:
+            shutil.copytree(source_root / directory, staging / directory, symlinks=True)
+        for filename in INSTALL_FILES:
+            shutil.copy2(source_root / filename, staging / filename)
+        staging.rename(destination)
+    except Exception:
+        shutil.rmtree(staging, ignore_errors=True)
+        raise
+
+
+def backup_destination(destination: Path) -> Path:
+    stamp = time.strftime("%Y%m%d-%H%M%S")
+    backup = destination.with_name(f"{destination.name}.bak-{stamp}")
+    suffix = 1
+    while backup.exists() or backup.is_symlink():
+        backup = destination.with_name(f"{destination.name}.bak-{stamp}-{suffix}")
+        suffix += 1
+    shutil.move(str(destination), str(backup))
+    return backup
+
+
+def cmd_install(args: argparse.Namespace) -> int:
+    source_root = Path(__file__).resolve().parent.parent
+    errors: list[str] = []
+    installed: list[dict[str, Any]] = []
+    checks: list[dict[str, Any]] = []
+
+    try:
+        if args.target:
+            targets = install_target_candidates(args.target)
+        else:
+            detected = install_harness_candidates()
+            if not detected:
+                return emit({
+                    "status": "FAIL",
+                    "installed": [],
+                    "check_package": {},
+                    "errors": ["no supported harness detected; create a skills dir or pass --target"],
+                }, args.output)
+            if not args.yes and sys.stdin.isatty() and sys.stdout.isatty():
+                targets = choose_install_targets(detected)
+                if targets is None:
+                    return emit({
+                        "status": "FAIL",
+                        "installed": [],
+                        "check_package": {},
+                        "errors": ["invalid or cancelled harness selection"],
+                    }, args.output)
+            else:
+                targets = detected
+    except (OSError, ValueError) as exc:
+        return emit({"status": "FAIL", "installed": [], "check_package": {}, "errors": [str(exc)]}, args.output)
+
+    for harness, target_root in targets:
+        destination = target_root / "skills-catalog-governance"
+        existed = destination.exists() or destination.is_symlink()
+        overwritten = False
+        if existed:
+            if not args.yes:
+                confirmed = False
+                if sys.stdin.isatty() and sys.stdout.isatty():
+                    print(f"{destination} exists; overwrite? [y/N] ", end="", file=sys.stderr, flush=True)
+                    try:
+                        confirmed = sys.stdin.readline().strip().lower() in {"y", "yes"}
+                    except (EOFError, KeyboardInterrupt):
+                        confirmed = False
+                if not confirmed:
+                    installed.append({"harness": harness, "target": str(target_root), "existed": True, "overwritten": False})
+                    errors.append(f"destination exists; rerun with --yes to replace: {destination}")
+                    continue
+            try:
+                backup_destination(destination)
+                overwritten = True
+            except OSError as exc:
+                installed.append({"harness": harness, "target": str(target_root), "existed": True, "overwritten": False})
+                errors.append(f"could not back up existing destination {destination}: {exc}")
+                continue
+        try:
+            install_package(source_root, target_root)
+            check = package_report(destination)
+            checks.append(check)
+            installed.append({"harness": harness, "target": str(target_root), "existed": existed, "overwritten": overwritten})
+            if check["status"] != "PASS":
+                errors.append(f"check-package failed for {destination}: {check.get('message', 'package is incomplete')}")
+        except (OSError, ValueError, shutil.Error) as exc:
+            installed.append({"harness": harness, "target": str(target_root), "existed": existed, "overwritten": overwritten})
+            errors.append(f"installation failed for {destination}: {exc}")
+
+    if len(checks) == 1:
+        check_package: dict[str, Any] = checks[0]
+    else:
+        check_package = {
+            "status": "PASS" if checks and all(check["status"] == "PASS" for check in checks) else "FAIL",
+            "results": checks,
+        }
+    report = {
+        "status": "PASS" if installed and not errors and check_package.get("status") == "PASS" else "FAIL",
+        "installed": installed,
+        "check_package": check_package,
+        "errors": errors,
     }
     return emit(report, args.output)
 
@@ -915,6 +1161,11 @@ def parser() -> argparse.ArgumentParser:
     package.add_argument("--root", default=".")
     package.add_argument("--output")
     package.set_defaults(func=cmd_check_package)
+    install = sub.add_parser("install")
+    install.add_argument("--target", help="harness name or existing skills directory")
+    install.add_argument("--yes", action="store_true", help="replace existing installs after a timestamped backup")
+    install.add_argument("--output")
+    install.set_defaults(func=cmd_install)
     manifest = sub.add_parser("validate-manifest")
     manifest.add_argument("--root", required=True)
     manifest.add_argument("--manifest", required=True)

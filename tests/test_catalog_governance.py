@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -13,13 +14,14 @@ SCHEMAS = ROOT / "schemas"
 
 
 class GovernanceCliTests(unittest.TestCase):
-    def run_cli(self, *args, expected=0):
+    def run_cli(self, *args, expected=0, env=None):
         result = subprocess.run(
             [sys.executable, str(TOOL), *map(str, args)],
             cwd=ROOT,
             capture_output=True,
             text=True,
             check=False,
+            env=env,
         )
         self.assertEqual(result.returncode, expected, result.stdout + result.stderr)
         return json.loads(result.stdout)
@@ -328,6 +330,77 @@ class GovernanceCliTests(unittest.TestCase):
             entry = report["inventory"][0]
             self.assertEqual(entry["store"], "external")
             self.assertTrue(entry["read_only"])
+
+    def test_install_into_explicit_target(self):
+        with tempfile.TemporaryDirectory() as raw:
+            target = Path(raw) / "skills"
+            target.mkdir()
+            report = self.run_cli("install", "--target", target)
+            self.assertEqual(report["status"], "PASS")
+            self.assertEqual(report["installed"], [{
+                "harness": "custom",
+                "target": str(target),
+                "existed": False,
+                "overwritten": False,
+            }])
+            self.assertTrue((target / "skills-catalog-governance" / "SKILL.md").is_file())
+            self.assertEqual(report["check_package"]["status"], "PASS")
+
+    def test_install_fails_when_no_harness_is_detected(self):
+        with tempfile.TemporaryDirectory() as raw:
+            env = os.environ.copy()
+            env["HOME"] = raw
+            report = self.run_cli("install", expected=1, env=env)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertIn("no supported harness detected", " ".join(report["errors"]))
+
+    def test_install_rejects_missing_target(self):
+        with tempfile.TemporaryDirectory() as raw:
+            missing = Path(raw) / "does-not-exist"
+            report = self.run_cli("install", "--target", missing, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertIn("does not exist", " ".join(report["errors"]))
+
+    def test_install_existing_target_is_not_overwritten_without_yes(self):
+        with tempfile.TemporaryDirectory() as raw:
+            target = Path(raw) / "skills"
+            target.mkdir()
+            destination = target / "skills-catalog-governance"
+            destination.mkdir()
+            marker = destination / "user-file.txt"
+            marker.write_text("keep me", encoding="utf-8")
+            report = self.run_cli("install", "--target", target, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertFalse(report["installed"][0]["overwritten"])
+            self.assertTrue(marker.is_file())
+            self.assertEqual(marker.read_text(encoding="utf-8"), "keep me")
+
+    def test_install_yes_creates_timestamped_backup(self):
+        with tempfile.TemporaryDirectory() as raw:
+            target = Path(raw) / "skills"
+            target.mkdir()
+            destination = target / "skills-catalog-governance"
+            destination.mkdir()
+            (destination / "old.txt").write_text("old", encoding="utf-8")
+            report = self.run_cli("install", "--target", target, "--yes")
+            self.assertEqual(report["status"], "PASS")
+            self.assertTrue(report["installed"][0]["overwritten"])
+            backups = list(target.glob("skills-catalog-governance.bak-*"))
+            self.assertEqual(len(backups), 1)
+            self.assertEqual((backups[0] / "old.txt").read_text(encoding="utf-8"), "old")
+            self.assertTrue((destination / "SKILL.md").is_file())
+
+    def test_install_detection_finds_harness_in_probe_order(self):
+        with tempfile.TemporaryDirectory() as raw:
+            home = Path(raw)
+            harness_dir = home / ".claude" / "skills"
+            harness_dir.mkdir(parents=True)
+            env = os.environ.copy()
+            env["HOME"] = str(home)
+            report = self.run_cli("install", "--yes", env=env)
+            self.assertEqual(report["status"], "PASS")
+            self.assertEqual(report["installed"][0]["harness"], "claude")
+            self.assertTrue((harness_dir / "skills-catalog-governance" / "SKILL.md").is_file())
 
     def write_inventory(self, directory: Path, entries):
         inventory = directory / "inventory.json"
