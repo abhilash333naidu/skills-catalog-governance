@@ -1,0 +1,41 @@
+{
+  "demo-skill-a": {
+    "archived_at": null,
+    "created_at": "2026-07-24T03:58:49.935940+00:00",
+    "created_by": "agent",
+    "last_patched_at": "2026-08-05T10:53:46.302022+00:00",
+    "last_used_at": "2026-08-05T10:51:05.761659+00:00",
+    "last_viewed_at": "2026-08-05T10:51:05.711733+00:00",
+    "patch_count": 43,
+    "pinned": false,
+    "state": "active",
+    "use_count": 39,
+    "view_count": 39
+  },
+  "demo-skill-b": {
+    "archived_at": null,
+    "created_at": "2026-06-15T00:17:29.573498+00:00",
+    "created_by": null,
+    "last_patched_at": null,
+    "last_used_at": null,
+    "last_viewed_at": null,
+    "patch_count": 0,
+    "pinned": false,
+    "state": "stale",
+    "use_count": 0,
+    "view_count": 0
+  },
+  "demo-skill-c": {
+    "archived_at": null,
+    "created_at": "2026-07-01T12:00:00.000000+00:00",
+    "created_by": "user",
+    "last_patched_at": "2026-08-01T09:30:00.000000+00:00",
+    "last_used_at": "2026-08-02T18:22:10.123456+00:00",
+    "last_viewed_at": "2026-08-02T18:22:10.123456+00:00",
+    "patch_count": 12,
+    "pinned": true,
+    "state": "active",
+    "use_count": 131,
+    "view_count": 131
+  }
+}
