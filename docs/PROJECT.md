@@ -71,6 +71,10 @@ Backlog source: docs/HANDOFF-20260811.md. P1 = hard bugs first; P2/P3 queued.
 | R3 multi-harness "all" | **DONE — PASS** | install --yes with 4 fake harnesses (opencode/pi/claude/master): all installed, aggregate check_package PASS (4 results), zero errors; per-harness check-package all PASS |
 | R4 promotion rollback | **DONE — PASS** | install v1 → install --yes (creates .bak) → corrupt (rm SKILL.md + script) → check FAIL detected → restore .bak → check PASS; restored sha256 == repo (bbf6a035...) |
 | R10 PROJECT.md spine | **DONE** | v3.2/v3.2.1/v3.2.2/v3.2.3/v3.2.4 milestone entries added above |
+| R5 grouping heuristic 2nd catalog | **DONE — VALIDATED** | tech-leads-club/agent-skills registry (88 real skills, 0 junctions): 51 candidates / 7 groups / 0 oversized @ threshold 0.4, max 8. Deploy family (4/4) + figma/react/subagent-creator/rfc pairs all genuine; security trio (best-practices/ownership-map/threat-model) correctly NOT grouped (cos≤0.44, overlap≤0.37 — distinct workflows sharing vocabulary). No code change needed |
+| R6 real .usage.json | **DONE — bug found + fixed (v3.2.5, commit 09d63f6)** | REAL Hermes shape is nested objects ({"skill": {"use_count": N, ...}}) — loader only accepted flat ints → 163-entry real file yielded 0 counts (silent no-op). Fix reads use_count from nested objects; flat back-compat; fail-open kept. Verified: 40 tests (5 new), real file → 163 counts, detect-skills end-to-end enrichment works |
+| R7 G2 judge limitation | **DONE — rubric + loud note (commit 884c77f)** | references/g2-judge-rubric.md: scoring axes, cell verdicts, ≥3 runs/cell bar, cross-model judge procedure; SKILL.md M5 carries loud correlated-judge honesty note (mandatory in every benchmark artifact). benchmark.json already had an honesty field — now the gate itself documents it |
+| R8 council verdict schema | **IN PROGRESS** | FreeBuff implementing validate-council-verdict subcommand + schemas/council-verdict.schema.json + tests |
 
 ## Open questions (non-blocking)
 
