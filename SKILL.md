@@ -137,6 +137,15 @@ format conformance + content completeness. Record `benchmark.json` with run coun
 Single-pass is indicative, NOT proof — the ≥3-run confirmation is the standing gate.
 Pilot: 36/36 cells PASS, master strict superset of both sources.
 
+**G2 JUDGE LIMITATION (loud, binding):** the G2 judge is typically the SAME base model
+family that GENERATED the outputs (correlated judge — e.g. DeepSeek-V4-Pro judging
+DeepSeek-V4-Pro output). This tests instruction-set coverage and format conformance,
+NOT model-independent quality; a correlated judge can systematically favor the output
+style it was prompted to produce. Any benchmark.json or G2 evidence MUST carry the
+honesty note from `references/g2-judge-rubric.md` (verbatim or pointer); a benchmark
+without it is not a governed G2 artifact. A truly independent validation requires a
+DIFFERENT provider/model as judge (rubric + cross-model procedure in that file).
+
 ### M6 — Promotion
 
 git init the governing repo (or explicit no-VCS snapshot+sha256 fallback); snapshot →
@@ -462,6 +471,7 @@ All supporting evidence and historical analysis documents are stored in the `ref
 - `references/delegated-full-read-comparison-2026-08.md` — Full-read subagent comparison pattern and verdicts.
 - `references/embedded-council-procedure.md` — 5-advisor → peer-review → chairman council (inline fallback procedure).
 - `references/external-benchmark-gates-2026-08.md` — Hardening gates (G0-G3) external benchmarking analysis.
+- `references/g2-judge-rubric.md` — G2 judge scoring criteria + correlated-model honesty note (MANDATORY in every benchmark artifact).
 - `references/hardening-gates.md` — Full G0-G4 gate bodies + process (consulted at every promotion).
 - `references/hardening-toolkit.md` — Phase 1 authoritative execution contracts (preflight/plan/apply/loss-check/approval).
 - `references/4-phase-workflow.md` — Legacy manifest-driven archive-only workflow.
