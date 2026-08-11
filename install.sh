@@ -29,6 +29,12 @@ else
   PACKAGE_ROOT="$TEMP_ROOT/repo"
 fi
 
+# git-bash / MSYS paths (e.g. /tmp/... or /c/Users/...) are not understood by
+# native Windows python. Convert to a Windows-native path when cygpath exists.
+if command -v cygpath >/dev/null 2>&1; then
+  PACKAGE_ROOT="$(cygpath -w "$PACKAGE_ROOT")"
+fi
+
 if command -v python3 >/dev/null 2>&1; then
   PYTHON="$(command -v python3)"
 elif command -v python >/dev/null 2>&1; then
