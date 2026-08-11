@@ -11,7 +11,11 @@ cleanup() {
 }
 trap cleanup EXIT
 
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -n "${BASH_SOURCE[0]:-}" ]]; then
+  SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+else
+  SCRIPT_DIR=""
+fi
 if [[ -f "$SCRIPT_DIR/scripts/catalog_governance.py" ]]; then
   PACKAGE_ROOT="$SCRIPT_DIR"
 elif [[ -f "$PWD/scripts/catalog_governance.py" ]]; then
@@ -46,7 +50,7 @@ fi
 
 # curl | bash consumes the script on stdin. Reconnect the child to the terminal
 # when available so the Python install picker can still read a selection.
-if [[ -t 0 && -r /dev/tty ]]; then
+if (exec 0</dev/tty) 2>/dev/null; then
   "$PYTHON" "$PACKAGE_ROOT/scripts/catalog_governance.py" install "$@" </dev/tty
 else
   "$PYTHON" "$PACKAGE_ROOT/scripts/catalog_governance.py" install "$@"
