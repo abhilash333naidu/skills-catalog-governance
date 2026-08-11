@@ -77,7 +77,14 @@ Backlog source: docs/HANDOFF-20260811.md. P1 = hard bugs first; P2/P3 queued.
 | R8 council verdict schema | **DONE — commit 78c89e3 (v3.2.6)** | validate-council-verdict subcommand + schemas/council-verdict.schema.json (verdict enum MERGE/SPLIT/RECATEGORIZE/KEEP_SEPARATE/NO_MERGE, survivors[], recategorizations[], absorbed[], gates_passed[]); stdlib YAML-list parser; required_payload updated. Verified: 47 tests (7 new), check-package PASS, legacy prose verdict → clean machine-readable FAIL |
 | R9 oversized-group guidance | **DONE — commit 8c7cacd** | SKILL.md M3 now has explicit oversized-group handling: do not council a group over max-group-size; re-run with lower threshold; split along single-signal seams; only clean ≤max sub-groups go to council. Body trimmed to 499 lines for G0 |
 | R12 version reconciliation | **DONE — commit 8c7cacd** | SKILL.md frontmatter version 3.1.0 → 3.2.6; description updated. G0/G1/G3/G3.5 all PASS |
-| R11 real .usage.json fixture | **IN PROGRESS** | tests/fixtures/usage-real-shape.json committed (real Hermes shape, anonymized); test wiring delegated to FreeBuff |
+| R11 real .usage.json fixture | **DONE** | tests/fixtures/usage-real-shape.json (real Hermes shape, anonymized) + loader test asserting use_count 39/0/131 from the committed fixture. 48 tests pass, check-package PASS |
+
+## Refinement backlog: ALL CLEAR (P1 + P2 + P3, 2026-08-11)
+
+R1-R12 all done/verified. The 7 clean groups are clear to run via the council
+pipeline: understand-*, caveman-help/ponytail-help, careful/guard,
+context-restore/save, qa/qa-only, tdd-iron-law/compact,
+web-design-guidelines/writing-guidelines.
 
 ## Open questions (non-blocking)
 
