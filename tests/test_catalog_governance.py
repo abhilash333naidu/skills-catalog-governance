@@ -44,6 +44,31 @@ class GovernanceCliTests(unittest.TestCase):
             "---\nname: test\n---\nSee `references/ok.md`.\n", encoding="utf-8"
         )
 
+    def test_version_guard_passes_on_current_interpreter(self):
+        self.assertIsNone(GOVERNANCE.require_python_version())
+
+    def test_version_guard_fails_cleanly_for_old_python(self):
+        # Simulate running under Python 3.9: the module must emit the structured
+        # FAIL JSON and exit 1, never a raw traceback.
+        probe = (
+            "import importlib.util, sys\n"
+            f"spec = importlib.util.spec_from_file_location('cg', {str(TOOL)!r})\n"
+            "m = importlib.util.module_from_spec(spec)\n"
+            "sys.version_info = (3, 9, 0)\n"
+            "try:\n"
+            "    spec.loader.exec_module(m)\n"
+            "except SystemExit as exc:\n"
+            "    print('GUARD_EXIT', exc.code)\n"
+            "    raise\n"
+        )
+        result = subprocess.run([sys.executable, "-c", probe], cwd=ROOT, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("GUARD_EXIT 1", result.stdout)
+        report = json.loads(result.stdout.split("GUARD_EXIT")[0].strip())
+        self.assertEqual(report["status"], "FAIL")
+        self.assertIn("3.10", report["message"])
+        self.assertIn("3.9", report["message"])
+
     def test_complete_package_passes(self):
         with tempfile.TemporaryDirectory() as raw:
             package = Path(raw) / "package"

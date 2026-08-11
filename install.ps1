@@ -39,8 +39,17 @@ try {
     }
 
     $scriptPath = Join-Path $packageRoot "scripts/catalog_governance.py"
+    # Fail closed on too-old Python instead of letting the tool die with a raw
+    # SyntaxError traceback. The tool requires Python 3.10+; let Python itself
+    # answer the version comparison (valid syntax on every 3.x).
+    $VersionProbe = "import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)"
     $py = Get-Command py -ErrorAction SilentlyContinue
     if ($null -ne $py) {
+        & $py.Source -3 -c $VersionProbe 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            $found = (& $py.Source -3 --version 2>&1 | Out-String).Trim()
+            throw "Python 3.10 or newer is required to install skills-catalog-governance (found: $found); install it from https://www.python.org/downloads/"
+        }
         & $py.Source -3 $scriptPath install @InstallArguments
         if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
@@ -49,6 +58,11 @@ try {
         $python = Get-Command python -ErrorAction SilentlyContinue
         if ($null -eq $python) {
             throw "Python 3 is required to install skills-catalog-governance"
+        }
+        & $python.Source -c $VersionProbe 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            $found = (& $python.Source --version 2>&1 | Out-String).Trim()
+            throw "Python 3.10 or newer is required to install skills-catalog-governance (found: $found); install it from https://www.python.org/downloads/"
         }
         & $python.Source $scriptPath install @InstallArguments
         if ($LASTEXITCODE -ne 0) {

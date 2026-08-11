@@ -41,6 +41,18 @@ Non-negotiables:
 - Portability covenant — masters never use harness-specific prompts, commands, or telemetry.
 - External/vendored skill trees are never edited — content is absorbed in, parent left whole.
 
+## Requirements
+
+- **Python 3.10+** — stdlib only, no pip dependencies. The tool checks this and
+  fails with a clean error, never a raw traceback, when your Python is too old.
+- **macOS / Linux**: `python3` on your PATH. The one-liner needs `git` only when it
+  has to clone the repo; running from a checkout needs nothing extra. Generated
+  inventories contain absolute local paths and should not be committed.
+- **Windows**: PowerShell 5+ (or pwsh) for `install.ps1`. The installer uses the
+  `py` launcher (`py -3`) or `python` on your PATH. No git required — it falls back
+  to downloading a zip archive.
+- Nothing else: no other tools, permissions, or credentials.
+
 ## Install
 
 ### One-liner (recommended)
@@ -72,8 +84,6 @@ backup.
 cp -r skills-catalog-governance ~/.claude/skills/
 # or ~/.config/opencode/skills/, ~/.agents/skills/, a Hermes profile skills dir, etc.
 ```
-
-Requirements: Python 3.10+ (stdlib only — no pip dependencies).
 
 Verify the install:
 

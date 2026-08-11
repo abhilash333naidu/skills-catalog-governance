@@ -78,6 +78,7 @@ Backlog source: docs/HANDOFF-20260811.md. P1 = hard bugs first; P2/P3 queued.
 | R9 oversized-group guidance | **DONE — commit 8c7cacd** | SKILL.md M3 now has explicit oversized-group handling: do not council a group over max-group-size; re-run with lower threshold; split along single-signal seams; only clean ≤max sub-groups go to council. Body trimmed to 499 lines for G0 |
 | R12 version reconciliation | **DONE — commit 8c7cacd** | SKILL.md frontmatter version 3.1.0 → 3.2.6; description updated. G0/G1/G3/G3.5 all PASS |
 | R11 real .usage.json fixture | **DONE** | tests/fixtures/usage-real-shape.json (real Hermes shape, anonymized) + loader test asserting use_count 39/0/131 from the committed fixture. 48 tests pass, check-package PASS |
+| R13 prereq doc + enforcement (v3.2.7) | **DONE** | README Requirements section moved above Install (Python 3.10+, no-git Windows zip fallback, PowerShell); install.sh + install.ps1 probe the interpreter version BEFORE invoking Python (fail-closed plain error, was a raw SyntaxError traceback on 3.8/3.9); catalog_governance.py top-of-file guard emits structured JSON FAIL on <3.10 (covers direct invocation skipping the installer); 2 new tests (old-version probe → FAIL JSON + exit 1) |
 
 ## Refinement backlog: ALL CLEAR (P1 + P2 + P3, 2026-08-11)
 

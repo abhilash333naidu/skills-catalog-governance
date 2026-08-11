@@ -48,6 +48,14 @@ else
   exit 1
 fi
 
+# Fail closed on too-old Python instead of letting the tool die with a raw
+# SyntaxError traceback. The tool requires Python 3.10+; let Python itself
+# answer the version comparison (valid syntax on every 3.x).
+if ! "$PYTHON" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)' 2>/dev/null; then
+  echo "error: Python 3.10 or newer is required to install skills-catalog-governance (found: $("$PYTHON" --version 2>&1))" >&2
+  exit 1
+fi
+
 # curl | bash consumes the script on stdin. Reconnect the child to the terminal
 # when available so the Python install picker can still read a selection.
 if (exec 0</dev/tty) 2>/dev/null; then

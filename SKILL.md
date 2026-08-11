@@ -1,7 +1,7 @@
 ---
 name: skills-catalog-governance
-description: "Use when cleaning skills catalog: archive, merge, verify. Governs merging duplicate skill families into ONE survivor via council + loss-check + G0-G3 gates + safe promote. v3.2 fixes: over-grouping (strong-pair + group-size cap), usage-aware discovery, real .usage.json shape. Self-contained as one packaged folder; package completeness is verified before use."
-version: "3.2.6"
+description: "Use when cleaning skills catalog: archive, merge, verify. Governs merging duplicate skill families into ONE survivor via council + loss-check + G0-G3 gates + safe promote. v3.2 fixes: over-grouping (strong-pair + group-size cap), usage-aware discovery, real .usage.json shape. Self-contained as one packaged folder; package completeness is verified before use. Prereq guard: fail-closed Python 3.10+ check in installers + script."
+version: "3.2.7"
 author: Coder CEO
 license: MIT
 platforms: [windows, linux, macos]

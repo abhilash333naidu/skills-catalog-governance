@@ -23,6 +23,24 @@ import uuid
 from pathlib import Path
 from typing import Any, Iterable
 
+MIN_PYTHON = (3, 10)
+
+
+def require_python_version(minimum: tuple[int, int] = MIN_PYTHON) -> None:
+    """Fail-closed prereq guard: structured FAIL (never a raw traceback) on old Python."""
+    if sys.version_info < minimum:
+        print(json.dumps({
+            "status": "FAIL",
+            "message": (
+                f"Python {minimum[0]}.{minimum[1]} or newer is required "
+                f"(found {sys.version_info[0]}.{sys.version_info[1]}.{sys.version_info[2]})"
+            ),
+        }, indent=2, sort_keys=True))
+        sys.exit(1)
+
+
+require_python_version()
+
 SCHEMA_VERSION = "1"
 REF_RE = re.compile(r"`(references/[^`]+)`")
 HEADING_RE = re.compile(r"^#{1,6}\s+(.+?)\s*$")
