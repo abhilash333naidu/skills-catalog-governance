@@ -55,6 +55,22 @@ dedup guidance). We are building something new; proper project methodology appli
 | M5 | Live benchmark | Head-to-head vs EACH source, ≥3 runs/cell, with/without baseline | D4 bar; benchmark.json evidence | **DONE 2026-08-10** — G2 confirmation: 36/36 cells format+content PASS (3 runs/cell, 4 conditions incl. no-skill baseline); master strict superset; benchmark.json has run counts |
 | M6 | VCS & promotion | git init (or explicit no-VCS snapshot+sha256); snapshot → promote → archive my-store sources → record | sha256 match; literal outputs | **DONE 2026-08-10** — git init'd (a173bb9); promoted caveman-commit v2.0.0 to live (sha256 f81bab01... draft==live MATCH); post-promotion re-audit PASS (frontmatter parses, detect-skills 211/0); vendored herdr tree untouched per council |
 | M7 | Public release | LICENSE (MIT), README (problem statement, install, quickstart, architecture), sanitize user-specific paths (C:\Users\abhil, ~/.agents, incident specifics stay in references/ as evidence NOT core rules), portability check (windows/linux/macos, junction-aware but not Windows-only), publish to GitHub | G0 on all docs; fresh-clone install test on a clean machine profile | **DONE 2026-08-10** — LIVE at github.com/abhilash333naidu/skills-catalog-governance (PUBLIC); LICENSE MIT, README, SKILL.md v3.0.0, sanitized, cross-platform verified |
+| v3.2 | Harness-detecting installer | `install` subcommand + install.sh + install.ps1; harness detection (opencode/pi/claude/codex/omp/hermes/master/gstack); interactive picker; idempotent (no silent overwrite; --yes + timestamped .bak) | parse-check install.sh/install.ps1; unit tests for picker + install paths | **DONE 2026-08-11** (d85d3d2) — spec docs/spec-installer-20260810.md; picker unit-tested; --target CLI path tested |
+| v3.2.1 | MSYS path fix | cygpath conversion for native python under git-bash | install.sh smoke test | **DONE 2026-08-11** (da690d4) |
+| v3.2.2/3 | One-liner URL fixes + branch rename | README one-liners point at correct branch; default branch master→main | URL fetch 200s | **DONE 2026-08-11** (c984564, 64ef66b) |
+| v3.2.4 | One-liner curl\|bash fix (R2) | install.sh survives pipe execution; picker fires under curl\|bash | non-tty pipe install PASS; interactive picker selects only chosen harness; file-mode regression PASS; 35 tests; check-package PASS | **DONE 2026-08-11** (9333c34) — Defect 1: BASH_SOURCE[0] unbound under set -u in pipe mode (one-liner died instantly); Defect 2: /dev/tty reconnect probed by (exec 0</dev/tty) not -r permission bit (open fails ENXIO in no-tty contexts) |
+
+## Refinement backlog execution (P1 — correctness, 2026-08-11)
+
+Backlog source: docs/HANDOFF-20260811.md. P1 = hard bugs first; P2/P3 queued.
+
+| Item | Result | Evidence |
+|---|---|---|
+| R1 install.ps1 end-to-end | **DONE — PASS** | pwsh 7.6.4; local-checkout path install → status PASS, check_package PASS; real one-liner `irm ... \| iex` with isolated HOME → detected pi harness, installed, check_package PASS; installed SKILL.md sha256 == repo (bbf6a035...) |
+| R2 one-liner picker tty | **DONE — bug found + fixed (v3.2.4)** | curl\|bash died instantly (BASH_SOURCE[0] unbound, set -u); fix shipped; 3 acceptance tests PASS (non-tty pipe install, interactive picker via WSL pty selects only chosen harness, file-mode regression) |
+| R3 multi-harness "all" | **DONE — PASS** | install --yes with 4 fake harnesses (opencode/pi/claude/master): all installed, aggregate check_package PASS (4 results), zero errors; per-harness check-package all PASS |
+| R4 promotion rollback | **DONE — PASS** | install v1 → install --yes (creates .bak) → corrupt (rm SKILL.md + script) → check FAIL detected → restore .bak → check PASS; restored sha256 == repo (bbf6a035...) |
+| R10 PROJECT.md spine | **DONE** | v3.2/v3.2.1/v3.2.2/v3.2.3/v3.2.4 milestone entries added above |
 
 ## Open questions (non-blocking)
 
