@@ -1,7 +1,7 @@
 ---
 name: skills-catalog-governance
-description: "Use when cleaning skills catalog: archive, merge, verify. Governs merging duplicate skill families into ONE survivor via council + loss-check + G0-G3 gates + safe promote. v3.1 fixes: over-grouping (strong-pair + group-size cap), usage-aware discovery. Self-contained as one packaged folder; package completeness is verified before use."
-version: "3.1.0"
+description: "Use when cleaning skills catalog: archive, merge, verify. Governs merging duplicate skill families into ONE survivor via council + loss-check + G0-G3 gates + safe promote. v3.2 fixes: over-grouping (strong-pair + group-size cap), usage-aware discovery, real .usage.json shape. Self-contained as one packaged folder; package completeness is verified before use."
+version: "3.2.6"
 author: Coder CEO
 license: MIT
 platforms: [windows, linux, macos]
@@ -42,14 +42,12 @@ sibling `skills-archive/` directory.
 > staging path breaks the G0 name==dir check), (2) a human read-through, (3) ideally one
 > real run of each `[NEW]` gate with literal output captured.
 
-> **v3.0 RELEASE NOTE (2026-08-10):** this revision adds the full LIFECYCLE pipeline —
-> M1 discovery → M2 grouping → M3 council → M3.5 golden-output gate → M4 master-build →
-> M5 benchmark → M6 promotion — implemented in `scripts/catalog_governance.py` as the
-> `detect-skills` and `detect-groups` subcommands, piloted end-to-end on the commit-message
-> skill family, and PROMOTED to live. Pilot evidence: 211 skills discovered (0 errors),
-> 19 suggested groups, council verdict (two survivors), golden-output 6/6 match,
-> G2 benchmark 36/36 cells PASS (3 runs/cell, 4 conditions incl. no-skill baseline).
-> All new phases carry literal command outputs in `docs/` (see References).
+> **v3.0 RELEASE NOTE (2026-08-10):** this revision adds the full LIFECYCLE pipeline — M1
+> discovery → M2 grouping → M3 council → M3.5 golden-output → M4 master-build → M5 benchmark
+> → M6 promotion — in `scripts/catalog_governance.py` (`detect-skills`, `detect-groups`),
+> piloted end-to-end on the commit-message family and PROMOTED to live. Pilot: 211 skills,
+> 19 groups, council verdict (two survivors), golden-output 6/6, G2 36/36 cells. Evidence in
+> `docs/` (see References).
 
 ## Lifecycle Pipeline (v3.0, BINDING for new merges)
 
@@ -107,8 +105,16 @@ python scripts/catalog_governance.py detect-groups --inventory inventory.json --
 
 For each suggested group: 5 advisors → 5 anonymous peer reviews → chairman synthesis.
 MANDATORY — never skippable (see Embedded Council Procedure). Every line of every source
-read. Output = RECOMMENDATION + provenance table + portability covenant. The council
-decides GROUPING (may recategorize members, e.g. "generator vs executor") before any merge.
+read. Output = RECOMMENDATION + provenance table + portability covenant. The council may
+recategorize members (e.g. "generator vs executor") before any merge. Oversized group
+handling (R9 — `oversized_groups` in a detection report): a group over `--max-group-size`
+(default 8) means the recall net over-bridged families sharing vocabulary but not function.
+DO NOT council an oversized group — the every-line guarantee degrades past
+~6-8 members. Action: (1) re-run with a LOWER threshold; raise the cap only for one genuine
+oversized family (rare). (2) Split along single-signal seams — cosine-only or overlap-only
+links to the core are likely another family (verified: security trio stayed apart ≤0.44/≤0.37).
+(3) Only clean ≤max sub-groups go to council; never promote oversized as-is, never drop
+members silently. Same failure class as v3.0's 24-member mega-group (see pilot note).
 
 ### M3.5 — Golden-output gate
 
@@ -349,8 +355,8 @@ below are proposed additions — same enforcement intent, no live-incident proof
 | G0 name==dir, ≤64ch, refs depth | agentskills.io spec (24K★ official standard) | spec is the canonical file-format authority |
 | G0 desc ≤1024, no XML `<>` | agentskills.io spec + Claude Code frontmatter rules | XML-angle-bracket rule = prompt-injection surface |
 | G1 security patterns | tech-leads-club/agent-skills (registry vetting) + Snyk audit + arXiv:2605.11418 | anchor stats verified; scanner is our own regex first-pass |
-| G1b `[NEW]` semantic/adversarial framing check | NotebookLM review 2026-08-10, citing arXiv semantic-hijack paper (86% retrieval win, 77.6% selection bias, 36.5-100% governance evasion) | proposed — no live run yet, LLM-judged, costs a call |
-| G1 `[NEW]` lockfile cross-check | NotebookLM review 2026-08-10, citing community dependency-checker findings (~30% skills w/ outdated pkg, 40% of silent failures = transitive deps) | proposed — check declared deps against actual lockfile, not just manifest ranges |
+| G1b `[NEW]` semantic/adversarial framing check | NotebookLM review 2026-08-10 (arXiv semantic-hijack: 86% retrieval win, 77.6% selection bias, 36.5-100% evasion) | proposed — no live run yet, LLM-judged, costs a call |
+| G1 `[NEW]` lockfile cross-check | NotebookLM review 2026-08-10 (~30% skills w/ outdated pkg; 40% silent failures = transitive deps) | proposed — check declared deps against actual lockfile |
 | G2 with/without A/B | darkrishabh/agent-skills-eval + agentskills evaluation loops | judge-graded; ≥3 runs/cell per evals literature |
 | G2 dedup bands (0.95/0.90/0.75) | NVIDIA SkillEvaluator tier-2 | cosine similarity classification, optional |
 | G3 SemVer + provenance | agentskills #415 (version field) — our merged-from addition | tied to git-versioned master |
