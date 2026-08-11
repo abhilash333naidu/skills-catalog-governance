@@ -12,6 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 TOOL = ROOT / "scripts" / "catalog_governance.py"
 SCHEMAS = ROOT / "schemas"
+FIXTURE_USAGE = ROOT / "tests" / "fixtures" / "usage-real-shape.json"
 MODULE_SPEC = importlib.util.spec_from_file_location("catalog_governance", TOOL)
 assert MODULE_SPEC is not None and MODULE_SPEC.loader is not None
 GOVERNANCE = importlib.util.module_from_spec(MODULE_SPEC)
@@ -255,6 +256,20 @@ class GovernanceCliTests(unittest.TestCase):
             self.write_usage(store, {"skill-a": 7})
             result = self.run_usage_loader(store)
             self.assertEqual(result, {"skill-a": 7})
+
+    def test_load_usage_counts_real_shape_fixture(self):
+        with tempfile.TemporaryDirectory() as raw:
+            store = Path(raw)
+            self.write_usage(
+                store,
+                json.loads(FIXTURE_USAGE.read_text(encoding="utf-8")),
+            )
+            result = self.run_usage_loader(store)
+            self.assertEqual(result, {
+                "demo-skill-a": 39,
+                "demo-skill-b": 0,
+                "demo-skill-c": 131,
+            })
 
     def test_load_usage_counts_skills_wrapper_supports_nested_objects(self):
         with tempfile.TemporaryDirectory() as raw:
