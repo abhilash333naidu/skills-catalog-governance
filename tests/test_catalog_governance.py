@@ -4,9 +4,11 @@ import hashlib
 import importlib.util
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
@@ -1172,6 +1174,184 @@ gates_passed:
             self.assertEqual(report["status"], "FAIL")
             self.assertEqual(report["total"], 0)
             self.assertIn("inline-code executor argument", " ".join(report["errors"]))
+
+
+class RepairCliTests(unittest.TestCase):
+    def setUp(self):
+        self.raw = tempfile.mkdtemp()
+        self.env = dict(os.environ)
+        # Speed up polling loop in cmd_repair so tests don't hang
+        self.env["CATALOG_GOVERNANCE_REPAIR_POLL_SECONDS"] = "0.5"
+        self.base = Path(self.raw)
+
+    def tearDown(self):
+        shutil.rmtree(self.raw, ignore_errors=True)
+
+    def run_repair(self, *args, expected=0, timeout=20):
+        result = subprocess.run(
+            [sys.executable, str(TOOL), "repair", *map(str, args)],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+            env=self.env,
+            timeout=timeout,
+        )
+        self.assertEqual(
+            result.returncode,
+            expected,
+            "stdout=%s stderr=%s" % (result.stdout, result.stderr),
+        )
+        return json.loads(result.stdout)
+
+    def write_loss_report(self, draft: Path, sources: list[dict]):
+        loss_report = self.base / "loss.json"
+        loss_report.write_text(json.dumps({
+            "schema": "skills-catalog-loss-check-1",
+            "draft": str(draft),
+            "checks": sources,
+            "status": "REVIEW",
+            "manual_review_required": True,
+        }), encoding="utf-8")
+        return loss_report
+
+    def test_repair_all_defects_fixed_after_round_1_passes(self):
+        # Initial state: defect present (missing heading). Fix it before repair runs.
+        source = self.base / "source.md"
+        draft = self.base / "draft.md"
+        full_content = "# Required Heading\n\nkeep alpha beta\n```bash\nfind x\n```\n"
+        bad_content = "# Required Heading\n\nkeep alpha beta\n```bash\nsomething else\n```\n"
+        source.write_text(full_content, encoding="utf-8")
+        draft.write_text(bad_content, encoding="utf-8")
+
+        # We want the FIRST round to PASS, so pre-fix the draft to be identical to source
+        draft.write_text(full_content, encoding="utf-8")
+
+        loss_report = self.write_loss_report(draft, [{
+            "source": str(source),
+            "draft_sha256": hashlib.sha256(draft.read_text(encoding="utf-8").encode("utf-8")).hexdigest(),
+            "minimum_overlap": 0.35,
+        }])
+
+        report = self.run_repair("--loss-report", loss_report, "--draft", draft, "--source", source)
+        self.assertEqual(report["status"], "PASS")
+        self.assertEqual(report["rounds_run"], 1)
+        self.assertEqual(report["schema"], "skills-catalog-repair-1")
+
+    def test_repair_one_defect_persists_escalates_after_3_rounds(self):
+        source = self.base / "source.md"
+        draft = self.base / "draft.md"
+        full_content = "# Required Heading\n\nkeep alpha beta\n```bash\nfind x\n```\n"
+        bad_content = "# Required Heading\n\nkeep missing stuff\n```bash\nwrong\n```\n"
+        source.write_text(full_content, encoding="utf-8")
+        draft.write_text(bad_content, encoding="utf-8")
+
+        loss_report = self.write_loss_report(draft, [{
+            "source": str(source),
+            "draft_sha256": hashlib.sha256(draft.read_text(encoding="utf-8").encode("utf-8")).hexdigest(),
+            "minimum_overlap": 0.35,
+        }])
+
+        report = self.run_repair("--loss-report", loss_report, "--draft", draft, "--source", source, timeout=30)
+        self.assertEqual(report["status"], "ESCALATE")
+        self.assertEqual(report["rounds_run"], 3)
+        # Ensure round 4 never executed
+        for c in report["checks"]:
+            self.assertLessEqual(len(c["verdicts"]), 3)
+        self.assertGreater(len(report["defects"]), 0)
+
+    def test_repair_recovers_after_modification_round_2(self):
+        source = self.base / "source.md"
+        draft = self.base / "draft.md"
+        full_content = "# Required Heading\n\nkeep alpha beta\n```bash\nfind x\n```\n"
+        bad_content = "# Required Heading\n\nkeep missing stuff\n```bash\nwrong\n```\n"
+        source.write_text(full_content, encoding="utf-8")
+        draft.write_text(bad_content, encoding="utf-8")
+
+        loss_report = self.write_loss_report(draft, [{
+            "source": str(source),
+            "draft_sha256": hashlib.sha256(bad_content.encode("utf-8")).hexdigest(),
+            "minimum_overlap": 0.35,
+        }])
+
+        # Run repair in a thread so we can modify the draft mid-flight
+        import threading
+        output = {}
+        def worker():
+            try:
+                output["report"] = self.run_repair(
+                    "--loss-report", loss_report, "--draft", draft, "--source", source,
+                    timeout=30,
+                )
+            except Exception as e:
+                output["error"] = e
+
+        t = threading.Thread(target=worker)
+        t.start()
+
+        # Wait ~0.7s then fix the draft so round 2 PASSes
+        time.sleep(0.7)
+        draft.write_text(full_content, encoding="utf-8")
+
+        t.join(timeout=20)
+        self.assertIn("report", output, "repair worker did not complete")
+        report = output["report"]
+        self.assertEqual(report["status"], "PASS")
+        self.assertEqual(report["rounds_run"], 2)
+
+    def test_repair_refuses_when_draft_hash_changed_without_flag(self):
+        source = self.base / "source.md"
+        draft = self.base / "draft.md"
+        full_content = "# Required Heading\n\nkeep alpha beta\n```bash\nfind x\n```\n"
+        source.write_text(full_content, encoding="utf-8")
+        draft.write_text(full_content, encoding="utf-8")
+
+        loss_report = self.write_loss_report(draft, [{
+            "source": str(source),
+            "draft_sha256": "deadbeef" * 8,  # wrong hash to trigger refusal
+            "minimum_overlap": 0.35,
+        }])
+
+        report = self.run_repair("--loss-report", loss_report, "--draft", draft, "--source", source, expected=1)
+        self.assertEqual(report["status"], "FAIL")
+        self.assertIn("draft hash changed", " ".join(report.get("errors", [])))
+
+    def test_repair_allows_draft_change_with_flag(self):
+        source = self.base / "source.md"
+        draft = self.base / "draft.md"
+        full_content = "# Required Heading\n\nkeep alpha beta\n```bash\nfind x\n```\n"
+        source.write_text(full_content, encoding="utf-8")
+        draft.write_text(full_content, encoding="utf-8")
+
+        loss_report = self.write_loss_report(draft, [{
+            "source": str(source),
+            "draft_sha256": "deadbeef" * 8,
+            "minimum_overlap": 0.35,
+        }])
+
+        report = self.run_repair(
+            "--loss-report", loss_report, "--draft", draft, "--source", source,
+            "--allow-draft-change",
+        )
+        self.assertEqual(report["status"], "PASS")
+        self.assertEqual(report["rounds_run"], 1)
+
+    def test_repair_malformed_loss_report_fails(self):
+        draft = self.base / "draft.md"
+        draft.write_text("anything", encoding="utf-8")
+        bad = self.base / "bad.json"
+        bad.write_text("not json {{{", encoding="utf-8")
+        report = self.run_repair("--loss-report", bad, "--draft", draft, expected=1)
+        self.assertEqual(report["status"], "FAIL")
+        self.assertIn("malformed loss-report", " ".join(report.get("errors", [])))
+
+    def test_repair_empty_checks_fails(self):
+        draft = self.base / "draft.md"
+        draft.write_text("anything", encoding="utf-8")
+        empty = self.base / "empty.json"
+        empty.write_text(json.dumps({"schema": "skills-catalog-loss-check-1", "checks": []}), encoding="utf-8")
+        report = self.run_repair("--loss-report", empty, "--draft", draft, expected=1)
+        self.assertEqual(report["status"], "FAIL")
 
 
 if __name__ == "__main__":

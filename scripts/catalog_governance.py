@@ -65,7 +65,7 @@ def emit(report: dict[str, Any], output: str | None = None) -> int:
         Path(output).parent.mkdir(parents=True, exist_ok=True)
         Path(output).write_text(rendered, encoding="utf-8", newline="\n")
     print(rendered, end="")
-    return 0 if report.get("status") in {"PASS", "PLANNED"} else 1
+    return 0 if report.get("status") in {"PASS", "PLANNED", "ESCALATE"} else 1
 
 
 def sha256_file(path: Path) -> str:
@@ -1789,6 +1789,178 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
         return fail(str(exc))
     return emit(report, args.output)
 
+
+def cmd_repair(args: argparse.Namespace) -> int:
+    loss_report_path = Path(args.loss_report)
+    draft_path = Path(args.draft)
+    
+    errors = []
+    try:
+        loss_report = load_json(loss_report_path)
+    except ValueError as exc:
+        errors.append(f"malformed loss-report: {exc}")
+        return _repair_emit_fail(errors, args)
+        
+    if not isinstance(loss_report, dict) or loss_report.get("schema") != "skills-catalog-loss-check-1":
+        errors.append("malformed loss-report: invalid schema or format")
+        return _repair_emit_fail(errors, args)
+        
+    checks = loss_report.get("checks", [])
+    if not isinstance(checks, list) or not checks:
+        errors.append("malformed loss-report: non-empty checks array is required")
+        return _repair_emit_fail(errors, args)
+        
+    # Get expected draft_sha256 from the report
+    expected_draft_sha = None
+    for c in checks:
+        if isinstance(c, dict) and "draft_sha256" in c:
+            expected_draft_sha = c["draft_sha256"]
+            break
+            
+    if not expected_draft_sha:
+        errors.append("malformed loss-report: missing draft_sha256 in checks")
+        return _repair_emit_fail(errors, args)
+        
+    # Read current draft
+    try:
+        draft_content = draft_path.read_text(encoding="utf-8")
+    except OSError as exc:
+        errors.append(f"cannot read draft {draft_path}: {exc}")
+        return _repair_emit_fail(errors, args)
+        
+    current_draft_sha = sha256_bytes(draft_content.encode("utf-8"))
+    
+    # Hash-bind: refuse if changed unless --allow-draft-change
+    if current_draft_sha != expected_draft_sha and not args.allow_draft_change:
+        errors.append("draft hash changed and --allow-draft-change absent")
+        return _repair_emit_fail(errors, args)
+        
+    # Filter checks if --source is provided
+    if args.source:
+        allowed_sources = set(args.source)
+        filtered_checks = []
+        for c in checks:
+            if isinstance(c, dict) and "source" in c:
+                if any(s in c["source"] or c["source"].endswith(s) for s in allowed_sources):
+                    filtered_checks.append(c)
+        if not filtered_checks:
+            errors.append("no matching sources found in loss-report checks")
+            return _repair_emit_fail(errors, args)
+        checks = filtered_checks
+
+    # Keep track of per-round verdicts for each check
+    check_records = []
+    for c in checks:
+        source_path = Path(c["source"])
+        min_overlap = c.get("minimum_overlap", 0.35)
+        check_records.append({
+            "source": str(source_path.resolve()),
+            "source_path": source_path,
+            "minimum_overlap": min_overlap,
+            "verdicts": []
+        })
+
+    rounds_run = 0
+    max_rounds = 3
+    final_status = "ESCALATE"
+    
+    last_seen_sha = current_draft_sha
+    
+    for r in range(1, max_rounds + 1):
+        rounds_run = r
+        
+        # Re-read current draft content and sha
+        try:
+            draft_content = draft_path.read_text(encoding="utf-8")
+        except OSError as exc:
+            errors.append(f"cannot read draft {draft_path} in round {r}: {exc}")
+            return _repair_emit_fail(errors, args)
+        current_draft_sha = sha256_bytes(draft_content.encode("utf-8"))
+        last_seen_sha = current_draft_sha
+        
+        round_all_pass = True
+        latest_results = {}
+        
+        for rec in check_records:
+            # Re-run mechanical one_loss_check
+            try:
+                res = one_loss_check(rec["source_path"], draft_content, current_draft_sha, rec["minimum_overlap"])
+            except ValueError as exc:
+                errors.append(str(exc))
+                return _repair_emit_fail(errors, args)
+            
+            rec["verdicts"].append(res["status"])
+            latest_results[rec["source"]] = res
+            if res["status"] != "PASS":
+                round_all_pass = False
+                
+        if round_all_pass:
+            final_status = "PASS"
+            break
+            
+        # If any fail and we haven't reached round 3, wait for modification
+        if r < max_rounds:
+            # Default wait of 2 seconds per round, overridable via CATALOG_GOVERNANCE_REPAIR_POLL_SECONDS
+            try:
+                poll_seconds = float(os.environ.get("CATALOG_GOVERNANCE_REPAIR_POLL_SECONDS", "2.0"))
+            except ValueError:
+                poll_seconds = 2.0
+            if poll_seconds < 0:
+                poll_seconds = 0
+            iterations = max(1, int(poll_seconds * 10))
+            for _ in range(iterations):
+                time.sleep(0.1)
+                try:
+                    new_content = draft_path.read_text(encoding="utf-8")
+                    new_sha = sha256_bytes(new_content.encode("utf-8"))
+                    if new_sha != last_seen_sha:
+                        break
+                except OSError:
+                    pass
+
+    # Build final checks and defects
+    final_checks = []
+    defects = []
+    for rec in check_records:
+        final_verdict = rec["verdicts"][-1]
+        final_checks.append({
+            "source": rec["source"],
+            "verdicts": rec["verdicts"],
+            "final_verdict": final_verdict
+        })
+        if final_verdict != "PASS":
+            latest_res = latest_results.get(rec["source"], {})
+            defects.append({
+                "source": rec["source"],
+                "missing_headings": latest_res.get("missing_headings", []),
+                "missing_commands": latest_res.get("missing_commands", []),
+                "word_overlap": latest_res.get("word_overlap", 0.0),
+                "minimum_overlap": rec["minimum_overlap"]
+            })
+            
+    report = {
+        "schema": "skills-catalog-repair-1",
+        "status": final_status,
+        "rounds_run": rounds_run,
+        "checks": final_checks,
+        "defects": defects
+    }
+    
+    return emit(report, args.output)
+
+
+def _repair_emit_fail(errors: list[str], args: argparse.Namespace) -> int:
+    """Helper for cmd_repair to emit a structured FAIL report with errors[]."""
+    report = {
+        "schema": "skills-catalog-repair-1",
+        "status": "FAIL",
+        "rounds_run": 0,
+        "checks": [],
+        "defects": [],
+        "errors": errors,
+    }
+    return emit(report, args.output)
+
 def parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__)
     sub = p.add_subparsers(dest="command", required=True)
@@ -1865,6 +2037,13 @@ def parser() -> argparse.ArgumentParser:
     bench.add_argument("--bundle", required=True)
     bench.add_argument("--output")
     bench.set_defaults(func=cmd_benchmark)
+    repair = sub.add_parser("repair")
+    repair.add_argument("--loss-report", required=True)
+    repair.add_argument("--draft", required=True)
+    repair.add_argument("--source", action="append", default=[])
+    repair.add_argument("--allow-draft-change", action="store_true")
+    repair.add_argument("--output")
+    repair.set_defaults(func=cmd_repair)
     return p
 
 
