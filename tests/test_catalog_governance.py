@@ -1022,8 +1022,8 @@ gates_passed:
             manifest = Path(raw) / "golden.json"
             manifest.write_text(json.dumps({
                 "schema": "skills-catalog-golden-1",
-                "master": {"name": "master", "runner": ["python", "master/gen.py"]},
-                "sources": [{"name": "src-a", "runner": ["python", "src-a/gen.py"]}],
+                "master": {"name": "master", "runner": [sys.executable, "master/gen.py"]},
+                "sources": [{"name": "src-a", "runner": [sys.executable, "src-a/gen.py"]}],
                 "inputs": [{"id": "c1", "args": ["--owner", "alice", "--sprint", "S1"]}],
                 "allow_runners": True,
                 "timeout_seconds": 30,
@@ -1044,8 +1044,8 @@ gates_passed:
             manifest = Path(raw) / "golden.json"
             manifest.write_text(json.dumps({
                 "schema": "skills-catalog-golden-1",
-                "master": {"name": "master", "runner": ["python", "master/gen.py"]},
-                "sources": [{"name": "src-b", "runner": ["python", "src-b/gen.py"]}],
+                "master": {"name": "master", "runner": [sys.executable, "master/gen.py"]},
+                "sources": [{"name": "src-b", "runner": [sys.executable, "src-b/gen.py"]}],
                 "inputs": [{"id": "c1", "args": []}],
                 "allow_runners": True,
                 "timeout_seconds": 30,
@@ -1062,8 +1062,8 @@ gates_passed:
             manifest = Path(raw) / "golden.json"
             manifest.write_text(json.dumps({
                 "schema": "skills-catalog-golden-1",
-                "master": {"name": "master", "runner": ["python", "master/gen.py"]},
-                "sources": [{"name": "evil", "runner": ["python", "gen.py; rm -rf x"]}],
+                "master": {"name": "master", "runner": [sys.executable, "master/gen.py"]},
+                "sources": [{"name": "evil", "runner": [sys.executable, "gen.py; rm -rf x"]}],
                 "inputs": [{"id": "c1", "args": []}],
                 "allow_runners": True,
                 "timeout_seconds": 30,
@@ -1143,8 +1143,8 @@ gates_passed:
             manifest = Path(raw) / "golden.json"
             manifest.write_text(json.dumps({
                 "schema": "skills-catalog-golden-1",
-                "master": {"name": "master", "runner": ["python", "master/gen.py"]},
-                "sources": [{"name": "src-a", "runner": ["python", "src-a/gen.py"]}],
+                "master": {"name": "master", "runner": [sys.executable, "master/gen.py"]},
+                "sources": [{"name": "src-a", "runner": [sys.executable, "src-a/gen.py"]}],
                 "inputs": [{"id": "c1", "args": []}],
                 "timeout_seconds": 30,
             }), encoding="utf-8")
@@ -1163,8 +1163,8 @@ gates_passed:
             manifest.write_text(json.dumps({
                 "schema": "skills-catalog-golden-1",
                 "allow_runners": True,
-                "master": {"name": "master", "runner": ["python", "master/gen.py"]},
-                "sources": [{"name": "evil", "runner": ["python", "-c", "import os; os.system('x')"]}],
+                "master": {"name": "master", "runner": [sys.executable, "master/gen.py"]},
+                "sources": [{"name": "evil", "runner": [sys.executable, "-c", "import os; os.system('x')"]}],
                 "inputs": [{"id": "c1", "args": []}],
                 "timeout_seconds": 30,
             }), encoding="utf-8")
