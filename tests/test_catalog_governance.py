@@ -1025,6 +1025,7 @@ gates_passed:
                 "master": {"name": "master", "runner": ["python", "master/gen.py"]},
                 "sources": [{"name": "src-a", "runner": ["python", "src-a/gen.py"]}],
                 "inputs": [{"id": "c1", "args": ["--owner", "alice", "--sprint", "S1"]}],
+                "allow_runners": True,
                 "timeout_seconds": 30,
             }), encoding="utf-8")
             report = self.run_cli("golden-gate", "--manifest", manifest, "--workdir", work)
@@ -1046,6 +1047,7 @@ gates_passed:
                 "master": {"name": "master", "runner": ["python", "master/gen.py"]},
                 "sources": [{"name": "src-b", "runner": ["python", "src-b/gen.py"]}],
                 "inputs": [{"id": "c1", "args": []}],
+                "allow_runners": True,
                 "timeout_seconds": 30,
             }), encoding="utf-8")
             report = self.run_cli("golden-gate", "--manifest", manifest, "--workdir", work, expected=1)
@@ -1063,6 +1065,7 @@ gates_passed:
                 "master": {"name": "master", "runner": ["python", "master/gen.py"]},
                 "sources": [{"name": "evil", "runner": ["python", "gen.py; rm -rf x"]}],
                 "inputs": [{"id": "c1", "args": []}],
+                "allow_runners": True,
                 "timeout_seconds": 30,
             }), encoding="utf-8")
             report = self.run_cli("golden-gate", "--manifest", manifest, "--workdir", work, expected=1)
@@ -1129,6 +1132,46 @@ gates_passed:
             report = self.run_cli("benchmark", "--bundle", bundle, expected=1)
             self.assertEqual(report["status"], "FAIL")
             self.assertIn("runs_per_cell", " ".join(report["errors"]))
+
+
+    def test_golden_gate_refuses_without_allow_runners(self):
+        # fail-closed: runner execution is DISABLED by default until the manifest
+        # explicitly opts in with allow_runners: true.
+        with tempfile.TemporaryDirectory() as raw:
+            work = Path(raw) / "work"
+            work.mkdir()
+            manifest = Path(raw) / "golden.json"
+            manifest.write_text(json.dumps({
+                "schema": "skills-catalog-golden-1",
+                "master": {"name": "master", "runner": ["python", "master/gen.py"]},
+                "sources": [{"name": "src-a", "runner": ["python", "src-a/gen.py"]}],
+                "inputs": [{"id": "c1", "args": []}],
+                "timeout_seconds": 30,
+            }), encoding="utf-8")
+            report = self.run_cli("golden-gate", "--manifest", manifest, "--workdir", work, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertEqual(report["total"], 0)
+            self.assertIn("DISABLED by default", " ".join(report["errors"]))
+
+    def test_golden_gate_rejects_inline_code_runner(self):
+        # a benign argv such as ["python", "-c", "..."] would run arbitrary code
+        # with no shell metacharacters; inline-code executor args are refused.
+        with tempfile.TemporaryDirectory() as raw:
+            work = Path(raw) / "work"
+            work.mkdir()
+            manifest = Path(raw) / "golden.json"
+            manifest.write_text(json.dumps({
+                "schema": "skills-catalog-golden-1",
+                "allow_runners": True,
+                "master": {"name": "master", "runner": ["python", "master/gen.py"]},
+                "sources": [{"name": "evil", "runner": ["python", "-c", "import os; os.system('x')"]}],
+                "inputs": [{"id": "c1", "args": []}],
+                "timeout_seconds": 30,
+            }), encoding="utf-8")
+            report = self.run_cli("golden-gate", "--manifest", manifest, "--workdir", work, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertEqual(report["total"], 0)
+            self.assertIn("inline-code executor argument", " ".join(report["errors"]))
 
 
 if __name__ == "__main__":

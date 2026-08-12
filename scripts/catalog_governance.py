@@ -1533,11 +1533,20 @@ def cmd_check_master(args: argparse.Namespace) -> int:
 SHELL_META_RE = re.compile(r"[;&|`$()<>*?\[\]{}!]")
 
 
+INLINE_CODE_ARGS = {"-c", "--command", "--commands", "-e", "--eval", "-eval", "--code", "-exec"}
+
+
 def validate_runner_argv(runner: Any, errors: list[str], label: str) -> bool:
     if not isinstance(runner, list) or not runner or not all(isinstance(x, str) and x for x in runner):
         errors.append(f"{label}: runner must be a non-empty argv list of non-empty strings")
         return False
     for element in runner:
+        if element in INLINE_CODE_ARGS:
+            errors.append(
+                f"{label}: inline-code executor argument {element!r} is refused "
+                "(a benign argv could otherwise run arbitrary code)"
+            )
+            return False
         if "\x00" in element:
             errors.append(f"{label}: runner element contains NUL byte")
             return False
@@ -1596,6 +1605,11 @@ def golden_gate_report(manifest_path: Path, workdir: Path) -> dict[str, Any]:
     sources = manifest.get("sources", [])
     inputs = manifest.get("inputs", [])
     timeout = manifest.get("timeout_seconds", 30)
+    if manifest.get("allow_runners") is not True:
+        errors.append(
+            "runner execution is DISABLED by default; set \"allow_runners\": true in the "
+            "golden manifest to opt in (contained, orchestrator-provided argv runners)"
+        )
     if not isinstance(master, dict):
         errors.append("master must be an object with a runner argv list")
     if not isinstance(sources, list) or not sources:

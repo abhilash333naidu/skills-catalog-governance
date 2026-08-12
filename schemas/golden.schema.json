@@ -73,6 +73,11 @@
       "type": "number",
       "minimum": 1,
       "maximum": 120
+    },
+    "allow_runners": {
+      "type": "boolean",
+      "default": false,
+      "description": "must be true to execute orchestrator-provided runner argv"
     }
   },
   "additionalProperties": true

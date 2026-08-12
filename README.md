@@ -124,8 +124,10 @@ Three lifecycle stages that used to be method-only are now deterministic, fail-c
 python3 scripts/catalog_governance.py check-master --draft skills-merge-drafts/master.SKILL.md
 
 # Golden gate: one master contract must reproduce every source's output on fixed
-# inputs. Runners are orchestrator-provided argv lists (no shell), executed with
-# a timeout in --workdir; absorption is authorized only on N/N match.
+# inputs. Runner execution is DISABLED by default — the manifest must explicitly
+# opt in with "allow_runners": true. Runners are orchestrator-provided argv lists
+# (no shell, no inline-code executor args like -c/-e), executed with a timeout in
+# --workdir; absorption is authorized only on N/N match.
 python3 scripts/catalog_governance.py golden-gate --manifest golden.json --workdir ./work
 
 # G2 benchmark bundle verification: runs_per_cell>=3, master wins-or-ties every
@@ -134,10 +136,12 @@ python3 scripts/catalog_governance.py golden-gate --manifest golden.json --workd
 python3 scripts/catalog_governance.py benchmark --bundle docs/benchmark.json
 ```
 
-Security note for `golden-gate`: runners execute locally with the same trust
-model as move plans (orchestrator-provided input). Shell metacharacters are
-refused before any execution; runner output is captured and hashed locally and
-is never transmitted anywhere.
+Security note for `golden-gate`: executing runners is a code-execution surface,
+so it is rigorously defaulted to OFF — `allow_runners: true` must be set in the
+manifest. Runners are orchestrator-provided argv lists executed with a timeout in
+`--workdir`; shell metacharacters and inline-code executor args (`-c`, `-e`,
+`--eval`, …) are refused before any execution; runner output is captured and
+hashed locally and is never transmitted anywhere.
 
 ## How it works
 
