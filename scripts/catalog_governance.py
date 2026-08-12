@@ -16,6 +16,7 @@ import math
 import os
 import re
 import shutil
+import subprocess
 import sys
 from collections import Counter
 import time
@@ -622,6 +623,8 @@ def package_report(root: Path) -> dict[str, Any]:
         "schemas/approval.schema.json",
         "schemas/provenance.schema.json",
         "schemas/council-verdict.schema.json",
+        "schemas/golden.schema.json",
+        "schemas/benchmark.schema.json",
     ]
     required_files = sorted(set(references + required_payload))
     missing = [relative for relative in required_files if not (root / relative).is_file()]
@@ -1385,6 +1388,407 @@ def cmd_validate_council_verdict(args: argparse.Namespace) -> int:
     return emit(validate_council_verdict(Path(args.verdict)), args.output)
 
 
+# ---------------------------------------------------------------------------
+# Enforced CLI gates for formerly method-only phases (acceptance scope):
+#   check-master  -> G0 + G1 + G3 deterministic gates on a staged SKILL.md
+#   golden-gate   -> parameterized source/master output reproduction (N/N)
+#   benchmark     -> G2 bundle verification (>=3 runs, no LOSS, beats best source)
+# ---------------------------------------------------------------------------
+
+
+def _frontmatter_region(text: str) -> str:
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return ""
+    end = next((i for i, line in enumerate(lines[1:], 1) if line.strip() == "---"), None)
+    if end is None:
+        return ""
+    return "\n".join(lines[1:end])
+
+
+G0_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+G1_BLOCK_RE = [
+    re.compile(r"AKIA[0-9A-Z]{16}"),
+    re.compile(r"(?i)password\s*=\s*['\"][^'\"]{6,}"),
+    re.compile(r"(?i)-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
+    re.compile(r"(?i)powershell\s+(-enc\b|-encod\b)"),
+    re.compile(r"(?i)base64\s+-d\b"),
+]
+G1_FLAG_RE = [
+    re.compile(r"subprocess"),
+    re.compile(r"os\.system"),
+    re.compile(r"eval\s*\("),
+    re.compile(r"exec\s*\("),
+    re.compile(r"curl\s"),
+    re.compile(r"wget\s"),
+    re.compile(r"powershell\s+-enc\b"),
+    re.compile(r"os\.environ"),
+    re.compile(r"process\.env"),
+    re.compile(r"\.aws"),
+]
+
+
+def master_report(draft: Path, dir_name: str | None = None) -> dict[str, Any]:
+    """Run the deterministic G0/G1/G3 gates on a staged master SKILL.md."""
+    root = draft.parent
+    try:
+        text = draft.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise ValueError(f"cannot read draft {draft}: {exc}")
+    errors: list[str] = []
+    g0: list[str] = []
+    g1_blocked: list[str] = []
+    g1_flagged: list[str] = []
+    g3: list[str] = []
+
+    expected_dir = dir_name or root.name
+    name: str | None = None
+    description: str | None = None
+    try:
+        name, description = skill_frontmatter(text)
+    except ValueError as exc:
+        errors.append(f"frontmatter parse failed: {exc}")
+
+    # G0 — spec conformance (agentskills.io-derived constraints)
+    if name is None:
+        g0.append("frontmatter name missing")
+    else:
+        if name != expected_dir:
+            g0.append(f"name ({name!r}) != directory name ({expected_dir!r})")
+        if len(name) > 64:
+            g0.append(f"name longer than 64 chars ({len(name)})")
+        if not G0_NAME_RE.match(name):
+            g0.append(f"name must be lowercase/numbers/hyphens, no leading/trailing/consecutive hyphens: {name!r}")
+    if description is None:
+        g0.append("description missing")
+    else:
+        if len(description) > 1024:
+            g0.append(f"description longer than 1024 chars ({len(description)})")
+        if "<" in description or ">" in description:
+            g0.append("description contains XML angle brackets (< >) — prompt-injection surface")
+    if len(text.splitlines()) >= 500:
+        g0.append(f"SKILL.md body >= 500 lines ({len(text.splitlines())})")
+    for ref in referenced_files(draft):
+        parts = ref.split("/")
+        if len(parts) != 2 or parts[0] != "references":
+            g0.append(f"reference not one level deep under references/: {ref}")
+        elif not (root / ref).is_file():
+            g0.append(f"referenced file missing: {ref}")
+
+    # G1 — security scan (block credential-exfil / obfuscated payload; flag the rest)
+    for pattern in G1_BLOCK_RE:
+        if pattern.search(text):
+            g1_blocked.append(pattern.pattern)
+    for pattern in G1_FLAG_RE:
+        if pattern.search(text):
+            g1_flagged.append(pattern.pattern)
+    for dep_file in ("package.json", "requirements.txt"):
+        candidate = root / dep_file
+        if candidate.is_file():
+            if re.search(r'["\']\^|["\']~', candidate.read_text(encoding="utf-8")):
+                g1_flagged.append(f"unpinned dependency range in {dep_file}")
+
+    # G3 — version discipline (quoted string, semver-ish) + merged-from provenance
+    fm = _frontmatter_region(text)
+    version_match = re.search(r"^version\s*:\s*(.*?)\s*$", fm, re.M)
+    if not version_match:
+        g3.append("version missing from frontmatter")
+    else:
+        raw = version_match.group(1).strip()
+        if not ((raw.startswith('"') and raw.endswith('"')) or (raw.startswith("'") and raw.endswith("'"))):
+            g3.append(f"version must be a QUOTED string (YAML float trap): {raw!r}")
+        elif not re.fullmatch(r"\d+\.\d+(?:\.\d+)?(?:[-+][0-9A-Za-z.-]+)?", raw[1:-1]):
+            g3.append(f"version not valid semver-ish: {raw!r}")
+    if re.search(r"^merged-from\s*:", fm, re.M):
+        after = fm[re.search(r"^merged-from\s*:", fm, re.M).end():]
+        if not re.search(r"^\s+-\s+.+", after, re.M):
+            g3.append("merged-from must be a non-empty list of source paths")
+
+    g0_status = "PASS" if not g0 else "FAIL"
+    g1_status = "PASS" if not g1_blocked else "FAIL"
+    g3_status = "PASS" if not g3 else "FAIL"
+    status = "PASS" if not errors and g0_status == g1_status == g3_status == "PASS" else "FAIL"
+    return {
+        "schema": "skills-catalog-master-check-1",
+        "status": status,
+        "draft": str(draft.resolve()),
+        "dir_name": expected_dir,
+        "errors": errors,
+        "gates": {
+            "G0": {"status": g0_status, "details": g0},
+            "G1": {"status": g1_status, "blocked": g1_blocked, "flagged": g1_flagged},
+            "G3": {"status": g3_status, "details": g3},
+        },
+    }
+
+
+def cmd_check_master(args: argparse.Namespace) -> int:
+    try:
+        report = master_report(Path(args.draft), args.dir)
+    except ValueError as exc:
+        return fail(str(exc))
+    return emit(report, args.output)
+
+
+SHELL_META_RE = re.compile(r"[;&|`$()<>*?\[\]{}!]")
+
+
+INLINE_CODE_ARGS = {"-c", "--command", "--commands", "-e", "--eval", "-eval", "--code", "-exec"}
+
+
+def validate_runner_argv(runner: Any, errors: list[str], label: str) -> bool:
+    if not isinstance(runner, list) or not runner or not all(isinstance(x, str) and x for x in runner):
+        errors.append(f"{label}: runner must be a non-empty argv list of non-empty strings")
+        return False
+    for element in runner:
+        if element in INLINE_CODE_ARGS:
+            errors.append(
+                f"{label}: inline-code executor argument {element!r} is refused "
+                "(a benign argv could otherwise run arbitrary code)"
+            )
+            return False
+        if "\x00" in element:
+            errors.append(f"{label}: runner element contains NUL byte")
+            return False
+        if SHELL_META_RE.search(element):
+            errors.append(
+                f"{label}: runner element contains shell metacharacters; refusing to execute through a shell: {element!r}"
+            )
+            return False
+    return True
+
+
+def run_runner(runner: list[str], args_list: list[str], workdir: Path, timeout: float) -> tuple[int, str]:
+    completed = subprocess.run(
+        [*runner, *args_list],
+        cwd=str(workdir),
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        check=False,
+    )
+    return completed.returncode, completed.stdout
+
+
+def golden_gate_report(manifest_path: Path, workdir: Path) -> dict[str, Any]:
+    """Run a golden-output gate: every source must reproduce the master's output
+    on every fixed input (N/N). Runners are orchestrator-provided argv lists."""
+    try:
+        manifest = load_json(manifest_path)
+    except ValueError as exc:
+        return {
+            "schema": "skills-catalog-golden-1",
+            "status": "FAIL",
+            "manifest": str(manifest_path.resolve()),
+            "errors": [str(exc)],
+            "matched": 0,
+            "total": 0,
+            "absorption_authorized": False,
+            "cells": [],
+        }
+    if not workdir.is_dir():
+        return {
+            "schema": "skills-catalog-golden-1",
+            "status": "FAIL",
+            "manifest": str(manifest_path.resolve()),
+            "errors": [f"workdir is not a directory: {workdir}"],
+            "matched": 0,
+            "total": 0,
+            "absorption_authorized": False,
+            "cells": [],
+        }
+    errors: list[str] = []
+    if not isinstance(manifest, dict):
+        errors.append("manifest must be an object")
+        manifest = {}
+    master = manifest.get("master")
+    sources = manifest.get("sources", [])
+    inputs = manifest.get("inputs", [])
+    timeout = manifest.get("timeout_seconds", 30)
+    if manifest.get("allow_runners") is not True:
+        errors.append(
+            "runner execution is DISABLED by default; set \"allow_runners\": true in the "
+            "golden manifest to opt in (contained, orchestrator-provided argv runners)"
+        )
+    if not isinstance(master, dict):
+        errors.append("master must be an object with a runner argv list")
+    if not isinstance(sources, list) or not sources:
+        errors.append("sources must be a non-empty array")
+    if not isinstance(inputs, list) or not inputs:
+        errors.append("inputs must be a non-empty array")
+    if not isinstance(timeout, (int, float)) or not 0 < timeout <= 120:
+        errors.append("timeout_seconds must be a positive number <= 120")
+
+    master_ok = validate_runner_argv(master.get("runner") if isinstance(master, dict) else None, errors, "master")
+    source_runners: list[dict[str, Any]] = []
+    for index, source in enumerate(sources if isinstance(sources, list) else []):
+        if not isinstance(source, dict) or not isinstance(source.get("name"), str) or not source["name"]:
+            errors.append(f"sources[{index}].name must be a non-empty string")
+            continue
+        if validate_runner_argv(source.get("runner"), errors, f"sources[{index}].runner"):
+            source_runners.append(source)
+    input_cases: list[dict[str, Any]] = []
+    for index, entry in enumerate(inputs if isinstance(inputs, list) else []):
+        if not isinstance(entry, dict) or not isinstance(entry.get("id"), str) or not entry["id"]:
+            errors.append(f"inputs[{index}].id must be a non-empty string")
+            continue
+        if not isinstance(entry.get("args", []), list) or not all(isinstance(a, str) for a in entry.get("args", [])):
+            errors.append(f"inputs[{index}].args must be a list of strings")
+            continue
+        input_cases.append(entry)
+
+    cells: list[dict[str, Any]] = []
+    matched = 0
+    total = 0
+    if not errors and master_ok and source_runners and input_cases:
+        for entry in input_cases:
+            args_list = entry.get("args", [])
+            for source in source_runners:
+                total += 1
+                try:
+                    master_rc, master_out = run_runner(master["runner"], args_list, workdir, float(timeout))
+                except subprocess.TimeoutExpired:
+                    cells.append({"input": entry["id"], "source": source["name"], "status": "FAIL", "error": "master runner timed out"})
+                    continue
+                if master_rc != 0:
+                    cells.append({"input": entry["id"], "source": source["name"], "status": "FAIL", "error": f"master runner exited {master_rc}"})
+                    continue
+                try:
+                    src_rc, src_out = run_runner(source["runner"], args_list, workdir, float(timeout))
+                except subprocess.TimeoutExpired:
+                    cells.append({"input": entry["id"], "source": source["name"], "status": "FAIL", "error": "source runner timed out"})
+                    continue
+                if src_rc != 0:
+                    cells.append({"input": entry["id"], "source": source["name"], "status": "FAIL", "error": f"source runner exited {src_rc}"})
+                    continue
+                equal = master_out == src_out
+                if equal:
+                    matched += 1
+                cells.append({
+                    "input": entry["id"],
+                    "source": source["name"],
+                    "status": "PASS" if equal else "FAIL",
+                    "master_sha256": sha256_bytes(master_out.encode("utf-8")),
+                    "source_sha256": sha256_bytes(src_out.encode("utf-8")),
+                    "equal": equal,
+                })
+    status = "PASS" if not errors and total and matched == total else "FAIL"
+    return {
+        "schema": "skills-catalog-golden-1",
+        "status": status,
+        "manifest": str(manifest_path.resolve()),
+        "workdir": str(workdir.resolve()),
+        "matched": matched,
+        "total": total,
+        "absorption_authorized": status == "PASS",
+        "cells": cells,
+        "errors": errors,
+    }
+
+
+def cmd_golden_gate(args: argparse.Namespace) -> int:
+    try:
+        report = golden_gate_report(Path(args.manifest), Path(args.workdir))
+    except (ValueError, OSError) as exc:
+        return fail(str(exc))
+    return emit(report, args.output)
+
+
+def benchmark_report(bundle_path: Path) -> dict[str, Any]:
+    """Verify a G2 benchmark bundle: >=3 runs/cell, master wins-or-ties every
+    cell, and master beats the best source overall. Judge verdicts are the
+    orchestrator's LLM-judge artifact; this gate enforces the conditions."""
+    try:
+        bundle = load_json(bundle_path)
+    except ValueError as exc:
+        return {
+            "schema": "skills-catalog-benchmark-1",
+            "status": "FAIL",
+            "bundle": str(bundle_path.resolve()),
+            "errors": [str(exc)],
+            "verdict": "NO-GO",
+            "cells": 0,
+            "master_wins": 0,
+            "best_source_wins": 0,
+        }
+    errors: list[str] = []
+    if not isinstance(bundle, dict):
+        errors.append("bundle must be an object")
+        bundle = {}
+    min_runs = bundle.get("runs_per_cell")
+    if not isinstance(min_runs, int) or min_runs < 3:
+        errors.append("runs_per_cell must be an integer >= 3")
+    cells = bundle.get("cells", [])
+    if not isinstance(cells, list) or not cells:
+        errors.append("cells must be a non-empty array")
+
+    has_vs_source = False
+    has_vs_baseline = False
+    wins: dict[str, int] = {}
+    source_beats: dict[str, int] = {}
+    losses: list[str] = []
+    for index, cell in enumerate(cells if isinstance(cells, list) else []):
+        prefix = f"cells[{index}]"
+        if not isinstance(cell, dict):
+            errors.append(f"{prefix} must be an object")
+            continue
+        cid = cell.get("id")
+        kind = cell.get("kind")
+        verdict = cell.get("verdict")
+        runs = cell.get("runs")
+        if not isinstance(cid, str) or not cid:
+            errors.append(f"{prefix}.id must be a non-empty string")
+        if kind not in {"master_vs_source", "master_vs_baseline"}:
+            errors.append(f"{prefix}.kind must be master_vs_source or master_vs_baseline")
+        elif kind == "master_vs_source":
+            has_vs_source = True
+        else:
+            has_vs_baseline = True
+        if verdict not in {"WIN", "TIE", "LOSS"}:
+            errors.append(f"{prefix}.verdict must be WIN/TIE/LOSS")
+        if not isinstance(runs, int) or runs < 3:
+            errors.append(f"{prefix}.runs must be an integer >= 3")
+        if verdict == "LOSS":
+            losses.append(str(cid))
+        if kind == "master_vs_source":
+            source_name = cell.get("source", "?")
+            if verdict == "WIN":
+                wins[source_name] = wins.get(source_name, 0) + 1
+            elif verdict == "LOSS":
+                source_beats[source_name] = source_beats.get(source_name, 0) + 1
+    if not has_vs_source:
+        errors.append("bundle must contain at least one master_vs_source cell")
+    if not has_vs_baseline:
+        errors.append("bundle must contain at least one master_vs_baseline cell")
+    if losses:
+        errors.append(f"master LOST {len(losses)} cell(s); promotion blocked: {losses}")
+
+    master_wins = sum(wins.values())
+    best_source_wins = max(source_beats.values()) if source_beats else 0
+    if source_beats and master_wins <= best_source_wins:
+        errors.append(f"master ({master_wins} wins) does not beat the best source ({best_source_wins} source-wins)")
+
+    status = "PASS" if not errors else "FAIL"
+    return {
+        "schema": "skills-catalog-benchmark-1",
+        "status": status,
+        "bundle": str(bundle_path.resolve()),
+        "runs_per_cell": min_runs if isinstance(min_runs, int) else None,
+        "cell_count": len(cells if isinstance(cells, list) else []),
+        "master_wins": master_wins,
+        "best_source_wins": best_source_wins,
+        "errors": errors,
+        "verdict": "GO" if status == "PASS" else "NO-GO",
+    }
+
+
+def cmd_benchmark(args: argparse.Namespace) -> int:
+    try:
+        report = benchmark_report(Path(args.bundle))
+    except (ValueError, OSError) as exc:
+        return fail(str(exc))
+    return emit(report, args.output)
+
 def parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__)
     sub = p.add_subparsers(dest="command", required=True)
@@ -1447,6 +1851,20 @@ def parser() -> argparse.ArgumentParser:
     approval.add_argument("--loss-report")
     approval.add_argument("--output")
     approval.set_defaults(func=cmd_verify_approval)
+    master_check = sub.add_parser("check-master")
+    master_check.add_argument("--draft", required=True)
+    master_check.add_argument("--dir", help="expected directory name (default: draft parent dir name)")
+    master_check.add_argument("--output")
+    master_check.set_defaults(func=cmd_check_master)
+    golden = sub.add_parser("golden-gate")
+    golden.add_argument("--manifest", required=True)
+    golden.add_argument("--workdir", required=True)
+    golden.add_argument("--output")
+    golden.set_defaults(func=cmd_golden_gate)
+    bench = sub.add_parser("benchmark")
+    bench.add_argument("--bundle", required=True)
+    bench.add_argument("--output")
+    bench.set_defaults(func=cmd_benchmark)
     return p
 
 

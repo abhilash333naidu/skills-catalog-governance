@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skills-catalog-benchmark-1",
+  "type": "object",
+  "required": [
+    "runs_per_cell",
+    "cells"
+  ],
+  "properties": {
+    "runs_per_cell": {
+      "type": "integer",
+      "minimum": 3
+    },
+    "cells": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "verdict",
+          "runs"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "master_vs_source",
+              "master_vs_baseline"
+            ]
+          },
+          "verdict": {
+            "enum": [
+              "WIN",
+              "TIE",
+              "LOSS"
+            ]
+          },
+          "runs": {
+            "type": "integer",
+            "minimum": 3
+          },
+          "source": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

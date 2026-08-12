@@ -28,9 +28,9 @@ The pipeline (each phase gated by an orchestrator, never by the writer):
 | M1 Discovery | `detect-skills` | tagged inventory: store, path, name, description, sha256 |
 | M2 Grouping | `detect-groups` | similar-pair candidates + suggested groups (never a decision) |
 | M3 Council | 5 advisors → 5 anonymous reviews → chairman | verdict: merge / split / recategorize, with provenance |
-| M3.5 Golden gate | fixed inputs through each source vs one master contract | 6/6 = absorption authorized |
-| M4 Master build | staged draft outside live root | G0/G1/G3-clean merged SKILL.md |
-| M5 Benchmark | head-to-head vs each source, ≥3 runs/cell | master wins or ties every cell |
+| M3.5 Golden gate | `golden-gate` (manifest + runners) | N/N output match = absorption authorized |
+| M4 Master build | `check-master` (G0/G1/G3 gates) on staged draft | G0/G1/G3-clean merged SKILL.md |
+| M5 Benchmark | `benchmark` (bundle verification) | master wins-or-ties every cell + beats best source |
 | M6 Promotion | snapshot → promote → archive → commit | sha256-verified live install |
 
 Non-negotiables:
@@ -111,6 +111,37 @@ Scan additional stores (tagged read-only, never touched):
 ```bash
 python3 scripts/catalog_governance.py detect-skills --stores ~/third-party/skills
 ```
+
+## Enforced CLI gates
+
+Three lifecycle stages that used to be method-only are now deterministic, fail-closed CLI gates:
+
+```bash
+# G0 + G1 + G3 on a staged master SKILL.md (name==dir, <=64ch name, desc<=1024,
+# no XML angle brackets, <500 lines, refs one level; security scan blocks
+# credential-exfil / obfuscated payload and flags exec patterns + unpinned deps;
+# version must be a quoted semver string)
+python3 scripts/catalog_governance.py check-master --draft skills-merge-drafts/master.SKILL.md
+
+# Golden gate: one master contract must reproduce every source's output on fixed
+# inputs. Runner execution is DISABLED by default — the manifest must explicitly
+# opt in with "allow_runners": true. Runners are orchestrator-provided argv lists
+# (no shell, no inline-code executor args like -c/-e), executed with a timeout in
+# --workdir; absorption is authorized only on N/N match.
+python3 scripts/catalog_governance.py golden-gate --manifest golden.json --workdir ./work
+
+# G2 benchmark bundle verification: runs_per_cell>=3, master wins-or-ties every
+# cell (no LOSS), and master beats the best source overall. Judge verdicts are
+# the orchestrator's LLM-judge artifact; the gate enforces the conditions.
+python3 scripts/catalog_governance.py benchmark --bundle docs/benchmark.json
+```
+
+Security note for `golden-gate`: executing runners is a code-execution surface,
+so it is rigorously defaulted to OFF — `allow_runners: true` must be set in the
+manifest. Runners are orchestrator-provided argv lists executed with a timeout in
+`--workdir`; shell metacharacters and inline-code executor args (`-c`, `-e`,
+`--eval`, …) are refused before any execution; runner output is captured and
+hashed locally and is never transmitted anywhere.
 
 ## How it works
 
