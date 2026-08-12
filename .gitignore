@@ -5,3 +5,4 @@ skills-merge-drafts/
 *.lock
 *.journal.jsonl
 inventory-real.json
+E2E_TEST_RUN/
