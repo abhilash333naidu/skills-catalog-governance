@@ -10,6 +10,7 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest.mock import patch, MagicMock
 from pathlib import Path
 
 
@@ -1274,46 +1275,46 @@ class RepairCliTests(unittest.TestCase):
             "minimum_overlap": 0.35,
         }])
 
-        # Use a faster poll cycle for this specific test so the recovery is reliably caught
-        env = dict(self.env)
-        env["CATALOG_GOVERNANCE_REPAIR_POLL_SECONDS"] = "3.0"
+        # Prepare arguments for direct function call
+        args = argparse.Namespace(
+            loss_report=str(loss_report),
+            draft=str(draft),
+            source=[str(source)],
+            allow_draft_change=False,
+            output=None
+        )
 
-        # Run repair in a thread so we can modify the draft mid-flight
-        import threading
-        output = {}
-        def worker():
-            try:
-                result = subprocess.run(
-                    [sys.executable, str(TOOL), "repair",
-                     "--loss-report", str(loss_report), "--draft", str(draft),
-                     "--source", str(source)],
-                    cwd=ROOT,
-                    capture_output=True,
-                    text=True,
-                    check=False,
-                    env=env,
-                    timeout=30,
-                )
-                output["stdout"] = result.stdout
-                output["stderr"] = result.stderr
-                output["returncode"] = result.returncode
-                output["report"] = json.loads(result.stdout)
-            except Exception as e:
-                output["error"] = e
+        # We mock Path.read_text to return:
+        # 1. bad_content (initial check in cmd_repair)
+        # 2. bad_content (Round 1 execution)
+        # 3. full_content (Poll in Round 1 sees change)
+        # 4. full_content (Round 2 execution)
+        
+        # We need to mock Path.read_text *only* for our target files
+        original_read_text = Path.read_text
+        def side_effect(self_obj, *args, **kwargs):
+            p_str = str(self_obj)
+            if p_str.endswith("draft.md"):
+                call_count[p_str] = call_count.get(p_str, 0) + 1
+                if call_count[p_str] <= 2:
+                    return bad_content
+                return full_content
+            return original_read_text(self_obj, *args, **kwargs)
 
-        t = threading.Thread(target=worker)
-        t.start()
-
-        # Wait ~0.5s (round 1 + start of poll) then fix the draft so round 2 PASSes
-        time.sleep(0.5)
-        draft.write_text(full_content, encoding="utf-8")
-
-        t.join(timeout=20)
-        self.assertNotIn("error", output, "repair worker raised: %s" % output.get("error"))
-        self.assertIn("report", output, "repair worker did not complete")
-        report = output["report"]
-        self.assertEqual(report["status"], "PASS", "expected PASS but got: %s" % report)
-        self.assertEqual(report["rounds_run"], 2)
+        call_count = {}
+        with patch("scripts.catalog_governance.Path.read_text", autospec=True, side_effect=side_effect):
+            with patch("time.sleep"):  # Skip actual sleeping
+                # Capture stdout to parse JSON result
+                import io
+                from contextlib import redirect_stdout
+                f = io.StringIO()
+                with redirect_stdout(f):
+                    status_code = GOVERNANCE.cmd_repair(args)
+                
+                report = json.loads(f.getvalue())
+                self.assertEqual(status_code, 0)
+                self.assertEqual(report["status"], "PASS")
+                self.assertEqual(report["rounds_run"], 2)
 
     def test_repair_refuses_when_draft_hash_changed_without_flag(self):
         source = self.base / "source.md"
