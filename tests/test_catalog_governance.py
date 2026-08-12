@@ -920,5 +920,47 @@ gates_passed:
             self.assertIn("path", report.get("message", "") + " " + " ".join(report.get("details", [])))
 
 
+    def test_validate_council_verdict_accepts_inline_empty_list(self):
+        # Acceptance F1: `absorbed: []` must be a true empty list, not the string "[]".
+        with tempfile.TemporaryDirectory() as raw:
+            verdict = self.verdict_file(Path(raw), """---
+verdict: MERGE
+survivors:
+  - survivor
+absorbed: []
+gates_passed:
+  - loss-check
+---""")
+            report = self.run_cli("validate-council-verdict", "--verdict", verdict)
+            self.assertEqual(report["status"], "PASS")
+            self.assertEqual(report["absorbed"], [])
+            self.assertEqual(report["gates_passed"], ["loss-check"])
+
+    def test_validate_council_verdict_no_frontmatter_hints_machine_format(self):
+        # Acceptance F2: the no-frontmatter error must point at the machine-readable
+        # declaration contract, not leave the user guessing why a prose file failed.
+        with tempfile.TemporaryDirectory() as raw:
+            verdict = Path(raw) / "prose.md"
+            verdict.write_text("# Council transcript\n\nThe council decided to merge.\n", encoding="utf-8")
+            report = self.run_cli("validate-council-verdict", "--verdict", verdict, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            joined = " ".join(report["errors"])
+            self.assertIn("no frontmatter block", joined)
+            self.assertIn("council-verdict.schema.json", joined)
+
+    def test_check_package_rejects_corrupted_schema_content(self):
+        # Acceptance F3: check-package must fail when a bundled schema exists but
+        # its content is not valid JSON (presence-only checking missed this).
+        with tempfile.TemporaryDirectory() as raw:
+            package = Path(raw) / "package"
+            package.mkdir()
+            self.make_package(package)
+            (package / "schemas" / "manifest.schema.json").write_text("{invalid json", encoding="utf-8")
+            report = self.run_cli("check-package", "--root", package, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertIn("schemas/manifest.schema.json", report["invalid_files"])
+            self.assertEqual(report["missing_files"], [])
+
+
 if __name__ == "__main__":
     unittest.main()
