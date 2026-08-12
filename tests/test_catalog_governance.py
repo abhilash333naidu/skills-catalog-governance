@@ -1274,29 +1274,45 @@ class RepairCliTests(unittest.TestCase):
             "minimum_overlap": 0.35,
         }])
 
+        # Use a faster poll cycle for this specific test so the recovery is reliably caught
+        env = dict(self.env)
+        env["CATALOG_GOVERNANCE_REPAIR_POLL_SECONDS"] = "3.0"
+
         # Run repair in a thread so we can modify the draft mid-flight
         import threading
         output = {}
         def worker():
             try:
-                output["report"] = self.run_repair(
-                    "--loss-report", loss_report, "--draft", draft, "--source", source,
+                result = subprocess.run(
+                    [sys.executable, str(TOOL), "repair",
+                     "--loss-report", str(loss_report), "--draft", str(draft),
+                     "--source", str(source)],
+                    cwd=ROOT,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                    env=env,
                     timeout=30,
                 )
+                output["stdout"] = result.stdout
+                output["stderr"] = result.stderr
+                output["returncode"] = result.returncode
+                output["report"] = json.loads(result.stdout)
             except Exception as e:
                 output["error"] = e
 
         t = threading.Thread(target=worker)
         t.start()
 
-        # Wait ~0.7s then fix the draft so round 2 PASSes
-        time.sleep(0.7)
+        # Wait ~0.5s (round 1 + start of poll) then fix the draft so round 2 PASSes
+        time.sleep(0.5)
         draft.write_text(full_content, encoding="utf-8")
 
         t.join(timeout=20)
+        self.assertNotIn("error", output, "repair worker raised: %s" % output.get("error"))
         self.assertIn("report", output, "repair worker did not complete")
         report = output["report"]
-        self.assertEqual(report["status"], "PASS")
+        self.assertEqual(report["status"], "PASS", "expected PASS but got: %s" % report)
         self.assertEqual(report["rounds_run"], 2)
 
     def test_repair_refuses_when_draft_hash_changed_without_flag(self):
