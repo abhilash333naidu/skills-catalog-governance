@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skills-catalog-golden-1",
+  "type": "object",
+  "required": [
+    "master",
+    "sources",
+    "inputs"
+  ],
+  "properties": {
+    "master": {
+      "type": "object",
+      "required": [
+        "name",
+        "runner"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "runner": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "runner"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "runner": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          }
+        }
+      }
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "args": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "timeout_seconds": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 120
+    }
+  },
+  "additionalProperties": true
+}

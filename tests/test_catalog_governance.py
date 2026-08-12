@@ -960,6 +960,175 @@ gates_passed:
             self.assertEqual(report["status"], "FAIL")
             self.assertIn("schemas/manifest.schema.json", report["invalid_files"])
             self.assertEqual(report["missing_files"], [])
+    def test_check_master_valid_passes(self):
+        with tempfile.TemporaryDirectory() as raw:
+            skill_dir = Path(raw) / "good-master"
+            (skill_dir / "references").mkdir(parents=True)
+            (skill_dir / "references" / "format.md").write_text("rules\n", encoding="utf-8")
+            (skill_dir / "SKILL.md").write_text(
+                "---\nname: good-master\ndescription: Deterministic report generator with a fixed template.\nversion: \"1.0.0\"\n---\n"
+                "# good-master\nSee `references/format.md`.\n",
+                encoding="utf-8",
+            )
+            report = self.run_cli("check-master", "--draft", skill_dir / "SKILL.md")
+            self.assertEqual(report["status"], "PASS")
+            self.assertEqual(report["gates"]["G0"]["status"], "PASS")
+            self.assertEqual(report["gates"]["G1"]["status"], "PASS")
+            self.assertEqual(report["gates"]["G3"]["status"], "PASS")
+
+    def test_check_master_rejects_name_mismatch_unquoted_version_and_long_desc(self):
+        with tempfile.TemporaryDirectory() as raw:
+            skill_dir = Path(raw) / "dir-name"
+            skill_dir.mkdir()
+            long_desc = "x" * 1100
+            (skill_dir / "SKILL.md").write_text(
+                f"---\nname: Different-Name\ndescription: {long_desc}\nversion: 1.0.0\n---\n# body\n",
+                encoding="utf-8",
+            )
+            report = self.run_cli("check-master", "--draft", skill_dir / "SKILL.md", expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            g0 = " ".join(report["gates"]["G0"]["details"])
+            self.assertIn("name ('Different-Name') != directory name ('dir-name')", g0)
+            self.assertIn("longer than 1024", g0)
+            self.assertIn("QUOTED string", " ".join(report["gates"]["G3"]["details"]))
+
+    def test_check_master_rejects_missing_reference_and_xml_description(self):
+        with tempfile.TemporaryDirectory() as raw:
+            skill_dir = Path(raw) / "bad-ref"
+            skill_dir.mkdir()
+            (skill_dir / "SKILL.md").write_text(
+                "---\nname: bad-ref\ndescription: has <xml> angle brackets.\nversion: \"1.0.0\"\n---\n# bad-ref\nSee `references/missing.md`.\n",
+                encoding="utf-8",
+            )
+            report = self.run_cli("check-master", "--draft", skill_dir / "SKILL.md", expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            g0 = " ".join(report["gates"]["G0"]["details"])
+            self.assertIn("XML angle brackets", g0)
+            self.assertIn("referenced file missing", g0)
+
+    def test_golden_gate_all_cells_match_passes(self):
+        with tempfile.TemporaryDirectory() as raw:
+            work = Path(raw) / "work"
+            (work / "master").mkdir(parents=True)
+            (work / "src-a").mkdir(parents=True)
+            (work / "master" / "gen.py").write_text(
+                "import sys\nargs=dict(zip(sys.argv[1::2],sys.argv[2::2]))\nprint(args.get('--owner','?'), args.get('--sprint','?'))\n",
+                encoding="utf-8",
+            )
+            (work / "src-a" / "gen.py").write_text(
+                "import sys\nargs=dict(zip(sys.argv[1::2],sys.argv[2::2]))\nprint(args.get('--owner','?'), args.get('--sprint','?'))\n",
+                encoding="utf-8",
+            )
+            manifest = Path(raw) / "golden.json"
+            manifest.write_text(json.dumps({
+                "schema": "skills-catalog-golden-1",
+                "master": {"name": "master", "runner": ["python", "master/gen.py"]},
+                "sources": [{"name": "src-a", "runner": ["python", "src-a/gen.py"]}],
+                "inputs": [{"id": "c1", "args": ["--owner", "alice", "--sprint", "S1"]}],
+                "timeout_seconds": 30,
+            }), encoding="utf-8")
+            report = self.run_cli("golden-gate", "--manifest", manifest, "--workdir", work)
+            self.assertEqual(report["status"], "PASS")
+            self.assertTrue(report["absorption_authorized"])
+            self.assertEqual(report["matched"], 1)
+            self.assertEqual(report["total"], 1)
+
+    def test_golden_gate_mismatch_fails(self):
+        with tempfile.TemporaryDirectory() as raw:
+            work = Path(raw) / "work"
+            (work / "master").mkdir(parents=True)
+            (work / "src-b").mkdir(parents=True)
+            (work / "master" / "gen.py").write_text("print('MASTER OUTPUT')\n", encoding="utf-8")
+            (work / "src-b" / "gen.py").write_text("print('DIFFERENT OUTPUT')\n", encoding="utf-8")
+            manifest = Path(raw) / "golden.json"
+            manifest.write_text(json.dumps({
+                "schema": "skills-catalog-golden-1",
+                "master": {"name": "master", "runner": ["python", "master/gen.py"]},
+                "sources": [{"name": "src-b", "runner": ["python", "src-b/gen.py"]}],
+                "inputs": [{"id": "c1", "args": []}],
+                "timeout_seconds": 30,
+            }), encoding="utf-8")
+            report = self.run_cli("golden-gate", "--manifest", manifest, "--workdir", work, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertFalse(report["absorption_authorized"])
+            self.assertEqual(report["matched"], 0)
+
+    def test_golden_gate_refuses_shell_metachar_runner(self):
+        with tempfile.TemporaryDirectory() as raw:
+            work = Path(raw) / "work"
+            work.mkdir()
+            manifest = Path(raw) / "golden.json"
+            manifest.write_text(json.dumps({
+                "schema": "skills-catalog-golden-1",
+                "master": {"name": "master", "runner": ["python", "master/gen.py"]},
+                "sources": [{"name": "evil", "runner": ["python", "gen.py; rm -rf x"]}],
+                "inputs": [{"id": "c1", "args": []}],
+                "timeout_seconds": 30,
+            }), encoding="utf-8")
+            report = self.run_cli("golden-gate", "--manifest", manifest, "--workdir", work, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertEqual(report["total"], 0)
+            self.assertIn("shell metacharacters", " ".join(report["errors"]))
+
+    def test_benchmark_go_passes(self):
+        with tempfile.TemporaryDirectory() as raw:
+            bundle = Path(raw) / "b.json"
+            bundle.write_text(json.dumps({
+                "schema": "skills-catalog-benchmark-1",
+                "runs_per_cell": 3,
+                "cells": [
+                    {"id": "p1", "kind": "master_vs_source", "source": "src-a", "runs": 3, "verdict": "WIN"},
+                    {"id": "p2", "kind": "master_vs_source", "source": "src-a", "runs": 3, "verdict": "TIE"},
+                    {"id": "b1", "kind": "master_vs_baseline", "runs": 3, "verdict": "WIN"},
+                ],
+            }), encoding="utf-8")
+            report = self.run_cli("benchmark", "--bundle", bundle)
+            self.assertEqual(report["status"], "PASS")
+            self.assertEqual(report["verdict"], "GO")
+
+    def test_benchmark_no_go_on_loss(self):
+        with tempfile.TemporaryDirectory() as raw:
+            bundle = Path(raw) / "b.json"
+            bundle.write_text(json.dumps({
+                "schema": "skills-catalog-benchmark-1",
+                "runs_per_cell": 3,
+                "cells": [
+                    {"id": "p1", "kind": "master_vs_source", "source": "src-a", "runs": 3, "verdict": "LOSS"},
+                    {"id": "b1", "kind": "master_vs_baseline", "runs": 3, "verdict": "WIN"},
+                ],
+            }), encoding="utf-8")
+            report = self.run_cli("benchmark", "--bundle", bundle, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertEqual(report["verdict"], "NO-GO")
+            self.assertIn("promotion blocked", " ".join(report["errors"]))
+
+    def test_benchmark_no_go_when_source_beats_master(self):
+        with tempfile.TemporaryDirectory() as raw:
+            bundle = Path(raw) / "b.json"
+            bundle.write_text(json.dumps({
+                "schema": "skills-catalog-benchmark-1",
+                "runs_per_cell": 3,
+                "cells": [
+                    {"id": "p1", "kind": "master_vs_source", "source": "src-a", "runs": 3, "verdict": "LOSS"},
+                    {"id": "p2", "kind": "master_vs_source", "source": "src-a", "runs": 3, "verdict": "LOSS"},
+                    {"id": "b1", "kind": "master_vs_baseline", "runs": 3, "verdict": "WIN"},
+                ],
+            }), encoding="utf-8")
+            report = self.run_cli("benchmark", "--bundle", bundle, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertIn("does not beat the best source", " ".join(report["errors"]))
+
+    def test_benchmark_rejects_runs_lt_3(self):
+        with tempfile.TemporaryDirectory() as raw:
+            bundle = Path(raw) / "b.json"
+            bundle.write_text(json.dumps({
+                "schema": "skills-catalog-benchmark-1",
+                "runs_per_cell": 2,
+                "cells": [{"id": "p1", "kind": "master_vs_source", "source": "src-a", "runs": 2, "verdict": "WIN"}],
+            }), encoding="utf-8")
+            report = self.run_cli("benchmark", "--bundle", bundle, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertIn("runs_per_cell", " ".join(report["errors"]))
 
 
 if __name__ == "__main__":
