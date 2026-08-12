@@ -231,7 +231,10 @@ def council_verdict_frontmatter(text: str) -> dict[str, str | list[str]]:
             current_key = match.group(1)
             if current_key in values:
                 raise ValueError(f"duplicate key in frontmatter: {current_key}")
-            values[current_key] = frontmatter_value(match.group(2))
+            raw_value = match.group(2).strip()
+            # Accept an inline empty list literal (`absorbed: []`) as a true empty
+            # list, not the string "[]" the generic scalar parser would produce.
+            values[current_key] = [] if raw_value == "[]" else frontmatter_value(raw_value)
             continue
         list_match = re.match(r"^\s+-\s+(.+?)\s*$", line)
         if list_match:
@@ -267,7 +270,10 @@ def validate_council_verdict(file: Path) -> dict[str, Any]:
 
     errors: list[str] = []
     if not frontmatter:
-        errors.append("no frontmatter block")
+        errors.append(
+            "no frontmatter block; expected a YAML frontmatter block declaring `verdict` "
+            "and a non-empty `survivors` list (see schemas/council-verdict.schema.json)"
+        )
 
     verdict = frontmatter.get("verdict", "")
     allowed_verdicts = {"MERGE", "SPLIT", "RECATEGORIZE", "KEEP_SEPARATE", "NO_MERGE"}
@@ -619,13 +625,29 @@ def package_report(root: Path) -> dict[str, Any]:
     ]
     required_files = sorted(set(references + required_payload))
     missing = [relative for relative in required_files if not (root / relative).is_file()]
+    # Content check beyond presence: bundled JSON schemas must actually parse.
+    # Presence-only checking let a byte-corrupted schema report PASS (acceptance F3).
+    invalid = []
+    for relative in required_payload:
+        candidate = root / relative
+        if relative.startswith("schemas/") and candidate.is_file():
+            try:
+                json.loads(candidate.read_text(encoding="utf-8"))
+            except ValueError:
+                invalid.append(relative)
+    clean = not missing and not invalid
     return {
-        "status": "PASS" if not missing else "FAIL",
+        "status": "PASS" if clean else "FAIL",
         "root": str(root),
         "skill_sha256": sha256_file(skill),
         "required_files": required_files,
         "missing_files": missing,
-        "message": "all required package files are present" if not missing else "required package files are missing",
+        "invalid_files": invalid,
+        "message": (
+            "all required package files are present and valid"
+            if clean
+            else ("required package files are missing" if missing else "required schema files are not valid JSON")
+        ),
     }
 
 
