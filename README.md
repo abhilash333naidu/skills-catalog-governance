@@ -35,7 +35,7 @@ AI coding agents accumulate skills quickly. Hermes profiles, Claude Code directo
 
 Soon you have 100–200+ skills with overlapping families: three "write a commit message" skills, five "review" skills, a family of `gstack-*` skills. Nobody can tell which is best, whether they should merge, or what they would lose by archiving one.
 
-No public tooling existed for this (verified mid-2026). The agentskills.io spec has no dedup guidance. Academic methods (SkillClone, arXiv:2603.22447) are preprints with unpublished code.
+Public tooling for skill catalog governance was not found at the time of writing (mid-2026). The agentskills.io spec has no dedup guidance. Academic methods (SkillClone, arXiv:2603.22447) are preprints with unpublished code.
 
 ---
 
