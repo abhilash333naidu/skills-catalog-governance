@@ -4,17 +4,16 @@ Generate animated terminal demo GIF for Skills Catalog Governance.
 Creates a realistic terminal animation showing the governance pipeline execution.
 """
 
-import os
 import sys
 from pathlib import Path
 
 try:
-    from PIL import Image, ImageDraw, ImageFont, ImageSequence
+    from PIL import Image, ImageDraw, ImageFont
 except ImportError:
     print("Pillow not installed. Installing...")
     import subprocess
     subprocess.check_call([sys.executable, "-m", "pip", "install", "pillow"])
-    from PIL import Image, ImageDraw, ImageFont, ImageSequence
+    from PIL import Image, ImageDraw, ImageFont
 
 
 # Configuration
@@ -37,11 +36,11 @@ try:
     # Try to find a monospace font
     FONT = ImageFont.truetype("C:/Windows/Fonts/consola.ttf", FONT_SIZE)
     FONT_BOLD = ImageFont.truetype("C:/Windows/Fonts/consolab.ttf", FONT_SIZE)
-except:
+except Exception:
     try:
         FONT = ImageFont.truetype("C:/Windows/Fonts/CascadiaCode.ttf", FONT_SIZE)
         FONT_BOLD = ImageFont.truetype("C:/Windows/Fonts/CascadiaCode.ttf", FONT_SIZE)
-    except:
+    except Exception:
         FONT = ImageFont.load_default()
         FONT_BOLD = ImageFont.load_default()
 

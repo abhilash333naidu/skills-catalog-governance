@@ -8,9 +8,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import time
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from pathlib import Path
 
 

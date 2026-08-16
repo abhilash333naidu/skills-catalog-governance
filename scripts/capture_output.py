@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Capture real check-package output as a terminal screenshot."""
-import subprocess, sys, json
+import json
+import subprocess
+import sys
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
@@ -10,7 +12,7 @@ BG = "#0d1117"
 try:
     FONT = ImageFont.truetype("C:/Windows/Fonts/consola.ttf", 13)
     FONT_BOLD = ImageFont.truetype("C:/Windows/Fonts/consolab.ttf", 13)
-except:
+except Exception:
     FONT = ImageFont.load_default()
     FONT_BOLD = FONT
 
@@ -30,15 +32,15 @@ lines = [
     "  Skills Catalog Governance  —  Package Verification",
     "  ──────────────────────────────────────────────────",
     "",
-    f"  $ python3 check-package --root .",
+    "  $ python3 check-package --root .",
     "",
 ]
 
 if status == "PASS":
     lines.append(f"  ✓ Package verification: {status}")
-    lines.append(f"  ✓ SKILL.md SHA-256: {skills}...")
-    lines.append(f"  ✓ {len(data.get('required_files', []))} required files present")
-    lines.append(f"  ✓ All schemas valid JSON")
+    lines.append("  ✓ SKILL.md SHA-256: " + skills + "...")
+    lines.append("  ✓ " + str(len(data.get('required_files', []))) + " required files present")
+    lines.append("  ✓ All schemas valid JSON")
     lines.append("")
     lines.append("  Pipeline ready. You can now run detect-skills.")
 else:
