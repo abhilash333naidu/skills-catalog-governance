@@ -1,0 +1,6 @@
+# Development dependencies for Skills Catalog Governance.
+# Kept out of the runtime path: scripts/catalog_governance.py is stdlib-only.
+# Install with: python -m pip install -r requirements-dev.txt
+pytest>=8.2
+pytest-cov>=5.0
+ruff>=0.5

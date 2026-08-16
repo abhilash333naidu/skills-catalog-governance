@@ -1,0 +1,36 @@
+name: Feature request
+description: Suggest a new capability or improvement
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: Please describe the capability you would like to see in the governance pipeline.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / motivation
+      description: What gap or pain point does this address?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How should it work? Reference the lifecycle phase (M1–M6) if applicable.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What else did you consider?
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Non-goals
+      description: Check any boundaries that should be respected
+      options:
+        - label: Must remain stdlib-only (no new runtime dependencies)
+        - label: Must stay deterministic / reproducible
+        - label: Must preserve non-destructive archival guarantees

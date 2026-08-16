@@ -1,0 +1,56 @@
+name: Bug report
+description: Report a defect in Skills Catalog Governance
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please fill in the details so the issue can be reproduced and fixed.
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What should happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: What actually happens? Include exact CLI output / error text.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Exact commands and inputs. Attach inventory/manifest/JSON files if relevant.
+      placeholder: |
+        python scripts/catalog_governance.py detect-skills --output inventory.json
+        # ...
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      description: OS, Python version (`python --version`)
+    validations:
+      required: true
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Lifecycle phase affected
+      options:
+        - M1 Discovery
+        - M2 Grouping
+        - M3 Council
+        - M3.5 Golden Gate
+        - M4 Master Build
+        - M5 Benchmark
+        - M6 Promotion
+        - Install / Package
+        - Other
+    validations:
+      required: true
