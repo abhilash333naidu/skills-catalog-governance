@@ -2,7 +2,13 @@ __pycache__/
 *.pyc
 run-record/
 skills-merge-drafts/
+scratch/
 *.lock
 *.journal.jsonl
 inventory-real.json
 E2E_TEST_RUN/
+.coverage
+.coverage.*
+htmlcov/
+.mermaid_tmp/
+puppeteer.config.json
