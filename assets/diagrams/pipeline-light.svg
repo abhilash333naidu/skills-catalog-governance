@@ -1,0 +1,253 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 650" width="1100" height="650" role="img" aria-labelledby="pipeline-title pipeline-desc">
+  <title id="pipeline-title">Skills Catalog Governance Pipeline</title>
+  <desc id="pipeline-desc">Complete governance pipeline from skill discovery through promotion with verification gates at each stage (light)</desc>
+  
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f6f8fa"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+    
+    <linearGradient id="stageGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1f2937"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    
+    <filter id="cardShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+    
+    <filter id="glowPurple" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <marker id="pipeArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#58a6ff"/>
+    </marker>
+    
+    <marker id="gateArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#3fb950"/>
+    </marker>
+  </defs>
+  
+  <rect width="1100" height="650" fill="url(#bgGrad)"/>
+  
+  <!-- Title -->
+  <text x="550" y="40" font-family="system-ui, sans-serif" font-size="24" font-weight="700" 
+        fill="#1f2328" text-anchor="middle">GOVERNANCE PIPELINE</text>
+  <text x="550" y="64" font-family="system-ui, sans-serif" font-size="14" 
+        fill="#57606a" text-anchor="middle">Every consolidation passes through deterministic gates — similarity generates candidates, evidence determines promotion</text>
+  
+  <!-- Pipeline flow - horizontal layout with vertical detail -->
+  <g transform="translate(50, 100)">
+    <!-- Stage definitions -->
+    <g class="pipeline-stage" id="stage-discover">
+      <!-- Stage card -->
+      <rect x="0" y="0" width="280" height="140" rx="12" fill="url(#stageGrad)" stroke="#58a6ff" stroke-width="2" filter="url(#cardShadow)"/>
+      
+      <!-- Stage header -->
+      <rect x="0" y="0" width="280" height="44" rx="12" fill="#58a6ff" opacity="0.15"/>
+      <circle cx="20" cy="22" r="10" fill="#58a6ff"/>
+      <text x="40" y="28" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#58a6ff">M1 DISCOVER</text>
+      
+      <!-- Command -->
+      <text x="20" y="62" font-family="'SF Mono', 'Fira Code', monospace" font-size="12" fill="#d29922">detect-skills</text>
+      
+      <!-- Outputs -->
+      <g transform="translate(20, 80)">
+        <rect x="0" y="0" width="240" height="24" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+        <text x="120" y="16" font-family="system-ui, sans-serif" font-size="11" font-weight="500" fill="#1f2328" text-anchor="middle">tagged inventory: store, path, name, sha256</text>
+      </g>
+      
+      <g transform="translate(20, 110)">
+        <rect x="0" y="0" width="78" height="20" rx="4" fill="#58a6ff" opacity="0.2"/>
+        <text x="39" y="14" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#58a6ff" text-anchor="middle">211 skills</text>
+      </g>
+    </g>
+    
+    <!-- Arrow -->
+    <path d="M 290 70 H 320" stroke="#58a6ff" stroke-width="3" marker-end="url(#pipeArrow)" fill="none"/>
+    
+    <!-- Stage 2: Group -->
+    <g class="pipeline-stage" transform="translate(330, 0)" id="stage-group">
+      <rect x="0" y="0" width="280" height="140" rx="12" fill="url(#stageGrad)" stroke="#d29922" stroke-width="2" filter="url(#cardShadow)"/>
+      <rect x="0" y="0" width="280" height="44" rx="12" fill="#d29922" opacity="0.15"/>
+      <circle cx="20" cy="22" r="10" fill="#d29922"/>
+      <text x="40" y="28" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#d29922">M2 GROUP</text>
+      <text x="20" y="62" font-family="'SF Mono', 'Fira Code', monospace" font-size="12" fill="#d29922">detect-groups</text>
+      <g transform="translate(20, 80)">
+        <rect x="0" y="0" width="240" height="24" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+        <text x="120" y="16" font-family="system-ui, sans-serif" font-size="11" font-weight="500" fill="#1f2328" text-anchor="middle">candidate pairs + suggested groups</text>
+      </g>
+      <g transform="translate(20, 110)">
+        <rect x="0" y="0" width="78" height="20" rx="4" fill="#d29922" opacity="0.2"/>
+        <text x="39" y="14" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#d29922" text-anchor="middle">19 families</text>
+      </g>
+    </g>
+    
+    <!-- Arrow -->
+    <path d="M 620 70 H 650" stroke="#d29922" stroke-width="3" marker-end="url(#pipeArrow)" fill="none"/>
+    
+    <!-- Stage 3: Council -->
+    <g class="pipeline-stage" transform="translate(660, 0)" id="stage-council">
+      <rect x="0" y="0" width="280" height="140" rx="12" fill="url(#stageGrad)" stroke="#a371f7" stroke-width="2" filter="url(#cardShadow)"/>
+      <rect x="0" y="0" width="280" height="44" rx="12" fill="#a371f7" opacity="0.15"/>
+      <circle cx="20" cy="22" r="10" fill="#a371f7"/>
+      <text x="40" y="28" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#a371f7">M3 COUNCIL</text>
+      <text x="20" y="62" font-family="'SF Mono', 'Fira Code', monospace" font-size="12" fill="#a371f7">llm-council / embedded</text>
+      <g transform="translate(20, 80)">
+        <rect x="0" y="0" width="240" height="24" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+        <text x="120" y="16" font-family="system-ui, sans-serif" font-size="11" font-weight="500" fill="#1f2328" text-anchor="middle">5 advisors → 5 reviews → 1 verdict</text>
+      </g>
+      <g transform="translate(20, 110)">
+        <rect x="0" y="0" width="90" height="20" rx="4" fill="#a371f7" opacity="0.2"/>
+        <text x="45" y="14" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#a371f7" text-anchor="middle">MERGE verdict</text>
+      </g>
+    </g>
+    
+    <!-- Arrow down to consolidation row -->
+    <path d="M 800 140 V 180" stroke="#a371f7" stroke-width="3" marker-end="url(#pipeArrow)" fill="none"/>
+    
+    <!-- Consolidation row (horizontal) -->
+    <g transform="translate(330, 200)" id="consolidation-row">
+      <!-- Consolidate -->
+      <g class="pipeline-stage" id="stage-consolidate">
+        <rect x="0" y="0" width="220" height="130" rx="12" fill="url(#stageGrad)" stroke="#3fb950" stroke-width="2" filter="url(#cardShadow)"/>
+        <rect x="0" y="0" width="220" height="40" rx="12" fill="#3fb950" opacity="0.15"/>
+        <circle cx="18" cy="20" r="9" fill="#3fb950"/>
+        <text x="36" y="27" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#3fb950">M4 CONSOLIDATE</text>
+        <text x="16" y="54" font-family="'SF Mono', 'Fira Code', monospace" font-size="11" fill="#d29922">check-master (G0/G1/G3)</text>
+        <g transform="translate(16, 70)">
+          <rect x="0" y="0" width="188" height="48" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+          <text x="94" y="18" font-family="system-ui, sans-serif" font-size="10" font-weight="500" fill="#1f2328" text-anchor="middle">staged master SKILL.md</text>
+          <text x="94" y="36" font-family="system-ui, sans-serif" font-size="9" fill="#57606a" text-anchor="middle">name==dir, desc≤1024, refs depth=1, semver</text>
+        </g>
+      </g>
+      
+      <!-- Arrow -->
+      <path d="M 230 55 H 255" stroke="#3fb950" stroke-width="3" marker-end="url(#gateArrow)" fill="none"/>
+      
+      <!-- Loss Check -->
+      <g class="pipeline-stage" transform="translate(265, 0)" id="stage-loss">
+        <rect x="0" y="0" width="220" height="130" rx="12" fill="url(#stageGrad)" stroke="#3fb950" stroke-width="2" filter="url(#cardShadow)"/>
+        <rect x="0" y="0" width="220" height="40" rx="12" fill="#3fb950" opacity="0.15"/>
+        <circle cx="18" cy="20" r="9" fill="#3fb950" opacity="0.85"/>
+        <text x="36" y="27" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#3fb950">LOSS CHECK</text>
+        <text x="16" y="54" font-family="'SF Mono', 'Fira Code', monospace" font-size="11" fill="#d29922">loss-check</text>
+        <g transform="translate(16, 70)">
+          <rect x="0" y="0" width="188" height="48" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+          <text x="94" y="18" font-family="system-ui, sans-serif" font-size="10" font-weight="500" fill="#1f2328" text-anchor="middle">missing headings / commands / overlap</text>
+          <text x="94" y="36" font-family="system-ui, sans-serif" font-size="9" fill="#57606a" text-anchor="middle">PASS = all sources covered ≥35%</text>
+        </g>
+      </g>
+      
+      <!-- Arrow -->
+      <path d="M 495 55 H 520" stroke="#3fb950" stroke-width="3" marker-end="url(#gateArrow)" fill="none"/>
+      
+      <!-- Golden Gate -->
+      <g class="pipeline-stage" transform="translate(530, 0)" id="stage-golden">
+        <rect x="0" y="0" width="220" height="130" rx="12" fill="url(#stageGrad)" stroke="#3fb950" stroke-width="2" filter="url(#cardShadow)"/>
+        <rect x="0" y="0" width="220" height="40" rx="12" fill="#3fb950" opacity="0.15"/>
+        <circle cx="18" cy="20" r="9" fill="#3fb950" opacity="0.7"/>
+        <text x="36" y="27" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#3fb950">GOLDEN GATE</text>
+        <text x="16" y="54" font-family="'SF Mono', 'Fira Code', monospace" font-size="11" fill="#d29922">golden-gate</text>
+        <g transform="translate(16, 70)">
+          <rect x="0" y="0" width="188" height="48" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+          <text x="94" y="18" font-family="system-ui, sans-serif" font-size="10" font-weight="500" fill="#1f2328" text-anchor="middle">N/N output reproduction</text>
+          <text x="94" y="36" font-family="system-ui, sans-serif" font-size="9" fill="#57606a" text-anchor="middle">runners disabled by default</text>
+        </g>
+      </g>
+    </g>
+    
+    <!-- Arrow down to verification row -->
+    <path d="M 770 330 V 370" stroke="#3fb950" stroke-width="3" marker-end="url(#pipeArrow)" fill="none"/>
+    
+    <!-- Verification row -->
+    <g transform="translate(330, 390)" id="verification-row">
+      <!-- Benchmark -->
+      <g class="pipeline-stage" id="stage-benchmark">
+        <rect x="0" y="0" width="220" height="130" rx="12" fill="url(#stageGrad)" stroke="#a371f7" stroke-width="2" filter="url(#cardShadow)"/>
+        <rect x="0" y="0" width="220" height="40" rx="12" fill="#a371f7" opacity="0.15"/>
+        <circle cx="18" cy="20" r="9" fill="#a371f7"/>
+        <text x="36" y="27" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#a371f7">M5 BENCHMARK</text>
+        <text x="16" y="54" font-family="'SF Mono', 'Fira Code', monospace" font-size="11" fill="#d29922">benchmark (G2)</text>
+        <g transform="translate(16, 70)">
+          <rect x="0" y="0" width="188" height="48" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+          <text x="94" y="18" font-family="system-ui, sans-serif" font-size="10" font-weight="500" fill="#1f2328" text-anchor="middle">master vs each source + baseline</text>
+          <text x="94" y="36" font-family="system-ui, sans-serif" font-size="9" fill="#57606a" text-anchor="middle">≥3 runs/cell, no LOSS, beats best source</text>
+        </g>
+      </g>
+      
+      <!-- Arrow -->
+      <path d="M 230 55 H 255" stroke="#a371f7" stroke-width="3" marker-end="url(#gateArrow)" fill="none"/>
+      
+      <!-- Approval -->
+      <g class="pipeline-stage" transform="translate(265, 0)" id="stage-approval">
+        <rect x="0" y="0" width="220" height="130" rx="12" fill="url(#stageGrad)" stroke="#a371f7" stroke-width="2" filter="url(#cardShadow)"/>
+        <rect x="0" y="0" width="220" height="40" rx="12" fill="#a371f7" opacity="0.15"/>
+        <circle cx="18" cy="20" r="9" fill="#a371f7" opacity="0.85"/>
+        <text x="36" y="27" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#a371f7">APPROVAL</text>
+        <text x="16" y="54" font-family="'SF Mono', 'Fira Code', monospace" font-size="11" fill="#d29922">verify-approval</text>
+        <g transform="translate(16, 70)">
+          <rect x="0" y="0" width="188" height="48" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+          <text x="94" y="18" font-family="system-ui, sans-serif" font-size="10" font-weight="500" fill="#1f2328" text-anchor="middle">hash-bound to draft</text>
+          <text x="94" y="36" font-family="system-ui, sans-serif" font-size="9" fill="#57606a" text-anchor="middle">live re-verification of loss-check</text>
+        </g>
+      </g>
+      
+      <!-- Arrow -->
+      <path d="M 495 55 H 520" stroke="#a371f7" stroke-width="3" marker-end="url(#gateArrow)" fill="none"/>
+      
+      <!-- Promote -->
+      <g class="pipeline-stage" transform="translate(530, 0)" id="stage-promote">
+        <rect x="0" y="0" width="220" height="130" rx="12" fill="url(#stageGrad)" stroke="#3fb950" stroke-width="3" filter="url(#cardShadow)"/>
+        <rect x="0" y="0" width="220" height="40" rx="12" fill="#3fb950" opacity="0.2"/>
+        <circle cx="18" cy="20" r="9" fill="url(#outputGradient)"/>
+        <text x="36" y="27" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#3fb950">M6 PROMOTE</text>
+        <text x="16" y="54" font-family="'SF Mono', 'Fira Code', monospace" font-size="11" fill="#d29922">apply-moves --apply --yes</text>
+        <g transform="translate(16, 70)">
+          <rect x="0" y="0" width="188" height="48" rx="4" fill="#f6f8fa" stroke="#3fb950" stroke-width="1.5"/>
+          <text x="94" y="18" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#3fb950" text-anchor="middle">promote → archive → commit</text>
+          <text x="94" y="36" font-family="system-ui, sans-serif" font-size="9" fill="#57606a" text-anchor="middle">SHA-256 verified, non-destructive</text>
+        </g>
+      </g>
+    </g>
+  </g>
+  
+  <!-- Legend / Gate types -->
+  <g transform="translate(50, 550)">
+    <text x="0" y="0" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#57606a">GATE TYPES</text>
+    <g transform="translate(0, 22)">
+      <g transform="translate(0, 0)">
+        <rect x="0" y="0" width="16" height="16" rx="3" fill="#58a6ff"/>
+        <text x="24" y="12" font-family="system-ui, sans-serif" font-size="11" fill="#1f2328">Discovery — inventory only</text>
+      </g>
+      <g transform="translate(220, 0)">
+        <rect x="0" y="0" width="16" height="16" rx="3" fill="#d29922"/>
+        <text x="24" y="12" font-family="system-ui, sans-serif" font-size="11" fill="#1f2328">Grouping — candidates only</text>
+      </g>
+      <g transform="translate(450, 0)">
+        <rect x="0" y="0" width="16" height="16" rx="3" fill="#a371f7"/>
+        <text x="24" y="12" font-family="system-ui, sans-serif" font-size="11" fill="#1f2328">Decision — council verdict</text>
+      </g>
+    </g>
+    <g transform="translate(0, 36)">
+      <g transform="translate(0, 0)">
+        <rect x="0" y="0" width="16" height="16" rx="3" fill="#3fb950"/>
+        <text x="24" y="12" font-family="system-ui, sans-serif" font-size="11" fill="#1f2328">Verification — loss check, golden gate</text>
+      </g>
+      <g transform="translate(220, 0)">
+        <rect x="0" y="0" width="16" height="16" rx="3" fill="#a371f7" opacity="0.8"/>
+        <text x="24" y="12" font-family="system-ui, sans-serif" font-size="11" fill="#1f2328">Benchmark — G2 comparison</text>
+      </g>
+      <g transform="translate(450, 0)">
+        <rect x="0" y="0" width="16" height="16" rx="3" stroke="#3fb950" stroke-width="2" fill="none"/>
+        <text x="24" y="12" font-family="system-ui, sans-serif" font-size="11" fill="#1f2328">Promotion — hash-bound, non-destructive</text>
+      </g>
+    </g>
+  </g>
+</svg>

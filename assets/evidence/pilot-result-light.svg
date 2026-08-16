@@ -1,0 +1,221 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" role="img" aria-labelledby="pilot-title pilot-desc">
+  <title id="pilot-title">Real Pilot Result: 211 skills cataloged → 19 candidate families identified → commit-message family pilot → 2 active governed skills retained</title>
+  <desc id="pilot-desc">Visualization of the commit-message family pilot showing the complete governance process with real numbers (light)</desc>
+  
+  <defs>
+    <linearGradient id="bgGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f6f8fa"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+    
+    <linearGradient id="discoverGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#58a6ff"/>
+      <stop offset="100%" stop-color="#388bfd"/>
+    </linearGradient>
+    
+    <linearGradient id="groupGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d29922"/>
+      <stop offset="100%" stop-color="#b0881e"/>
+    </linearGradient>
+    
+    <linearGradient id="councilGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#a371f7"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    
+    <linearGradient id="verifyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3fb950"/>
+      <stop offset="100%" stop-color="#2ea043"/>
+    </linearGradient>
+    
+    <filter id="cardShadow2" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+    
+    <filter id="numberGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <rect width="1000" height="500" fill="url(#bgGrad2)"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" font-family="system-ui, sans-serif" font-size="22" font-weight="700" 
+        fill="#1f2328" text-anchor="middle">REAL PILOT EVIDENCE</text>
+  <text x="500" y="64" font-family="system-ui, sans-serif" font-size="13" 
+        fill="#57606a" text-anchor="middle">Global inventory discovery + commit-message family end-to-end pilot run (2026-08-10)</text>
+  
+  <!-- Main flow - horizontal timeline -->
+  <g transform="translate(50, 100)">
+    <!-- Step 1: DISCOVER -->
+    <g class="step" id="step-discover">
+      <!-- Big number -->
+      <text x="60" y="80" font-family="system-ui, sans-serif" font-size="72" font-weight="800" 
+            fill="url(#discoverGrad)" text-anchor="middle" filter="url(#numberGlow)">211</text>
+      <text x="60" y="110" font-family="system-ui, sans-serif" font-size="14" font-weight="500" 
+            fill="#57606a" text-anchor="middle">SKILLS</text>
+      <text x="60" y="130" font-family="system-ui, sans-serif" font-size="11" 
+            fill="#8c959f" text-anchor="middle">cataloged across 5 stores</text>
+      
+      <!-- Detail card -->
+      <rect x="0" y="145" width="120" height="80" rx="8" fill="#ffffff" stroke="#d0d7de" filter="url(#cardShadow2)"/>
+      <text x="60" y="165" font-family="system-ui, sans-serif" font-size="11" font-weight="600" 
+            fill="#58a6ff" text-anchor="middle">detect-skills</text>
+      <text x="60" y="185" font-family="system-ui, sans-serif" font-size="9" 
+            fill="#57606a" text-anchor="middle">0 parse errors</text>
+      <text x="60" y="200" font-family="system-ui, sans-serif" font-size="9" 
+            fill="#8c959f" text-anchor="middle">5 local stores</text>
+      <text x="60" y="215" font-family="system-ui, sans-serif" font-size="9" 
+            fill="#8c959f" text-anchor="middle">Hermes, Claude, OpenCode, Codex, Pi</text>
+    </g>
+    
+    <!-- Arrow -->
+    <path d="M 120 70 H 185" stroke="#57606a" stroke-width="2" stroke-dasharray="6,4" fill="none" 
+          marker-end="url(#arrowhead2)"/>
+    <defs>
+      <marker id="arrowhead2" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+        <path d="M0,0 L10,5 L0,10 Z" fill="#57606a"/>
+      </marker>
+    </defs>
+    
+    <!-- Step 2: GROUP -->
+    <g class="step" transform="translate(200, 0)" id="step-group">
+      <text x="60" y="80" font-family="system-ui, sans-serif" font-size="72" font-weight="800" 
+            fill="url(#groupGrad)" text-anchor="middle" filter="url(#numberGlow)">19</text>
+      <text x="60" y="110" font-family="system-ui, sans-serif" font-size="14" font-weight="500" 
+            fill="#57606a" text-anchor="middle">CANDIDATE</text>
+      <text x="60" y="130" font-family="system-ui, sans-serif" font-size="11" 
+            fill="#8c959f" text-anchor="middle">families identified</text>
+      
+      <rect x="0" y="145" width="120" height="80" rx="8" fill="#ffffff" stroke="#d0d7de" filter="url(#cardShadow2)"/>
+      <text x="60" y="165" font-family="system-ui, sans-serif" font-size="11" font-weight="600" 
+            fill="#d29922" text-anchor="middle">detect-groups</text>
+      <text x="60" y="185" font-family="system-ui, sans-serif" font-size="9" 
+            fill="#57606a" text-anchor="middle">TF-IDF + word overlap</text>
+      <text x="60" y="200" font-family="system-ui, sans-serif" font-size="9" 
+            fill="#8c959f" text-anchor="middle">strong-pair candidates</text>
+      <text x="60" y="215" font-family="system-ui, sans-serif" font-size="9" 
+            fill="#8c959f" text-anchor="middle">max 8 group cap</text>
+    </g>
+    
+    <!-- Arrow -->
+    <path d="M 320 70 H 385" stroke="#57606a" stroke-width="2" stroke-dasharray="6,4" fill="none" 
+          marker-end="url(#arrowhead2)"/>
+    
+    <!-- Step 3: COUNCIL -->
+    <g class="step" transform="translate(400, 0)" id="step-council">
+      <text x="60" y="80" font-family="system-ui, sans-serif" font-size="72" font-weight="800" 
+            fill="url(#councilGrad)" text-anchor="middle" filter="url(#numberGlow)">3 → 2</text>
+      <text x="60" y="110" font-family="system-ui, sans-serif" font-size="14" font-weight="500" 
+            fill="#57606a" text-anchor="middle">PILOT FAMILY</text>
+      <text x="60" y="130" font-family="system-ui, sans-serif" font-size="11" 
+            fill="#8c959f" text-anchor="middle">commit-message group</text>
+      
+      <rect x="0" y="145" width="120" height="80" rx="8" fill="#ffffff" stroke="#d0d7de" filter="url(#cardShadow2)"/>
+      <text x="60" y="165" font-family="system-ui, sans-serif" font-size="11" font-weight="600" 
+            fill="#a371f7" text-anchor="middle">council verdict</text>
+      <text x="60" y="180" font-family="system-ui, sans-serif" font-size="9" 
+            fill="#57606a" text-anchor="middle">1 merged generator</text>
+      <text x="60" y="195" font-family="system-ui, sans-serif" font-size="9" 
+            fill="#57606a" text-anchor="middle">1 retained executor</text>
+      <text x="60" y="210" font-family="system-ui, sans-serif" font-size="9" 
+            fill="#8c959f" text-anchor="middle">2 functional groups</text>
+    </g>
+    
+    <!-- Arrow -->
+    <path d="M 520 70 H 585" stroke="#57606a" stroke-width="2" stroke-dasharray="6,4" fill="none" 
+          marker-end="url(#arrowhead2)"/>
+    
+    <!-- Step 4: VERIFICATION -->
+    <g class="step" transform="translate(600, 0)" id="step-verify">
+      <text x="60" y="80" font-family="system-ui, sans-serif" font-size="72" font-weight="800" 
+            fill="url(#verifyGrad)" text-anchor="middle" filter="url(#numberGlow)">PASS</text>
+      <text x="60" y="110" font-family="system-ui, sans-serif" font-size="14" font-weight="500" 
+            fill="#57606a" text-anchor="middle">GATES CLEARED</text>
+      <text x="60" y="130" font-family="system-ui, sans-serif" font-size="11" 
+            fill="#8c959f" text-anchor="middle">promoted to live</text>
+      
+      <rect x="0" y="145" width="120" height="80" rx="8" fill="#ffffff" stroke="#d0d7de" filter="url(#cardShadow2)"/>
+      <text x="60" y="165" font-family="system-ui, sans-serif" font-size="11" font-weight="600" 
+            fill="#3fb950" text-anchor="middle">promoted</text>
+      <text x="60" y="185" font-family="system-ui, sans-serif" font-size="9" 
+            fill="#57606a" text-anchor="middle">golden gate: 6/6 ✓</text>
+      <text x="60" y="200" font-family="system-ui, sans-serif" font-size="9" 
+            fill="#57606a" text-anchor="middle">benchmark: 36/36 ✓</text>
+      <text x="60" y="215" font-family="system-ui, sans-serif" font-size="9" 
+            fill="#8c959f" text-anchor="middle">hash-bound approval</text>
+    </g>
+  </g>
+  
+  <!-- Verification badges row -->
+  <g transform="translate(50, 300)">
+    <text x="0" y="0" font-family="system-ui, sans-serif" font-size="13" font-weight="600" 
+          fill="#57606a">VERIFICATION GATES PASSED (PILOT FAMILY)</text>
+    
+    <g class="badges" transform="translate(0, 28)">
+      <!-- Golden Gate -->
+      <g transform="translate(0, 0)" filter="url(#cardShadow2)">
+        <rect x="0" y="0" width="180" height="56" rx="8" fill="#ffffff" stroke="#3fb950" stroke-width="1.5"/>
+        <text x="90" y="20" font-family="system-ui, sans-serif" font-size="12" font-weight="600" 
+              fill="#3fb950" text-anchor="middle">GOLDEN GATE</text>
+        <text x="90" y="40" font-family="system-ui, sans-serif" font-size="14" font-weight="700" 
+              fill="#3fb950" text-anchor="middle">6 / 6 MATCH</text>
+      </g>
+      
+      <!-- Benchmark -->
+      <g transform="translate(200, 0)" filter="url(#cardShadow2)">
+        <rect x="0" y="0" width="180" height="56" rx="8" fill="#ffffff" stroke="#a371f7" stroke-width="1.5"/>
+        <text x="90" y="20" font-family="system-ui, sans-serif" font-size="12" font-weight="600" 
+              fill="#a371f7" text-anchor="middle">G2 BENCHMARK</text>
+        <text x="90" y="40" font-family="system-ui, sans-serif" font-size="14" font-weight="700" 
+              fill="#a371f7" text-anchor="middle">36 / 36 PASS</text>
+      </g>
+      
+      <!-- Loss Check -->
+      <g transform="translate(400, 0)" filter="url(#cardShadow2)">
+        <rect x="0" y="0" width="180" height="56" rx="8" fill="#ffffff" stroke="#3fb950" stroke-width="1.5" opacity="0.8"/>
+        <text x="90" y="20" font-family="system-ui, sans-serif" font-size="12" font-weight="600" 
+              fill="#3fb950" text-anchor="middle">LOSS CHECK</text>
+        <text x="90" y="40" font-family="system-ui, sans-serif" font-size="14" font-weight="700" 
+              fill="#3fb950" text-anchor="middle">ALL SOURCES ✓</text>
+      </g>
+      
+      <!-- Approval -->
+      <g transform="translate(600, 0)" filter="url(#cardShadow2)">
+        <rect x="0" y="0" width="180" height="56" rx="8" fill="#ffffff" stroke="#a371f7" stroke-width="1.5" opacity="0.8"/>
+        <text x="90" y="20" font-family="system-ui, sans-serif" font-size="12" font-weight="600" 
+              fill="#a371f7" text-anchor="middle">APPROVAL</text>
+        <text x="90" y="40" font-family="system-ui, sans-serif" font-size="14" font-weight="700" 
+              fill="#a371f7" text-anchor="middle">HASH-BOUND ✓</text>
+      </g>
+    </g>
+  </g>
+  
+  <!-- Final outcome summary -->
+  <g transform="translate(50, 380)">
+    <rect x="0" y="0" width="900" height="80" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+    
+    <g transform="translate(30, 20)">
+      <text x="0" y="0" font-family="system-ui, sans-serif" font-size="11" font-weight="500" 
+            fill="#8c959f">PILOT OUTCOME SUMMARY</text>
+      <text x="0" y="20" font-family="system-ui, sans-serif" font-size="15" font-weight="700" 
+            fill="#1f2328">
+        <tspan fill="#58a6ff">211</tspan> skills cataloged  →  <tspan fill="#d29922">19</tspan> candidate families identified  →  
+        commit-message family pilot (3 skills evaluated)  →  
+        <tspan fill="#3fb950" font-weight="800">2 active governed skills in resulting catalog</tspan>:
+        1 consolidated generator + 1 git executor retained separately
+      </text>
+      <text x="0" y="44" font-family="system-ui, sans-serif" font-size="10" fill="#8c959f">
+        Results: 1 consolidated generator skill + 1 git executor skill retained separately in the resulting catalog. Absorbed source material archived with SHA-256 hash provenance.
+      </text>
+      <text x="0" y="62" font-family="system-ui, sans-serif" font-size="10" fill="#8c959f">
+        Full evidence: <tspan fill="#58a6ff">docs/benchmark.json</tspan>, <tspan fill="#58a6ff">docs/council-verdict-commit-family-20260810.md</tspan>, 
+        <tspan fill="#58a6ff">artifacts/pilot-commit-family/</tspan>
+      </text>
+    </g>
+  </g>
+</svg>
