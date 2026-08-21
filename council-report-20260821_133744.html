@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Council Verdict: README Images</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            line-height: 1.6;
+            color: #1f2328;
+            background: #f6f8fa;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2d1b69 0%, #5b21b6 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(91, 33, 182, 0.3);
+        }
+        
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        .meta {
+            font-size: 0.9em;
+            opacity: 0.8;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+        
+        .verdict-section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #7c4dff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .verdict-section h2 {
+            color: #7c4dff;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .verdict-section h3 {
+            color: #1f2328;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .agreement-list, .issue-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .agreement-list li, .issue-list li {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background: #f6f8fa;
+            border-radius: 6px;
+            border-left: 3px solid #3fb950;
+        }
+        
+        .issue-list li {
+            border-left-color: #f85149;
+        }
+        
+        .clash-box {
+            background: #fff8e1;
+            border-left: 4px solid #d29922;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        
+        .clash-box .position {
+            margin-bottom: 15px;
+        }
+        
+        .position strong {
+            color: #d29922;
+        }
+        
+        .blind-spot-card {
+            background: #ffe5e5;
+            border: 2px solid #f85149;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .blind-spot-card h4 {
+            color: #f85149;
+            margin-bottom: 10px;
+        }
+        
+        .recommendation-box {
+            background: #e6f7ff;
+            border-left: 4px solid #2d7ff9;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        
+        .action-item {
+            background: #2d7ff9;
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(45, 127, 249, 0.3);
+        }
+        
+        .action-item h3 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .action-item ol {
+            margin-left: 20px;
+            margin-top: 15px;
+        }
+        
+        .action-item li {
+            margin-bottom: 10px;
+        }
+        
+        .advisor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .advisor-card {
+            background: white;
+            border: 2px solid #d0d7de;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.2s;
+        }
+        
+        .advisor-card:hover {
+            border-color: #7c4dff;
+            box-shadow: 0 4px 12px rgba(124, 77, 255, 0.15);
+        }
+        
+        .advisor-card h4 {
+            color: #7c4dff;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .advisor-card p {
+            font-size: 0.95em;
+            color: #57606a;
+        }
+        
+        .priority-badge {
+            display: inline-block;
+            background: #f85149;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        .priority-badge.p2 { background: #d29922; }
+        .priority-badge.p3 { background: #3fb950; }
+        .priority-badge.p4 { background: #2d7ff9; }
+        .priority-badge.p5 { background: #8b5cf6; }
+        
+        details {
+            background: #f6f8fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 1px solid #d0d7de;
+        }
+        
+        summary {
+            cursor: pointer;
+            font-weight: 600;
+            color: #7c4dff;
+            user-select: none;
+        }
+        
+        summary:hover {
+            color: #5b21b6;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #57606a;
+            font-size: 0.9em;
+            border-top: 1px solid #d0d7de;
+            margin-top: 40px;
+        }
+        
+        code {
+            background: #f6f8fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'SF Mono', 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+        
+        .metric {
+            display: inline-block;
+            background: #2e7d32;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 0.9em;
+            margin: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 25px;
+            }
+            
+            .verdict-section {
+                padding: 20px;
+            }
+            
+            .advisor-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🛡️ LLM Council Verdict</h1>
+        <div class="subtitle">Skills Catalog Governance — README Visual Assets Review</div>
+        <div class="meta">
+            <div><strong>Counciled:</strong> 6 images (Hero, Why Different, Pilot Evidence, Pipeline, Capabilities, Demo Screenshot)</div>
+            <div><strong>Session:</strong> 2026-08-21 13:32 - 13:37 (5 advisors + peer review + chairman)</div>
+            <div><strong>Question:</strong> What specific refinements are needed to maximize communication clarity, visual consistency, technical credibility, accessibility, and performance?</div>
+        </div>
+    </div>
+
+    <div class="verdict-section">
+        <h2>✅ Where the Council Agrees</h2>
+        <p>High-confidence signals — multiple advisors converged independently:</p>
+        <ul class="agreement-list">
+            <li><strong>Jargon overload</strong> — Terms like "SHA-256," "TF-IDF," "golden gate," "loss-check" appear undefined. Breaking comprehension for visitors without deep context.</li>
+            <li><strong>Hero image illegibility</strong> — Governance pipeline middle section uses 11px text, thin grey arrows, compressed stage cards. Unreadable at README width.</li>
+            <li><strong>Missing baselines</strong> — Pilot Evidence shows "6/6 match" and "36/36 PASS" but doesn't explain what those mean or what the alternative would be. Kills credibility.</li>
+            <li><strong>File size bloat</strong> — 15KB of unnecessary embedded SVG symbols and redundant gradient definitions across all images.</li>
+            <li><strong>"Why Different" strawman</strong> — Traditional approach depicted as "hope it works → deploy" which no serious engineer would recognize. Breaks trust.</li>
+        </ul>
+    </div>
+
+    <div class="verdict-section">
+        <h2>⚡ Where the Council Clashes</h2>
+        
+        <div class="clash-box">
+            <h3>Should there be 6 images at all?</h3>
+            
+            <div class="position">
+                <strong>First Principles Thinker:</strong> "Wrong question entirely. Replace all 6 with ONE asciicast/gif showing real CLI output. Engineers trust terminal output more than diagrams."
+            </div>
+            
+            <div class="position">
+                <strong>Contrarian + Outsider:</strong> "Images exist but fail at their job. Fix the communication failures — define terms, show baselines, prove claims."
+            </div>
+            
+            <div class="position">
+                <strong>Executor + Expansionist:</strong> "Keep images but refine them — optimize file size, add time savings badges, show scaling trajectory."
+            </div>
+            
+            <div class="recommendation-box">
+                <strong>Chairman Resolution:</strong> This is a GitHub README, not API documentation. READMEs serve evaluators, decision-makers, and contributors — not just engineers who will run the tool. A single terminal recording serves only one audience. <strong>Verdict: Keep conceptual diagrams but fix trust and legibility issues.</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="verdict-section">
+        <h2>🔍 Blind Spots the Council Caught</h2>
+        <p>Peer review surfaced critical gaps all 5 advisors missed:</p>
+        
+        <div class="blind-spot-card">
+            <h4>Accessibility — Complete Blind Spot</h4>
+            <ul>
+                <li>Zero mentions of alt text quality, screen reader experience, or WCAG contrast ratios</li>
+                <li>Red/green comparisons rely solely on color — fails for colorblind users</li>
+                <li>11px text illegible for mobile users and low-vision readers</li>
+                <li>Dark mode rendering consistency not tested (60%+ developer usage)</li>
+            </ul>
+        </div>
+        
+        <div class="blind-spot-card">
+            <h4>Verifiability Gap</h4>
+            <ul>
+                <li>Pilot Evidence claims "2026-08-10 run" but provides no link to artifacts</li>
+                <li>Demo Screenshot shows JSON but no command that produced it</li>
+                <li>"36/36 benchmark PASS" unverifiable without actual benchmark bundle</li>
+            </ul>
+        </div>
+        
+        <div class="blind-spot-card">
+            <h4>Consumption Context</h4>
+            <ul>
+                <li>No advisor verified images in actual GitHub README environment</li>
+                <li>Load performance on slow connections not considered</li>
+                <li>Git diff-friendliness of SVG structure ignored</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="verdict-section">
+        <h2>🎯 The Recommendation</h2>
+        
+        <h3><span class="priority-badge">P1</span>Fix Trust-Breaking Issues</h3>
+        <ul class="issue-list">
+            <li><strong>Hero Image:</strong> Enlarge governance stage cards from 11px to 18px minimum, thicken arrows from grey to high-contrast #2D7FF9, add inline definitions for M1-M6</li>
+            <li><strong>Why Different:</strong> Rewrite "Traditional Approach" to reflect actual engineering practice (not "hope it works → deploy"), make comparison symmetrical, add baseline verification results</li>
+            <li><strong>Pilot Evidence:</strong> Add baseline context ("Without governance: 18 regressions detected"), link to actual pilot transcript, explain 6/6 and 36/36 in plain language</li>
+        </ul>
+        
+        <h3><span class="priority-badge p2">P2</span>Fix Comprehension Failures</h3>
+        <ul class="issue-list">
+            <li><strong>All Images:</strong> Add inline glossary callouts ("SHA-256: cryptographic fingerprint," "TF-IDF: similarity scoring")</li>
+            <li><strong>All Images:</strong> Top of each image: one-sentence plain-language description of success</li>
+            <li><strong>Pipeline:</strong> Simplify to linear M1→M6 flow, add typical duration per stage, show one failure path with repair loop</li>
+        </ul>
+        
+        <h3><span class="priority-badge p3">P3</span>Unlock Missed Upside</h3>
+        <ul class="issue-list">
+            <li><strong>Pilot Evidence:</strong> Add time comparison badge ("Traditional: 40+ hours vs Governance: 2.5 hours")</li>
+            <li><strong>Pilot Evidence:</strong> Show scaling trajectory ("211→2 pilot, 500→12 after 6 months")</li>
+            <li><strong>Capabilities:</strong> Add connecting lines showing emergent properties ("Golden Gate + Benchmark = zero-regression confidence")</li>
+        </ul>
+        
+        <h3><span class="priority-badge p4">P4</span>Accessibility Fixes</h3>
+        <ul class="issue-list">
+            <li><strong>All Images:</strong> Run WCAG contrast checker (minimum 4.5:1 ratio)</li>
+            <li><strong>Why Different:</strong> Replace red/green with shape+color encoding</li>
+            <li><strong>All Images:</strong> Verify dark mode rendering, improve alt text to describe insights not just contents</li>
+            <li><strong>Mobile:</strong> Add simplified linear diagram fallback below 768px width</li>
+        </ul>
+        
+        <h3><span class="priority-badge p5">P5</span>Performance</h3>
+        <ul class="issue-list">
+            <li><strong>Hero:</strong> Remove embedded SVG symbols, flatten gradients <span class="metric">Saves 15KB</span></li>
+            <li><strong>Pipeline:</strong> Refactor to reusable templates with <code>&lt;use&gt;</code> <span class="metric">Cuts 60% markup</span></li>
+            <li><strong>Demo Screenshot:</strong> Compress PNG with oxipng <span class="metric">Target 8-10KB</span></li>
+            <li><strong>All SVGs:</strong> Lock to consistent font stack</li>
+        </ul>
+    </div>
+
+    <div class="verdict-section">
+        <div class="action-item">
+            <h3>🚀 The One Thing to Do First</h3>
+            <p><strong>Fix the Hero image legibility and "Why Different" trust issue</strong> — these are the first two images visitors see.</p>
+            
+            <p style="margin-top: 15px;"><strong>Concrete Monday morning action:</strong></p>
+            <ol>
+                <li>Open <code>assets/brand/hero-light.svg</code></li>
+                <li>Find governance stage cards (line ~200-300), increase font-size from 11px to 18px</li>
+                <li>Increase stage card dimensions from 80px to 120px width</li>
+                <li>Thicken flow arrows: change stroke-width from 1.5px to 3px, color from grey to #2D7FF9</li>
+                <li>Open <code>assets/diagrams/why-different-light.svg</code></li>
+                <li>Rewrite "Traditional Approach" step 3 from "Hope it works → deploy" to "Test suite verification → staged rollout"</li>
+                <li>Add verification results box: "Traditional: 18 regressions detected post-merge"</li>
+            </ol>
+            
+            <p style="margin-top: 15px;"><strong>Time estimate:</strong> 2 hours | <strong>Validation:</strong> Show updated images to 3 engineers who haven't seen the repo — if they can explain the governance pipeline from the Hero image alone, it's fixed.</p>
+        </div>
+    </div>
+
+    <div class="verdict-section">
+        <h2>👥 The Council</h2>
+        <div class="advisor-grid">
+            <div class="advisor-card">
+                <h4>The Outsider</h4>
+                <p>All images assume deep technical context visitors don't have. Define terms inline, simplify pipeline to linear flow, add plain-language success descriptions.</p>
+            </div>
+            
+            <div class="advisor-card">
+                <h4>First Principles Thinker</h4>
+                <p>Wrong question — why 6 images instead of 1 working demo? Engineers need proof via terminal output. Replace with asciicast/gif showing real CLI execution.</p>
+            </div>
+            
+            <div class="advisor-card">
+                <h4>The Expansionist</h4>
+                <p>Missing upside opportunities — show scaling trajectory (211→2 then 500→12), time savings (40h vs 2.5h), emergent properties, multi-run production demos.</p>
+            </div>
+            
+            <div class="advisor-card">
+                <h4>The Executor</h4>
+                <p>Strip SVG bloat (embedded symbols, 6-stop gradients), refactor templates with &lt;use&gt;, compress PNG, reflow Capabilities to 3×2 grid. All changes ship Monday.</p>
+            </div>
+            
+            <div class="advisor-card">
+                <h4>The Contrarian</h4>
+                <p>Fatal flaws — Hero flow invisible (11px text), Why Different strawmans ("hope it works"), Pilot Evidence lacks baseline, unverifiable claims, optimizing for "looks technical" not "communicates value."</p>
+            </div>
+        </div>
+    </div>
+
+    <details>
+        <summary>📊 View Full Advisor Agreement Matrix</summary>
+        <div style="overflow-x: auto; margin-top: 15px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+                <thead>
+                    <tr style="background: #f6f8fa;">
+                        <th style="padding: 10px; text-align: left; border: 1px solid #d0d7de;">Issue</th>
+                        <th style="padding: 10px; border: 1px solid #d0d7de;">Outsider</th>
+                        <th style="padding: 10px; border: 1px solid #d0d7de;">First Princ.</th>
+                        <th style="padding: 10px; border: 1px solid #d0d7de;">Expansionist</th>
+                        <th style="padding: 10px; border: 1px solid #d0d7de;">Executor</th>
+                        <th style="padding: 10px; border: 1px solid #d0d7de;">Contrarian</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #d0d7de;">Jargon overload</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">✓</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">✓</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">✓</td>
+                    </tr>
+                    <tr style="background: #f6f8fa;">
+                        <td style="padding: 10px; border: 1px solid #d0d7de;">Hero illegibility</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">✓</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">✓</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">✓</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #d0d7de;">Strawman comparison</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">✓</td>
+                    </tr>
+                    <tr style="background: #f6f8fa;">
+                        <td style="padding: 10px; border: 1px solid #d0d7de;">Missing baselines</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">✓</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">✓</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">✓</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #d0d7de;">File size bloat</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">✓</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                    </tr>
+                    <tr style="background: #f6f8fa;">
+                        <td style="padding: 10px; border: 1px solid #d0d7de;"><strong>Need for images at all</strong></td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">✓</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center; color: #f85149;"><strong>✗</strong></td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">✓</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">✓</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">✓</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #d0d7de;">Accessibility concerns</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                        <td style="padding: 10px; border: 1px solid #d0d7de; text-align: center;">—</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p style="margin-top: 10px; font-size: 0.85em; color: #57606a;"><strong>Legend:</strong> ✓ = Agrees issue exists | ✗ = Disagrees | — = Not mentioned</p>
+        </div>
+    </details>
+
+    <div class="footer">
+        <p>LLM Council Methodology by <a href="https://x.com/karpathy" style="color: #7c4dff; text-decoration: none;">Andrej Karpathy</a></p>
+        <p style="margin-top: 10px;">Session: 2026-08-21 13:32:20 - 13:37:25 | 5 advisors + peer review + chairman synthesis</p>
+        <p style="margin-top: 5px;">Complete transcript: <code>council-transcript-20260821_133744.md</code></p>
+    </div>
+</body>
+</html>
