@@ -350,7 +350,56 @@ Full evidence &amp; transcripts: [`docs/`](docs/) and [`artifacts/pilot-commit-f
 
 ---
 
-## 🗺️ How It Works (M1–M6)
+## 📁 Project Structure
+
+```
+skills-catalog-governance/
+├── assets/
+│   ├── brand/              # Hero graphics, logos
+│   ├── demo/               # Screenshots, demo outputs
+│   └── diagrams/           # Architecture & capability diagrams
+├── docs/
+│   ├── architecture.md      # Technical design & CLI reference
+│   ├── benchmarking.md      # G2 benchmark methodology
+│   ├── governance-model.md  # Gates, non-negotiables, transitions
+│   ├── golden-gate.md       # Output reproduction verification
+│   ├── lifecycle.md         # M1–M6 pipeline deep-dive
+│   ├── provenance.md        # Source tracking & integrity
+│   └── security-model.md    # Safety controls & boundaries
+├── E2E_TEST_RUN/
+│   ├── acceptance_runner.py # End-to-end test orchestrator
+│   └── [fixtures]/          # Test data, golden outputs
+├── schemas/
+│   ├── approval.schema.json
+│   ├── benchmark.schema.json
+│   ├── council-verdict.schema.json
+│   ├── golden.schema.json
+│   ├── loss-check.schema.json
+│   ├── manifest.schema.json
+│   └── provenance.schema.json
+├── scripts/
+│   ├── catalog_governance.py    # Main governance pipeline
+│   ├── capture_output.py        # Visual evidence generator
+│   └── generate_demo_gif.py     # Demo animation generator
+├── references/              # Research, methodology notes
+├── artifacts/              # Generated pipeline outputs
+├── .github/
+│   └── workflows/
+│       ├── ci.yml           # CI pipeline
+│       └── lint-svg.yml     # SVG linting
+├── install.ps1             # Windows one-liner installer
+├── install.sh              # Unix one-liner installer
+├── LICENSE
+├── README.md
+├── SECURITY.md
+├── SKILL.md
+├── CODE_OF_CONDUCT.md
+├── CONTRIBUTING.md
+└── requirements-dev.txt
+```
+
+---
+
 
 | Phase | Command | Output |
 |---|---|---|
