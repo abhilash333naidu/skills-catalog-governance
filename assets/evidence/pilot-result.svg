@@ -1,18 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 300">
   <rect width="800" height="300" fill="#050505"/>
   <g transform="translate(40, 60)">
-    <text font-family="system-ui, sans-serif" font-size="24" font-weight="800" fill="#E6EDF3" letter-spacing="-0.03em">PILOT STUDY RESULTS</text>
+    <text font-family="system-ui, sans-serif" font-size="28" font-weight="800" fill="#E6EDF3" letter-spacing="-0.03em">PILOT STUDY RESULTS</text>
     
     <g transform="translate(0, 60)">
-       <rect width="720" height="120" rx="24" fill="#0D1117" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1"/>
+       <rect width="720" height="140" rx="24" fill="#0D1117" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1"/>
+       
        <g transform="translate(40, 40)">
-         <text font-family="system-ui" font-size="32" font-weight="800" fill="#E6EDF3">211 <tspan fill="#8B949E" font-size="16" font-weight="500">SKILLS Discovered</tspan></text>
+         <text font-family="system-ui" font-size="36" font-weight="800" fill="#E6EDF3">211 <tspan fill="#8B949E" font-size="18" font-weight="500">Discovered</tspan></text>
        </g>
        <g transform="translate(260, 40)">
-         <text font-family="system-ui" font-size="32" font-weight="800" fill="#E6EDF3">19 <tspan fill="#8B949E" font-size="16" font-weight="500">Families</tspan></text>
+         <text font-family="system-ui" font-size="36" font-weight="800" fill="#E6EDF3">19 <tspan fill="#8B949E" font-size="18" font-weight="500">Families</tspan></text>
        </g>
        <g transform="translate(480, 40)">
-         <text font-family="system-ui" font-size="32" font-weight="800" fill="#3FB950">2 <tspan fill="#8B949E" font-size="16" font-weight="500">Governed Skills</tspan></text>
+         <text font-family="system-ui" font-size="36" font-weight="800" fill="#3FB950">2 <tspan fill="#8B949E" font-size="18" font-weight="500">Governed</tspan></text>
+       </g>
+       
+       <g transform="translate(40, 100)">
+         <rect width="640" height="44" rx="12" fill="#3FB950" opacity="0.08"/>
+         <text x="320" y="28" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#3FB950" text-anchor="middle">⚡ Traditional: 40+ hours → Governance: 2.5 hours (16x faster)</text>
        </g>
     </g>
   </g>

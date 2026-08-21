@@ -1,36 +1,40 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300">
-  <rect width="1200" height="300" fill="#050505"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 280">
+  <rect width="1200" height="280" fill="#050505"/>
   <g transform="translate(40, 60)">
-    <text font-family="system-ui, sans-serif" font-size="24" font-weight="800" fill="#E6EDF3" letter-spacing="-0.03em">M1-M6 PIPELINE FLOW</text>
+    <text font-family="system-ui, sans-serif" font-size="24" font-weight="800" fill="#E6EDF3" letter-spacing="-0.03em">PIPELINE THROUGHPUT</text>
     
-    <g transform="translate(0, 80)">
-       <!-- Pipeline line -->
+    <g transform="translate(0, 70)">
        <path d="M 0 40 H 1120" stroke="rgba(255, 255, 255, 0.1)" stroke-width="2" stroke-dasharray="4,4"/>
        
-       <!-- Stage Nodes -->
        <g transform="translate(0, 0)">
          <circle cx="40" cy="40" r="16" fill="#58A6FF"/>
          <text x="40" y="80" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="700" fill="#E6EDF3">M1 DISCOVER</text>
+         <text x="40" y="98" text-anchor="middle" font-family="system-ui" font-size="10" fill="#8B949E">~2 min</text>
        </g>
        <g transform="translate(220, 0)">
          <circle cx="40" cy="40" r="16" fill="#58A6FF"/>
          <text x="40" y="80" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="700" fill="#E6EDF3">M2 GROUP</text>
+         <text x="40" y="98" text-anchor="middle" font-family="system-ui" font-size="10" fill="#8B949E">~30 sec</text>
        </g>
        <g transform="translate(440, 0)">
          <circle cx="40" cy="40" r="16" fill="#58A6FF"/>
          <text x="40" y="80" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="700" fill="#E6EDF3">M3 COUNCIL</text>
+         <text x="40" y="98" text-anchor="middle" font-family="system-ui" font-size="10" fill="#8B949E">~5 min</text>
        </g>
        <g transform="translate(660, 0)">
          <circle cx="40" cy="40" r="16" fill="#58A6FF"/>
          <text x="40" y="80" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="700" fill="#E6EDF3">M4 MERGE</text>
+         <text x="40" y="98" text-anchor="middle" font-family="system-ui" font-size="10" fill="#8B949E">~1 min</text>
        </g>
        <g transform="translate(880, 0)">
          <circle cx="40" cy="40" r="16" fill="#58A6FF"/>
          <text x="40" y="80" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="700" fill="#E6EDF3">M5 VERIFY</text>
+         <text x="40" y="98" text-anchor="middle" font-family="system-ui" font-size="10" fill="#8B949E">~3 min</text>
        </g>
        <g transform="translate(1100, 0)">
-         <circle cx="40" cy="40" r="16" fill="#58A6FF"/>
+         <circle cx="40" cy="40" r="16" fill="#3FB950"/>
          <text x="40" y="80" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="700" fill="#E6EDF3">M6 PROMOTE</text>
+         <text x="40" y="98" text-anchor="middle" font-family="system-ui" font-size="10" fill="#8B949E">&lt;1 min</text>
        </g>
     </g>
   </g>
