@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 280">
+<svg role="img" aria-labelledby="pipeline-title" <title id="pipeline-title">M1-M6 Pipeline Flow with Throughput Metrics</title> <desc id="pipeline-title-desc">Linear pipeline visualization showing six governance stages with typical duration for each: M1 Discover (~2 min), M2 Group (~30 sec), M3 Council (~5 min), M4 Merge (~1 min), M5 Verify (~3 min), M6 Promote (<1 min).</desc> xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 280">
   <rect width="1200" height="280" fill="#FFFFFF"/>
   <g transform="translate(40, 60)">
-    <text font-family="system-ui, sans-serif" font-size="24" font-weight="800" fill="#0F172A" letter-spacing="-0.03em">PIPELINE THROUGHPUT</text>
+    <text font-family="system-ui, sans-serif" font-size="24" font-weight="800" fill="#E6EDF3" letter-spacing="-0.03em">PIPELINE THROUGHPUT</text>
     
     <g transform="translate(0, 70)">
        <!-- Pipeline line -->
@@ -10,32 +10,32 @@
        <!-- Stage Nodes with Durations -->
        <g transform="translate(0, 0)">
          <circle cx="40" cy="40" r="16" fill="#2563EB"/>
-         <text x="40" y="80" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="700" fill="#0F172A">M1 DISCOVER</text>
+         <text x="40" y="80" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="700" fill="#E6EDF3">M1 DISCOVER</text>
          <text x="40" y="98" text-anchor="middle" font-family="system-ui" font-size="10" fill="#64748B">~2 min</text>
        </g>
        <g transform="translate(220, 0)">
          <circle cx="40" cy="40" r="16" fill="#2563EB"/>
-         <text x="40" y="80" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="700" fill="#0F172A">M2 GROUP</text>
+         <text x="40" y="80" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="700" fill="#E6EDF3">M2 GROUP</text>
          <text x="40" y="98" text-anchor="middle" font-family="system-ui" font-size="10" fill="#64748B">~30 sec</text>
        </g>
        <g transform="translate(440, 0)">
          <circle cx="40" cy="40" r="16" fill="#2563EB"/>
-         <text x="40" y="80" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="700" fill="#0F172A">M3 COUNCIL</text>
+         <text x="40" y="80" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="700" fill="#E6EDF3">M3 COUNCIL</text>
          <text x="40" y="98" text-anchor="middle" font-family="system-ui" font-size="10" fill="#64748B">~5 min</text>
        </g>
        <g transform="translate(660, 0)">
          <circle cx="40" cy="40" r="16" fill="#2563EB"/>
-         <text x="40" y="80" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="700" fill="#0F172A">M4 MERGE</text>
+         <text x="40" y="80" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="700" fill="#E6EDF3">M4 MERGE</text>
          <text x="40" y="98" text-anchor="middle" font-family="system-ui" font-size="10" fill="#64748B">~1 min</text>
        </g>
        <g transform="translate(880, 0)">
          <circle cx="40" cy="40" r="16" fill="#2563EB"/>
-         <text x="40" y="80" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="700" fill="#0F172A">M5 VERIFY</text>
+         <text x="40" y="80" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="700" fill="#E6EDF3">M5 VERIFY</text>
          <text x="40" y="98" text-anchor="middle" font-family="system-ui" font-size="10" fill="#64748B">~3 min</text>
        </g>
        <g transform="translate(1100, 0)">
-         <circle cx="40" cy="40" r="16" fill="#10B981"/>
-         <text x="40" y="80" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="700" fill="#0F172A">M6 PROMOTE</text>
+         <circle cx="40" cy="40" r="16" fill="#047857"/>
+         <text x="40" y="80" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="700" fill="#E6EDF3">M6 PROMOTE</text>
          <text x="40" y="98" text-anchor="middle" font-family="system-ui" font-size="10" fill="#64748B">&lt;1 min</text>
        </g>
     </g>

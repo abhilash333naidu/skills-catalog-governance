@@ -1,26 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 300">
+<svg role="img" aria-labelledby="pilot-title" <title id="pilot-title">Pilot Study Results — 211 Skills, 19 Families, 2 Governed</title> <desc id="pilot-title-desc">Evidence dashboard showing pilot study outcomes: 211 skills discovered, 19 families identified, 2 skills promoted to canonical catalog. Time savings: 40+ hours reduced to 2.5 hours.</desc> xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 300">
   <rect width="800" height="300" fill="#FFFFFF"/>
   <g transform="translate(40, 60)">
-    <text font-family="system-ui, sans-serif" font-size="28" font-weight="800" fill="#0F172A" letter-spacing="-0.03em">PILOT STUDY RESULTS</text>
+    <text font-family="system-ui, sans-serif" font-size="28" font-weight="800" fill="#E6EDF3" letter-spacing="-0.03em">PILOT STUDY RESULTS</text>
     
     <g transform="translate(0, 60)">
        <rect width="720" height="140" rx="24" fill="#F8FAFC" stroke="rgba(15, 23, 42, 0.08)" stroke-width="1"/>
        
        <!-- Metrics Row -->
        <g transform="translate(40, 40)">
-         <text font-family="system-ui" font-size="36" font-weight="800" fill="#0F172A">211 <tspan fill="#64748B" font-size="18" font-weight="500">Discovered</tspan></text>
+         <text font-family="system-ui" font-size="36" font-weight="800" fill="#E6EDF3">211 <tspan fill="#64748B" font-size="18" font-weight="500">Discovered</tspan></text>
        </g>
        <g transform="translate(260, 40)">
-         <text font-family="system-ui" font-size="36" font-weight="800" fill="#0F172A">19 <tspan fill="#64748B" font-size="18" font-weight="500">Families</tspan></text>
+         <text font-family="system-ui" font-size="36" font-weight="800" fill="#E6EDF3">19 <tspan fill="#64748B" font-size="18" font-weight="500">Families</tspan></text>
        </g>
        <g transform="translate(480, 40)">
-         <text font-family="system-ui" font-size="36" font-weight="800" fill="#10B981">2 <tspan fill="#64748B" font-size="18" font-weight="500">Governed</tspan></text>
+         <text font-family="system-ui" font-size="36" font-weight="800" fill="#047857">2 <tspan fill="#64748B" font-size="18" font-weight="500">Governed</tspan></text>
        </g>
        
        <!-- Time ROI Badge -->
        <g transform="translate(40, 100)">
-         <rect width="640" height="44" rx="12" fill="#10B981" opacity="0.08"/>
-         <text x="320" y="28" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#10B981" text-anchor="middle">⚡ Traditional: 40+ hours → Governance: 2.5 hours (16x faster)</text>
+         <rect width="640" height="44" rx="12" fill="#047857" opacity="0.08"/>
+         <text x="320" y="28" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">⚡ Traditional: 40+ hours → Governance: 2.5 hours (16x faster)</text>
        </g>
     </g>
   </g>
