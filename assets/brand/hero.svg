@@ -25,7 +25,7 @@
     </linearGradient>
 
     <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-      <polygon points="0 0, 10 3.5, 0 7" fill="#b4bac4"/>
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2D7FF9"/>
     </marker>
 
     <filter id="nodeShadow" x="-40%" y="-40%" width="180%" height="180%">
@@ -41,7 +41,7 @@
 
   <!-- Left: Agent Sources -->
   <g transform="translate(80, 24)">
-    <text x="0" y="0" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="13" font-weight="600" fill="#e6edf3" letter-spacing="1.5">AGENT SKILL SOURCES</text>
+    <text x="0" y="0" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16" font-weight="600" fill="#e6edf3" letter-spacing="1.5">AGENT SKILL SOURCES</text>
 
     <g transform="translate(0, 44)" filter="url(#nodeShadow)">
       <rect x="0" y="0" width="238" height="76" rx="12" fill="#1b222a" stroke="#7bb5ff" stroke-width="1.5"/>
@@ -49,9 +49,9 @@
         <circle r="18" fill="#ffffff" stroke="#58a6ff" stroke-width="1.2"/>
         <use href="#trigram-hermes" x="-10.5" y="-10.5" width="21" height="21"/>
       </g>
-      <text x="52" y="30" font-family="system-ui, sans-serif" font-size="15" font-weight="600" fill="#e6edf3">Hermes</text>
-      <text x="52" y="52" font-family="system-ui, sans-serif" font-size="12" fill="#9da7b3">~/.hermes/skills</text>
-      <g transform="translate(202, 38)"><circle r="11" fill="#58a6ff" opacity="0.22"/><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="700" fill="#7cc0ff">73</text></g>
+      <text x="52" y="30" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#e6edf3">Hermes</text>
+      <text x="52" y="52" font-family="system-ui, sans-serif" font-size="18" fill="#9da7b3">~/.hermes/skills</text>
+      <g transform="translate(202, 38)"><circle r="11" fill="#58a6ff" opacity="0.22"/><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="700" fill="#7cc0ff">73</text></g>
     </g>
 
     <g transform="translate(0, 132)" filter="url(#nodeShadow)">
@@ -60,9 +60,9 @@
         <circle r="18" fill="#ffffff" stroke="#f78166" stroke-width="1.2"/>
         <use href="#starburst-claude" x="-10.5" y="-10.5" width="21" height="21"/>
       </g>
-      <text x="52" y="30" font-family="system-ui, sans-serif" font-size="15" font-weight="600" fill="#e6edf3">Claude Code</text>
-      <text x="52" y="52" font-family="system-ui, sans-serif" font-size="12" fill="#9da7b3">~/.claude/skills</text>
-      <g transform="translate(196, 38)"><circle r="10" fill="#ff9a76" opacity="0.22"/><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="700" fill="#ffb899">41</text></g>
+      <text x="52" y="30" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#e6edf3">Claude Code</text>
+      <text x="52" y="52" font-family="system-ui, sans-serif" font-size="18" fill="#9da7b3">~/.claude/skills</text>
+      <g transform="translate(196, 38)"><circle r="10" fill="#ff9a76" opacity="0.22"/><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="700" fill="#ffb899">41</text></g>
     </g>
 
     <g transform="translate(0, 220)" filter="url(#nodeShadow)">
@@ -71,9 +71,9 @@
         <circle r="18" fill="#ffffff" stroke="#e2b341" stroke-width="1.2"/>
         <use href="#frame-opencode" x="-10.5" y="-10.5" width="21" height="21"/>
       </g>
-      <text x="52" y="30" font-family="system-ui, sans-serif" font-size="15" font-weight="600" fill="#e6edf3">OpenCode</text>
-      <text x="52" y="52" font-family="system-ui, sans-serif" font-size="12" fill="#9da7b3">~/.config/opencode/skills</text>
-      <g transform="translate(196, 38)"><circle r="10" fill="#e2b341" opacity="0.25"/><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="700" fill="#eec03f">36</text></g>
+      <text x="52" y="30" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#e6edf3">OpenCode</text>
+      <text x="52" y="52" font-family="system-ui, sans-serif" font-size="18" fill="#9da7b3">~/.config/opencode/skills</text>
+      <g transform="translate(196, 38)"><circle r="10" fill="#e2b341" opacity="0.25"/><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="700" fill="#eec03f">36</text></g>
     </g>
 
     <g transform="translate(0, 308)" filter="url(#nodeShadow)">
@@ -82,9 +82,9 @@
         <circle r="18" fill="#ffffff" stroke="#bc8cff" stroke-width="1.2"/>
         <use href="#knot-openai" x="-10.5" y="-10.5" width="21" height="21"/>
       </g>
-      <text x="52" y="30" font-family="system-ui, sans-serif" font-size="15" font-weight="600" fill="#e6edf3">Codex</text>
-      <text x="52" y="52" font-family="system-ui, sans-serif" font-size="12" fill="#9da7b3">~/.codex/skills</text>
-      <g transform="translate(196, 38)"><circle r="10" fill="#bc8cff" opacity="0.25"/><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="700" fill="#d3b3ff">28</text></g>
+      <text x="52" y="30" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#e6edf3">Codex</text>
+      <text x="52" y="52" font-family="system-ui, sans-serif" font-size="18" fill="#9da7b3">~/.codex/skills</text>
+      <g transform="translate(196, 38)"><circle r="10" fill="#bc8cff" opacity="0.25"/><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="700" fill="#d3b3ff">28</text></g>
     </g>
 
     <g transform="translate(0, 396)" filter="url(#nodeShadow)">
@@ -92,151 +92,151 @@
       <g transform="translate(20, 20)"><circle r="18" fill="#6e7681" opacity="0.25"/>
         <rect x="-7" y="-7" width="14" height="14" rx="2" fill="#9da7b3" opacity="0.7"/>
       </g>
-      <text x="52" y="30" font-family="system-ui, sans-serif" font-size="15" font-weight="500" fill="#c9d1d9">Other / External</text>
-      <text x="52" y="52" font-family="system-ui, sans-serif" font-size="12" fill="#9da7b3">vendored, custom paths</text>
-      <g transform="translate(196, 38)"><circle r="10" fill="#6e7681" opacity="0.35"/><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="700" fill="#c9d1d9">33</text></g>
+      <text x="52" y="30" font-family="system-ui, sans-serif" font-size="18" font-weight="500" fill="#c9d1d9">Other / External</text>
+      <text x="52" y="52" font-family="system-ui, sans-serif" font-size="18" fill="#9da7b3">vendored, custom paths</text>
+      <g transform="translate(196, 38)"><circle r="10" fill="#6e7681" opacity="0.35"/><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="700" fill="#c9d1d9">33</text></g>
     </g>
   </g>
 
   <!-- Center: Governance Pipeline -->
   <g transform="translate(396, 32)">
-    <text x="290" y="0" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#e6edf3" letter-spacing="1.5" text-anchor="middle">GOVERNANCE PIPELINE</text>
-    <text x="290" y="20" font-family="system-ui, sans-serif" font-size="10.5" fill="#9da7b3" text-anchor="middle">similarity generates candidates · evidence determines promotion</text>
+    <text x="290" y="0" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#e6edf3" letter-spacing="1.5" text-anchor="middle">GOVERNANCE PIPELINE</text>
+    <text x="290" y="20" font-family="system-ui, sans-serif" font-size="14" fill="#9da7b3" text-anchor="middle">similarity generates candidates · evidence determines promotion</text>
 
     <!-- Discover -->
     <g transform="translate(10, 52)" filter="url(#nodeShadow)">
-      <rect x="0" y="0" width="172" height="72" rx="11" fill="#1b222b" stroke="#58a6ff" stroke-width="1.5"/>
+      <rect x="0" y="0" width="200" height="85" rx="11" fill="#1b222b" stroke="#58a6ff" stroke-width="1.5"/>
       <g transform="translate(20,18)"><circle r="15" fill="url(#srcBlue)"/><circle cx="-3" cy="-3" r="2.2" fill="#fff" opacity=".95"/><circle cx="5" cy="5" r="2.2" fill="#fff" opacity=".95"/><path d="M-3 -3 L5 5" stroke="#fff" stroke-width="1.3" fill="none"/></g>
-      <text x="46" y="27" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" fill="#e6edf3">DISCOVER</text>
-      <text x="46" y="47" font-family="system-ui, sans-serif" font-size="10.5" fill="#9da7b3">detect-skills</text>
-      <text x="158" y="40" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#7cc0ff" text-anchor="end">211</text>
+      <text x="46" y="27" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#e6edf3">DISCOVER</text>
+      <text x="46" y="47" font-family="system-ui, sans-serif" font-size="14" fill="#9da7b3">detect-skills</text>
+      <text x="158" y="40" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#7cc0ff" text-anchor="end">211</text>
     </g>
-    <path d="M 192 88 H 216" stroke="#b4bac4" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+    <path d="M 192 88 H 216" stroke="#2D7FF9" stroke-width="3" marker-end="url(#arrowhead)" fill="none"/>
 
     <!-- Group -->
     <g transform="translate(226, 52)" filter="url(#nodeShadow)">
-      <rect x="0" y="0" width="172" height="72" rx="11" fill="#1b222b" stroke="#e2b341" stroke-width="1.5"/>
+      <rect x="0" y="0" width="200" height="85" rx="11" fill="#1b222b" stroke="#e2b341" stroke-width="1.5"/>
       <g transform="translate(20,18)"><circle r="15" fill="#d29922"/><g fill="#fff" opacity=".95"><rect x="-5" y="-5" width="4.5" height="4.5"/><rect x="1" y="-1" width="4.5" height="4.5"/></g></g>
-      <text x="46" y="27" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" fill="#e6edf3">GROUP</text>
-      <text x="46" y="47" font-family="system-ui, sans-serif" font-size="10.5" fill="#9da7b3">detect-groups</text>
-      <text x="158" y="40" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#eec03c" text-anchor="end">19</text>
+      <text x="46" y="27" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#e6edf3">GROUP</text>
+      <text x="46" y="47" font-family="system-ui, sans-serif" font-size="14" fill="#9da7b3">detect-groups</text>
+      <text x="158" y="40" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#eec03c" text-anchor="end">19</text>
     </g>
-    <path d="M 408 88 H 456" stroke="#b4bac4" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+    <path d="M 408 88 H 456" stroke="#2D7FF9" stroke-width="3" marker-end="url(#arrowhead)" fill="none"/>
 
     <!-- Council -->
     <g transform="translate(466, 52)" filter="url(#nodeShadow)">
-      <rect x="0" y="0" width="172" height="72" rx="11" fill="#1b222b" stroke="#a371f7" stroke-width="1.5"/>
+      <rect x="0" y="0" width="200" height="85" rx="11" fill="#1b222b" stroke="#a371f7" stroke-width="1.5"/>
       <g transform="translate(20,18)"><circle r="15" fill="url(#govPurple)"/><g fill="none" stroke="#fff" stroke-width="1.4"><circle r="6"/></g><circle r="2" fill="#fff"/></g>
-      <text x="46" y="27" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" fill="#e6edf3">COUNCIL</text>
-      <text x="46" y="47" font-family="system-ui, sans-serif" font-size="10.5" fill="#9da7b3">5 advisors → 1 verdict</text>
-      <text x="158" y="40" font-family="system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#d3b3ff" text-anchor="end">MERGE</text>
+      <text x="46" y="27" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#e6edf3">COUNCIL</text>
+      <text x="46" y="47" font-family="system-ui, sans-serif" font-size="14" fill="#9da7b3">5 advisors → 1 verdict</text>
+      <text x="158" y="40" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#d3b3ff" text-anchor="end">MERGE</text>
     </g>
 
     <!-- Consolidate -->
     <g transform="translate(10, 176)" filter="url(#nodeShadow)">
-      <rect x="0" y="0" width="172" height="72" rx="11" fill="#1b222b" stroke="#3fb950" stroke-width="1.5"/>
+      <rect x="0" y="0" width="200" height="85" rx="11" fill="#1b222b" stroke="#3fb950" stroke-width="1.5"/>
       <g transform="translate(20,18)"><circle r="15" fill="url(#outGreen)"/><path d="M4 -6 L-2 0 L4 6" stroke="#fff" stroke-width="2" fill="none" stroke-linejoin="round"/></g>
-      <text x="46" y="27" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" fill="#e6edf3">CONSOLIDATE</text>
-      <text x="46" y="47" font-family="system-ui, sans-serif" font-size="10.5" fill="#9da7b3">build master</text>
+      <text x="46" y="27" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#e6edf3">CONSOLIDATE</text>
+      <text x="46" y="47" font-family="system-ui, sans-serif" font-size="14" fill="#9da7b3">build master</text>
     </g>
-    <path d="M 192 212 H 226" stroke="#b4bac4" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+    <path d="M 192 212 H 226" stroke="#2D7FF9" stroke-width="3" marker-end="url(#arrowhead)" fill="none"/>
 
     <!-- Loss Check -->
     <g transform="translate(226, 176)" filter="url(#nodeShadow)">
-      <rect x="0" y="0" width="172" height="72" rx="11" fill="#1b222b" stroke="#3fb950" stroke-width="1.5"/>
-      <g transform="translate(20,18)"><circle r="15" fill="#3fb950" opacity="0.85"/><text x="0" y="6" text-anchor="middle" font-family="system-ui,sans-serif" font-size="15" font-weight="700" fill="#fff">=</text></g>
-      <text x="46" y="27" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" fill="#e6edf3">LOSS CHECK</text>
-      <text x="46" y="47" font-family="system-ui, sans-serif" font-size="10.5" fill="#9da7b3">verify content</text>
-      <text x="158" y="40" font-family="system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#3fb950" text-anchor="end">PASS</text>
+      <rect x="0" y="0" width="200" height="85" rx="11" fill="#1b222b" stroke="#3fb950" stroke-width="1.5"/>
+      <g transform="translate(20,18)"><circle r="15" fill="#3fb950" opacity="0.85"/><text x="0" y="6" text-anchor="middle" font-family="system-ui,sans-serif" font-size="18" font-weight="700" fill="#fff">=</text></g>
+      <text x="46" y="27" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#e6edf3">LOSS CHECK</text>
+      <text x="46" y="47" font-family="system-ui, sans-serif" font-size="14" fill="#9da7b3">verify content</text>
+      <text x="158" y="40" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#3fb950" text-anchor="end">PASS</text>
     </g>
-    <path d="M 408 212 H 456" stroke="#b4bac4" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+    <path d="M 408 212 H 456" stroke="#2D7FF9" stroke-width="3" marker-end="url(#arrowhead)" fill="none"/>
 
     <!-- Golden Gate -->
     <g transform="translate(466, 176)" filter="url(#nodeShadow)">
-      <rect x="0" y="0" width="172" height="72" rx="11" fill="#1b222b" stroke="#3fb950" stroke-width="1.5"/>
+      <rect x="0" y="0" width="200" height="85" rx="11" fill="#1b222b" stroke="#3fb950" stroke-width="1.5"/>
       <g transform="translate(20,18)"><circle r="15" fill="#3fb950" opacity="0.72"/><path d="M3 -4 L-1 0 L3 4" stroke="#fff" stroke-width="1.8" fill="none" stroke-linejoin="round"/></g>
-      <text x="46" y="27" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" fill="#e6edf3">GOLDEN GATE</text>
-      <text x="46" y="47" font-family="system-ui, sans-serif" font-size="10.5" fill="#9da7b3">verify output</text>
-      <text x="158" y="40" font-family="system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#3fb950" text-anchor="end">6/6</text>
+      <text x="46" y="27" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#e6edf3">GOLDEN GATE</text>
+      <text x="46" y="47" font-family="system-ui, sans-serif" font-size="14" fill="#9da7b3">verify output</text>
+      <text x="158" y="40" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#3fb950" text-anchor="end">6/6</text>
     </g>
 
     <!-- Benchmark -->
     <g transform="translate(10, 300)" filter="url(#nodeShadow)">
-      <rect x="0" y="0" width="172" height="72" rx="11" fill="#1b222b" stroke="#a371f7" stroke-width="1.5"/>
+      <rect x="0" y="0" width="200" height="85" rx="11" fill="#1b222b" stroke="#a371f7" stroke-width="1.5"/>
       <g transform="translate(20,18)"><circle r="15" fill="url(#govPurple)"/><g fill="#fff" stroke="#fff"><rect x="-3.5" y="-5" width="2.6" height="10"/><rect x="0.5" y="-7" width="2.6" height="14"/><rect x="4.5" y="-3" width="2.6" height="6"/></g></g>
-      <text x="46" y="27" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" fill="#e6edf3">BENCHMARK</text>
-      <text x="46" y="47" font-family="system-ui, sans-serif" font-size="10.5" fill="#9da7b3">G2 comparison</text>
-      <text x="158" y="40" font-family="system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#d3b3ff" text-anchor="end">36/36</text>
+      <text x="46" y="27" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#e6edf3">BENCHMARK</text>
+      <text x="46" y="47" font-family="system-ui, sans-serif" font-size="14" fill="#9da7b3">G2 comparison</text>
+      <text x="158" y="40" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#d3b3ff" text-anchor="end">36/36</text>
     </g>
-    <path d="M 192 336 H 226" stroke="#b4bac4" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+    <path d="M 192 336 H 226" stroke="#2D7FF9" stroke-width="3" marker-end="url(#arrowhead)" fill="none"/>
 
     <!-- Approval -->
     <g transform="translate(226, 300)" filter="url(#nodeShadow)">
-      <rect x="0" y="0" width="172" height="72" rx="11" fill="#1b222b" stroke="#a371f7" stroke-width="1.5"/>
+      <rect x="0" y="0" width="200" height="85" rx="11" fill="#1b222b" stroke="#a371f7" stroke-width="1.5"/>
       <g transform="translate(20,18)"><circle r="15" fill="url(#govPurple)" opacity="0.9"/><path d="M-3 -1 L1 3 L6 -3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
-      <text x="46" y="27" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" fill="#e6edf3">APPROVAL</text>
-      <text x="46" y="47" font-family="system-ui, sans-serif" font-size="10.5" fill="#9da7b3">hash-bound</text>
-      <text x="158" y="40" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#3fb950" text-anchor="end">✓</text>
+      <text x="46" y="27" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#e6edf3">APPROVAL</text>
+      <text x="46" y="47" font-family="system-ui, sans-serif" font-size="14" fill="#9da7b3">hash-bound</text>
+      <text x="158" y="40" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#3fb950" text-anchor="end">✓</text>
     </g>
-    <path d="M 408 336 H 456" stroke="#b4bac4" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+    <path d="M 408 336 H 456" stroke="#2D7FF9" stroke-width="3" marker-end="url(#arrowhead)" fill="none"/>
 
     <!-- Promote -->
     <g transform="translate(466, 300)" filter="url(#nodeShadow)">
-      <rect x="0" y="0" width="172" height="72" rx="11" fill="#1b222b" stroke="#2ea043" stroke-width="2"/>
+      <rect x="0" y="0" width="200" height="85" rx="11" fill="#1b222b" stroke="#2ea043" stroke-width="2"/>
       <g transform="translate(20,18)"><circle r="15" fill="url(#outGreen)"/><path d="M-2 5 L-2 -5 L2 -5 L2 5" stroke="#fff" stroke-width="2" fill="none" stroke-linejoin="round"/></g>
-      <text x="46" y="27" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" fill="#e6edf3">PROMOTE</text>
-      <text x="46" y="47" font-family="system-ui, sans-serif" font-size="10.5" fill="#9da7b3">archive + commit</text>
-      <text x="158" y="40" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#3fb950" text-anchor="end">2</text>
+      <text x="46" y="27" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#e6edf3">PROMOTE</text>
+      <text x="46" y="47" font-family="system-ui, sans-serif" font-size="14" fill="#9da7b3">archive + commit</text>
+      <text x="158" y="40" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#3fb950" text-anchor="end">2</text>
     </g>
   </g>
 
   <!-- Right: Canonical Catalog -->
   <g transform="translate(1164, 32)">
-    <text x="0" y="0" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#e6edf3" letter-spacing="1.5">CANONICAL CATALOG</text>
+    <text x="0" y="0" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#e6edf3" letter-spacing="1.5">CANONICAL CATALOG</text>
 
     <g transform="translate(0, 44)" filter="url(#nodeShadow)">
       <rect x="0" y="0" width="196" height="332" rx="14" fill="#0d1117" stroke="#3fb950" stroke-width="2"/>
 
       <rect x="0" y="0" width="196" height="52" rx="14" fill="#3fb950" opacity="0.12"/>
-      <text x="98" y="33" font-family="system-ui, sans-serif" font-size="15" font-weight="600" fill="#3fb950" text-anchor="middle">VERIFIED SKILLS</text>
+      <text x="98" y="33" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#3fb950" text-anchor="middle">VERIFIED SKILLS</text>
 
       <!-- Skill 1 -->
       <g transform="translate(14, 68)" filter="url(#nodeShadow)">
         <rect x="0" y="0" width="168" height="98" rx="9" fill="#1b222b" stroke="#3fb950" stroke-width="1.5"/>
         <path d="M10 22 L15 27 L23 19" stroke="#3fb950" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        <text x="32" y="26" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#3fb950">survivor</text>
-        <text x="14" y="48" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#e6edf3">canonical-commit-message</text>
-        <text x="14" y="64" font-family="system-ui, sans-serif" font-size="10" fill="#9da7b3">merged from 3 sources</text>
-        <text x="14" y="79" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#3fb950">SHA-256 verified ✓</text>
+        <text x="32" y="26" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#3fb950">survivor</text>
+        <text x="14" y="48" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#e6edf3">canonical-commit-message</text>
+        <text x="14" y="64" font-family="system-ui, sans-serif" font-size="16" fill="#9da7b3">merged from 3 sources</text>
+        <text x="14" y="79" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#3fb950">SHA-256 verified ✓</text>
       </g>
 
       <!-- Skill 2 -->
       <g transform="translate(14, 168)" filter="url(#nodeShadow)">
         <rect x="0" y="0" width="168" height="86" rx="9" fill="#1b222b" stroke="#3fb950" stroke-width="1.5"/>
         <path d="M14 22 L18 28 M22 22 L18 28 L14 34" stroke="#3fb950" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        <text x="41" y="26" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#3fb950">survivor</text>
-        <text x="14" y="48" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#e6edf3">ce-commit-executor</text>
-        <text x="14" y="64" font-family="system-ui, sans-serif" font-size="10" fill="#9da7b3">recategorized, kept separate</text>
-        <text x="14" y="79" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#3fb950">SHA-256 verified ✓</text>
+        <text x="41" y="26" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#3fb950">survivor</text>
+        <text x="14" y="48" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#e6edf3">ce-commit-executor</text>
+        <text x="14" y="64" font-family="system-ui, sans-serif" font-size="16" fill="#9da7b3">recategorized, kept separate</text>
+        <text x="14" y="79" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#3fb950">SHA-256 verified ✓</text>
       </g>
 
       <!-- Archived -->
       <g transform="translate(14, 268)">
         <rect x="0" y="0" width="168" height="60" rx="9" fill="#161b22" stroke="#6e7681" stroke-width="1" stroke-dasharray="5,4"/>
-        <text x="84" y="25" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#c9d1d9" text-anchor="middle">191 archived</text>
-        <text x="84" y="43" font-family="system-ui, sans-serif" font-size="10" fill="#9da7b3" text-anchor="middle">moved to skills-archive/</text>
+        <text x="84" y="25" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#c9d1d9" text-anchor="middle">191 archived</text>
+        <text x="84" y="43" font-family="system-ui, sans-serif" font-size="16" fill="#9da7b3" text-anchor="middle">moved to skills-archive/</text>
       </g>
 
       <!-- Note at bottom -->
-      <text x="98" y="400" font-family="system-ui, sans-serif" font-size="10" fill="#9da7b3" text-anchor="middle">non-destructive</text>
-      <text x="98" y="414" font-family="system-ui, sans-serif" font-size="10" fill="#9da7b3" text-anchor="middle">moves · never deletes</text>
+      <text x="98" y="400" font-family="system-ui, sans-serif" font-size="16" fill="#9da7b3" text-anchor="middle">non-destructive</text>
+      <text x="98" y="414" font-family="system-ui, sans-serif" font-size="16" fill="#9da7b3" text-anchor="middle">moves · never deletes</text>
     </g>
   </g>
 
   <!-- Bottom summary bar -->
   <g transform="translate(80, 518)">
     <rect x="0" y="0" width="1280" height="36" rx="9" fill="#161b22" stroke="#30363d" filter="url(#nodeShadow)"/>
-    <text x="640" y="24" font-family="system-ui, sans-serif" font-size="12" font-weight="500" fill="#e6edf3" text-anchor="middle">
+    <text x="640" y="24" font-family="system-ui, sans-serif" font-size="18" font-weight="500" fill="#e6edf3" text-anchor="middle">
       <tspan fill="#7cc0ff" font-weight="700">211</tspan> skills discovered →
       <tspan fill="#eec03c" font-weight="700">19</tspan> candidate families →
       <tspan fill="#d3b3ff" font-weight="700">Council</tspan> verdict →

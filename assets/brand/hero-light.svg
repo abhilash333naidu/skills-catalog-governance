@@ -1,10 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 580" role="img" aria-labelledby="hero-title hero-desc">
   <title id="hero-title">Skills Catalog Governance — Agent Skill Pipeline</title>
   <desc id="hero-desc">Agent skill sources flow through governance stages (discover, group, council, consolidate, loss check, golden gate, benchmark, approval, promote) into a canonical verified catalog</desc>
 
-  <!-- Color definitions via CSS custom properties (for reference) -->
+  
   <defs>
-    <style><![CDATA[
+    <style>
       :root {
         --source: #2D7FF9;
         --governance: #7C4DFF;
@@ -16,335 +17,335 @@
         --card-bg: #FFFFFF;
         --shadow-subtle: 0 2px 8px rgba(26, 26, 26, 0.06);
       }
-    ]]></style>
+    </style>
 
-    <!-- Arrowhead marker -->
+    
     <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-      <polygon points="0 0, 10 3.5, 0 7" fill="#5A5A5A"/>
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2D7FF9" />
     </marker>
 
-    <!-- Completed Hermes trigram symbol (clean, geometric) -->
+    
     <symbol id="trigram-hermes" viewBox="0 0 24 24">
       <title>Hermes trigram</title>
       <g fill="currentColor" fill-rule="evenodd">
-        <!-- Three solid bars representing the trigram -->
-        <rect x="4" y="4" width="16" height="2" rx="1"/>
-        <rect x="4" y="11" width="16" height="2" rx="1"/>
-        <rect x="4" y="18" width="16" height="2" rx="1"/>
+        
+        <rect x="4" y="4" width="16" height="2" rx="1" />
+        <rect x="4" y="11" width="16" height="2" rx="1" />
+        <rect x="4" y="18" width="16" height="2" rx="1" />
       </g>
     </symbol>
 
-    <!-- Source icons -->
+    
     <symbol id="icon-claude" viewBox="0 0 24 24">
       <title>Claude</title>
-      <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+      <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
     </symbol>
 
     <symbol id="icon-opencode" viewBox="0 0 24 24">
       <title>OpenCode</title>
-      <path fill="currentColor" d="M3 3h18v18H3zM7 7h10v2H7zm0 4h10v2H7zm0 4h7v2H7z"/>
+      <path fill="currentColor" d="M3 3h18v18H3zM7 7h10v2H7zm0 4h10v2H7zm0 4h7v2H7z" />
     </symbol>
 
     <symbol id="icon-codex" viewBox="0 0 24 24">
       <title>Codex</title>
-      <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3-8h-2V8h2v4zm0 4h-2v-2h2v2z"/>
+      <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3-8h-2V8h2v4zm0 4h-2v-2h2v2z" />
     </symbol>
 
     <symbol id="icon-other" viewBox="0 0 24 24">
       <title>Other/External</title>
-      <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
+      <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
     </symbol>
 
-    <!-- Pipeline stage icons -->
+    
     <symbol id="icon-discover" viewBox="0 0 24 24">
       <title>Discover</title>
-      <path fill="currentColor" d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+      <path fill="currentColor" d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
     </symbol>
 
     <symbol id="icon-group" viewBox="0 0 24 24">
       <title>Group</title>
-      <path fill="currentColor" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+      <path fill="currentColor" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
     </symbol>
 
     <symbol id="icon-council" viewBox="0 0 24 24">
       <title>Council</title>
-      <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+      <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
     </symbol>
 
     <symbol id="icon-consolidate" viewBox="0 0 24 24">
       <title>Consolidate</title>
-      <path fill="currentColor" d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+      <path fill="currentColor" d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
     </symbol>
 
     <symbol id="icon-loss-check" viewBox="0 0 24 24">
       <title>Loss Check</title>
-      <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+      <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
     </symbol>
 
     <symbol id="icon-golden-gate" viewBox="0 0 24 24">
       <title>Golden Gate</title>
-      <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
+      <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
     </symbol>
 
     <symbol id="icon-benchmark" viewBox="0 0 24 24">
       <title>Benchmark</title>
-      <path fill="currentColor" d="M11.5 16.5c.83 0 1.5-.67 1.5-1.5v-6c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v6c0 .83.67 1.5 1.5 1.5zm-5 0c.83 0 1.5-.67 1.5-1.5v-4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v4c0 .83.67 1.5 1.5 1.5zm10 0c.83 0 1.5-.67 1.5-1.5v-8c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v8c0 .83.67 1.5 1.5 1.5z"/>
+      <path fill="currentColor" d="M11.5 16.5c.83 0 1.5-.67 1.5-1.5v-6c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v6c0 .83.67 1.5 1.5 1.5zm-5 0c.83 0 1.5-.67 1.5-1.5v-4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v4c0 .83.67 1.5 1.5 1.5zm10 0c.83 0 1.5-.67 1.5-1.5v-8c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v8c0 .83.67 1.5 1.5 1.5z" />
     </symbol>
 
     <symbol id="icon-approval" viewBox="0 0 24 24">
       <title>Approval</title>
-      <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+      <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
     </symbol>
 
     <symbol id="icon-promote" viewBox="0 0 24 24">
       <title>Promote</title>
-      <path fill="currentColor" d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/>
+      <path fill="currentColor" d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z" />
     </symbol>
 
-    <!-- Check mark for verified -->
+    
     <symbol id="icon-check" viewBox="0 0 24 24">
       <title>Verified</title>
-      <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+      <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
     </symbol>
   </defs>
 
-  <!-- Background -->
-  <rect width="1400" height="560" fill="#FAFAFA"/>
+  
+  <rect width="1400" height="560" fill="#FAFAFA" />
 
-  <!-- Left: Agent Sources -->
+  
   <g transform="translate(60, 20)">
     <text x="0" y="0" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#1A1A1A" letter-spacing="1.2">AGENT SKILL SOURCES</text>
 
-    <!-- Hermes -->
+    
     <g transform="translate(0, 36)">
-      <rect x="0" y="0" width="220" height="70" rx="10" fill="#FFFFFF" stroke="#2D7FF9" stroke-width="1.5"/>
+      <rect x="0" y="0" width="220" height="70" rx="10" fill="#FFFFFF" stroke="#2D7FF9" stroke-width="1.5" />
       <g transform="translate(18, 18)">
-        <circle r="16" fill="#FFFFFF" stroke="#2D7FF9" stroke-width="1.5"/>
-        <use href="#trigram-hermes" x="-10" y="-10" width="20" height="20" fill="#2D7FF9"/>
+        <circle r="16" fill="#FFFFFF" stroke="#2D7FF9" stroke-width="1.5" />
+        <use href="#trigram-hermes" x="-10" y="-10" width="20" height="20" fill="#2D7FF9" />
       </g>
       <text x="48" y="24" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#1A1A1A">Hermes</text>
-      <text x="48" y="44" font-family="system-ui, sans-serif" font-size="11" fill="#5A5A5A">~/.hermes/skills</text>
-      <g transform="translate(188, 35)"><circle r="10" fill="#2D7FF9"/><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="10" font-weight="700" fill="#FFFFFF">73</text></g>
+      <text x="48" y="44" font-family="system-ui, sans-serif" font-size="14" fill="#5A5A5A">~/.hermes/skills</text>
+      <g transform="translate(188, 35)"><circle r="10" fill="#2D7FF9" /><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="#FFFFFF">73</text></g>
     </g>
 
-    <!-- Claude Code -->
+    
     <g transform="translate(0, 118)">
-      <rect x="0" y="0" width="220" height="70" rx="10" fill="#FFFFFF" stroke="#D97757" stroke-width="1.5"/>
+      <rect x="0" y="0" width="220" height="70" rx="10" fill="#FFFFFF" stroke="#D97757" stroke-width="1.5" />
       <g transform="translate(18, 18)">
-        <circle r="16" fill="#FFFFFF" stroke="#D97757" stroke-width="1.5"/>
-        <use href="#icon-claude" x="-10" y="-10" width="20" height="20" fill="#D97757"/>
+        <circle r="16" fill="#FFFFFF" stroke="#D97757" stroke-width="1.5" />
+        <use href="#icon-claude" x="-10" y="-10" width="20" height="20" fill="#D97757" />
       </g>
       <text x="48" y="24" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#1A1A1A">Claude Code</text>
-      <text x="48" y="44" font-family="system-ui, sans-serif" font-size="11" fill="#5A5A5A">~/.claude/skills</text>
-      <g transform="translate(188, 35)"><circle r="10" fill="#D97757"/><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="10" font-weight="700" fill="#FFFFFF">41</text></g>
+      <text x="48" y="44" font-family="system-ui, sans-serif" font-size="14" fill="#5A5A5A">~/.claude/skills</text>
+      <g transform="translate(188, 35)"><circle r="10" fill="#D97757" /><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="#FFFFFF">41</text></g>
     </g>
 
-    <!-- OpenCode -->
+    
     <g transform="translate(0, 200)">
-      <rect x="0" y="0" width="220" height="70" rx="10" fill="#FFFFFF" stroke="#B78626" stroke-width="1.5"/>
+      <rect x="0" y="0" width="220" height="70" rx="10" fill="#FFFFFF" stroke="#B78626" stroke-width="1.5" />
       <g transform="translate(18, 18)">
-        <circle r="16" fill="#FFFFFF" stroke="#B78626" stroke-width="1.5"/>
-        <use href="#icon-opencode" x="-10" y="-10" width="20" height="20" fill="#B78626"/>
+        <circle r="16" fill="#FFFFFF" stroke="#B78626" stroke-width="1.5" />
+        <use href="#icon-opencode" x="-10" y="-10" width="20" height="20" fill="#B78626" />
       </g>
       <text x="48" y="24" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#1A1A1A">OpenCode</text>
-      <text x="48" y="44" font-family="system-ui, sans-serif" font-size="11" fill="#5A5A5A">~/.config/opencode/skills</text>
-      <g transform="translate(188, 35)"><circle r="10" fill="#B78626"/><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="10" font-weight="700" fill="#FFFFFF">36</text></g>
+      <text x="48" y="44" font-family="system-ui, sans-serif" font-size="14" fill="#5A5A5A">~/.config/opencode/skills</text>
+      <g transform="translate(188, 35)"><circle r="10" fill="#B78626" /><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="#FFFFFF">36</text></g>
     </g>
 
-    <!-- Codex -->
+    
     <g transform="translate(0, 282)">
-      <rect x="0" y="0" width="220" height="70" rx="10" fill="#FFFFFF" stroke="#7C4DFF" stroke-width="1.5"/>
+      <rect x="0" y="0" width="220" height="70" rx="10" fill="#FFFFFF" stroke="#7C4DFF" stroke-width="1.5" />
       <g transform="translate(18, 18)">
-        <circle r="16" fill="#FFFFFF" stroke="#7C4DFF" stroke-width="1.5"/>
-        <use href="#icon-codex" x="-10" y="-10" width="20" height="20" fill="#7C4DFF"/>
+        <circle r="16" fill="#FFFFFF" stroke="#7C4DFF" stroke-width="1.5" />
+        <use href="#icon-codex" x="-10" y="-10" width="20" height="20" fill="#7C4DFF" />
       </g>
       <text x="48" y="24" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#1A1A1A">Codex</text>
-      <text x="48" y="44" font-family="system-ui, sans-serif" font-size="11" fill="#5A5A5A">~/.codex/skills</text>
-      <g transform="translate(188, 35)"><circle r="10" fill="#7C4DFF"/><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="10" font-weight="700" fill="#FFFFFF">28</text></g>
+      <text x="48" y="44" font-family="system-ui, sans-serif" font-size="14" fill="#5A5A5A">~/.codex/skills</text>
+      <g transform="translate(188, 35)"><circle r="10" fill="#7C4DFF" /><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="#FFFFFF">28</text></g>
     </g>
 
-    <!-- Other / External -->
+    
     <g transform="translate(0, 364)">
-      <rect x="0" y="0" width="220" height="70" rx="10" fill="#FFFFFF" stroke="#8B949E" stroke-width="1" stroke-dasharray="4,4"/>
+      <rect x="0" y="0" width="220" height="70" rx="10" fill="#FFFFFF" stroke="#8B949E" stroke-width="1" stroke-dasharray="4,4" />
       <g transform="translate(18, 18)">
-        <circle r="16" fill="#FFFFFF" stroke="#8B949E" stroke-width="1.5"/>
-        <use href="#icon-other" x="-10" y="-10" width="20" height="20" fill="#8B949E" opacity="0.6"/>
+        <circle r="16" fill="#FFFFFF" stroke="#8B949E" stroke-width="1.5" />
+        <use href="#icon-other" x="-10" y="-10" width="20" height="20" fill="#8B949E" opacity="0.6" />
       </g>
       <text x="48" y="24" font-family="system-ui, sans-serif" font-size="14" font-weight="500" fill="#3F4853">Other / External</text>
-      <text x="48" y="44" font-family="system-ui, sans-serif" font-size="11" fill="#5A5A5A">vendored, custom paths</text>
-      <g transform="translate(188, 35)"><circle r="10" fill="#8B949E" opacity="0.4"/><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="10" font-weight="700" fill="#1A1A1A">33</text></g>
+      <text x="48" y="44" font-family="system-ui, sans-serif" font-size="14" fill="#5A5A5A">vendored, custom paths</text>
+      <g transform="translate(188, 35)"><circle r="10" fill="#8B949E" opacity="0.4" /><text x="0" y="4" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="#1A1A1A">33</text></g>
     </g>
   </g>
 
-  <!-- Center: Governance Pipeline -->
+  
   <g transform="translate(340, 28)">
     <text x="290" y="0" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#1A1A1A" letter-spacing="1.2" text-anchor="middle">GOVERNANCE PIPELINE</text>
-    <text x="290" y="18" font-family="system-ui, sans-serif" font-size="10" fill="#5A5A5A" text-anchor="middle">similarity generates candidates · evidence determines promotion</text>
+    <text x="290" y="18" font-family="system-ui, sans-serif" font-size="13" fill="#5A5A5A" text-anchor="middle">similarity generates candidates · evidence determines promotion</text>
 
-    <!-- Row 1: Discover → Group → Council -->
-    <!-- Discover -->
+    
+    
     <g transform="translate(10, 44)">
-      <rect x="0" y="0" width="168" height="68" rx="10" fill="#FFFFFF" stroke="#2D7FF9" stroke-width="1.5"/>
+      <rect x="0" y="0" width="200" height="85" rx="10" fill="#FFFFFF" stroke="#2D7FF9" stroke-width="1.5" />
       <g transform="translate(18, 16)">
-        <circle r="14" fill="#2D7FF9"/>
-        <use href="#icon-discover" x="-10" y="-10" width="20" height="20" fill="#FFFFFF"/>
+        <circle r="14" fill="#2D7FF9" />
+        <use href="#icon-discover" x="-10" y="-10" width="20" height="20" fill="#FFFFFF" />
       </g>
-      <text x="44" y="23" font-family="system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#1A1A1A">DISCOVER</text>
-      <text x="44" y="41" font-family="system-ui, sans-serif" font-size="9.5" fill="#5A5A5A">detect-skills</text>
-      <text x="152" y="36" font-family="system-ui, sans-serif" font-size="9" font-weight="700" fill="#2D7FF9" text-anchor="end">211</text>
+      <text x="44" y="23" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#1A1A1A">DISCOVER</text>
+      <text x="44" y="41" font-family="system-ui, sans-serif" font-size="14" fill="#5A5A5A">detect-skills</text>
+      <text x="152" y="36" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#2D7FF9" text-anchor="end">211</text>
     </g>
-    <path d="M 188 78 H 212" stroke="#5A5A5A" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+    <path d="M 188 78 H 212" stroke="#2D7FF9" stroke-width="3" marker-end="url(#arrowhead)" fill="none" />
 
-    <!-- Group -->
+    
     <g transform="translate(222, 44)">
-      <rect x="0" y="0" width="168" height="68" rx="10" fill="#FFFFFF" stroke="#B78626" stroke-width="1.5"/>
+      <rect x="0" y="0" width="200" height="85" rx="10" fill="#FFFFFF" stroke="#B78626" stroke-width="1.5" />
       <g transform="translate(18, 16)">
-        <circle r="14" fill="#B78626"/>
-        <use href="#icon-group" x="-10" y="-10" width="20" height="20" fill="#FFFFFF"/>
+        <circle r="14" fill="#B78626" />
+        <use href="#icon-group" x="-10" y="-10" width="20" height="20" fill="#FFFFFF" />
       </g>
-      <text x="44" y="23" font-family="system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#1A1A1A">GROUP</text>
-      <text x="44" y="41" font-family="system-ui, sans-serif" font-size="9.5" fill="#5A5A5A">detect-groups</text>
-      <text x="152" y="36" font-family="system-ui, sans-serif" font-size="9" font-weight="700" fill="#B78626" text-anchor="end">19</text>
+      <text x="44" y="23" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#1A1A1A">GROUP</text>
+      <text x="44" y="41" font-family="system-ui, sans-serif" font-size="14" fill="#5A5A5A">detect-groups</text>
+      <text x="152" y="36" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#B78626" text-anchor="end">19</text>
     </g>
-    <path d="M 400 78 H 448" stroke="#5A5A5A" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+    <path d="M 400 78 H 448" stroke="#2D7FF9" stroke-width="3" marker-end="url(#arrowhead)" fill="none" />
 
-    <!-- Council -->
+    
     <g transform="translate(458, 44)">
-      <rect x="0" y="0" width="168" height="68" rx="10" fill="#FFFFFF" stroke="#7C4DFF" stroke-width="1.5"/>
+      <rect x="0" y="0" width="200" height="85" rx="10" fill="#FFFFFF" stroke="#7C4DFF" stroke-width="1.5" />
       <g transform="translate(18, 16)">
-        <circle r="14" fill="#7C4DFF"/>
-        <use href="#icon-council" x="-10" y="-10" width="20" height="20" fill="#FFFFFF"/>
+        <circle r="14" fill="#7C4DFF" />
+        <use href="#icon-council" x="-10" y="-10" width="20" height="20" fill="#FFFFFF" />
       </g>
-      <text x="44" y="23" font-family="system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#1A1A1A">COUNCIL</text>
-      <text x="44" y="41" font-family="system-ui, sans-serif" font-size="9.5" fill="#5A5A5A">5 advisors → 1 verdict</text>
-      <!-- MERGE badge: upper-right corner, no overlap -->
-      <rect x="118" y="10" width="42" height="18" rx="4" fill="#7C4DFF" opacity="0.15"/>
-      <text x="139" y="23" font-family="system-ui, sans-serif" font-size="8.5" font-weight="700" fill="#7C4DFF" text-anchor="middle">MERGE</text>
+      <text x="44" y="23" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#1A1A1A">COUNCIL</text>
+      <text x="44" y="41" font-family="system-ui, sans-serif" font-size="14" fill="#5A5A5A">5 advisors → 1 verdict</text>
+      
+      <rect x="118" y="10" width="42" height="18" rx="4" fill="#7C4DFF" opacity="0.15" />
+      <text x="139" y="23" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#7C4DFF" text-anchor="middle">MERGE</text>
     </g>
 
-    <!-- Row 2: Consolidate → Loss Check → Golden Gate -->
-    <!-- Consolidate -->
+    
+    
     <g transform="translate(10, 160)">
-      <rect x="0" y="0" width="168" height="68" rx="10" fill="#FFFFFF" stroke="#2E7D32" stroke-width="1.5"/>
+      <rect x="0" y="0" width="200" height="85" rx="10" fill="#FFFFFF" stroke="#2E7D32" stroke-width="1.5" />
       <g transform="translate(18, 16)">
-        <circle r="14" fill="#2E7D32"/>
-        <use href="#icon-consolidate" x="-10" y="-10" width="20" height="20" fill="#FFFFFF"/>
+        <circle r="14" fill="#2E7D32" />
+        <use href="#icon-consolidate" x="-10" y="-10" width="20" height="20" fill="#FFFFFF" />
       </g>
-      <text x="44" y="23" font-family="system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#1A1A1A">CONSOLIDATE</text>
-      <text x="44" y="41" font-family="system-ui, sans-serif" font-size="9.5" fill="#5A5A5A">build master</text>
+      <text x="44" y="23" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#1A1A1A">CONSOLIDATE</text>
+      <text x="44" y="41" font-family="system-ui, sans-serif" font-size="14" fill="#5A5A5A">build master</text>
     </g>
-    <path d="M 188 194 H 212" stroke="#5A5A5A" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+    <path d="M 188 194 H 212" stroke="#2D7FF9" stroke-width="3" marker-end="url(#arrowhead)" fill="none" />
 
-    <!-- Loss Check -->
+    
     <g transform="translate(222, 160)">
-      <rect x="0" y="0" width="168" height="68" rx="10" fill="#FFFFFF" stroke="#2E7D32" stroke-width="1.5"/>
+      <rect x="0" y="0" width="200" height="85" rx="10" fill="#FFFFFF" stroke="#2E7D32" stroke-width="1.5" />
       <g transform="translate(18, 16)">
-        <circle r="14" fill="#2E7D32" opacity="0.85"/>
-        <use href="#icon-loss-check" x="-10" y="-10" width="20" height="20" fill="#FFFFFF"/>
+        <circle r="14" fill="#2E7D32" opacity="0.85" />
+        <use href="#icon-loss-check" x="-10" y="-10" width="20" height="20" fill="#FFFFFF" />
       </g>
-      <text x="44" y="23" font-family="system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#1A1A1A">LOSS CHECK</text>
-      <text x="44" y="41" font-family="system-ui, sans-serif" font-size="9.5" fill="#5A5A5A">verify content</text>
-      <text x="152" y="36" font-family="system-ui, sans-serif" font-size="8.5" font-weight="700" fill="#1A7F2B" text-anchor="end">PASS</text>
+      <text x="44" y="23" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#1A1A1A">LOSS CHECK</text>
+      <text x="44" y="41" font-family="system-ui, sans-serif" font-size="14" fill="#5A5A5A">verify content</text>
+      <text x="152" y="36" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#1A7F2B" text-anchor="end">PASS</text>
     </g>
-    <path d="M 400 194 H 448" stroke="#5A5A5A" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+    <path d="M 400 194 H 448" stroke="#2D7FF9" stroke-width="3" marker-end="url(#arrowhead)" fill="none" />
 
-    <!-- Golden Gate -->
+    
     <g transform="translate(458, 160)">
-      <rect x="0" y="0" width="168" height="68" rx="10" fill="#FFFFFF" stroke="#2E7D32" stroke-width="1.5"/>
+      <rect x="0" y="0" width="200" height="85" rx="10" fill="#FFFFFF" stroke="#2E7D32" stroke-width="1.5" />
       <g transform="translate(18, 16)">
-        <circle r="14" fill="#2E7D32" opacity="0.72"/>
-        <use href="#icon-golden-gate" x="-10" y="-10" width="20" height="20" fill="#FFFFFF"/>
+        <circle r="14" fill="#2E7D32" opacity="0.72" />
+        <use href="#icon-golden-gate" x="-10" y="-10" width="20" height="20" fill="#FFFFFF" />
       </g>
-      <text x="44" y="23" font-family="system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#1A1A1A">GOLDEN GATE</text>
-      <text x="44" y="41" font-family="system-ui, sans-serif" font-size="9.5" fill="#5A5A5A">verify output</text>
-      <text x="152" y="36" font-family="system-ui, sans-serif" font-size="8.5" font-weight="700" fill="#1A7F2B" text-anchor="end">6/6</text>
+      <text x="44" y="23" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#1A1A1A">GOLDEN GATE</text>
+      <text x="44" y="41" font-family="system-ui, sans-serif" font-size="14" fill="#5A5A5A">verify output</text>
+      <text x="152" y="36" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#1A7F2B" text-anchor="end">6/6</text>
     </g>
 
-    <!-- Row 3: Benchmark → Approval → Promote -->
-    <!-- Benchmark -->
+    
+    
     <g transform="translate(10, 276)">
-      <rect x="0" y="0" width="168" height="68" rx="10" fill="#FFFFFF" stroke="#7C4DFF" stroke-width="1.5"/>
+      <rect x="0" y="0" width="200" height="85" rx="10" fill="#FFFFFF" stroke="#7C4DFF" stroke-width="1.5" />
       <g transform="translate(18, 16)">
-        <circle r="14" fill="#7C4DFF"/>
-        <use href="#icon-benchmark" x="-10" y="-10" width="20" height="20" fill="#FFFFFF"/>
+        <circle r="14" fill="#7C4DFF" />
+        <use href="#icon-benchmark" x="-10" y="-10" width="20" height="20" fill="#FFFFFF" />
       </g>
-      <text x="44" y="23" font-family="system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#1A1A1A">BENCHMARK</text>
-      <text x="44" y="41" font-family="system-ui, sans-serif" font-size="9.5" fill="#5A5A5A">G2 comparison</text>
-      <text x="152" y="36" font-family="system-ui, sans-serif" font-size="8.5" font-weight="700" fill="#7C4DFF" text-anchor="end">36/36</text>
+      <text x="44" y="23" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#1A1A1A">BENCHMARK</text>
+      <text x="44" y="41" font-family="system-ui, sans-serif" font-size="14" fill="#5A5A5A">G2 comparison</text>
+      <text x="152" y="36" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#7C4DFF" text-anchor="end">36/36</text>
     </g>
-    <path d="M 188 310 H 212" stroke="#5A5A5A" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+    <path d="M 188 310 H 212" stroke="#2D7FF9" stroke-width="3" marker-end="url(#arrowhead)" fill="none" />
 
-    <!-- Approval -->
+    
     <g transform="translate(222, 276)">
-      <rect x="0" y="0" width="168" height="68" rx="10" fill="#FFFFFF" stroke="#7C4DFF" stroke-width="1.5"/>
+      <rect x="0" y="0" width="200" height="85" rx="10" fill="#FFFFFF" stroke="#7C4DFF" stroke-width="1.5" />
       <g transform="translate(18, 16)">
-        <circle r="14" fill="#7C4DFF" opacity="0.9"/>
-        <use href="#icon-approval" x="-10" y="-10" width="20" height="20" fill="#FFFFFF"/>
+        <circle r="14" fill="#7C4DFF" opacity="0.9" />
+        <use href="#icon-approval" x="-10" y="-10" width="20" height="20" fill="#FFFFFF" />
       </g>
-      <text x="44" y="23" font-family="system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#1A1A1A">APPROVAL</text>
-      <text x="44" y="41" font-family="system-ui, sans-serif" font-size="9.5" fill="#5A5A5A">hash-bound</text>
-      <text x="152" y="36" font-family="system-ui, sans-serif" font-size="9" font-weight="700" fill="#1A7F2B" text-anchor="end">✓</text>
+      <text x="44" y="23" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#1A1A1A">APPROVAL</text>
+      <text x="44" y="41" font-family="system-ui, sans-serif" font-size="14" fill="#5A5A5A">hash-bound</text>
+      <text x="152" y="36" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#1A7F2B" text-anchor="end">✓</text>
     </g>
-    <path d="M 400 310 H 448" stroke="#5A5A5A" stroke-width="2" marker-end="url(#arrowhead)" fill="none"/>
+    <path d="M 400 310 H 448" stroke="#2D7FF9" stroke-width="3" marker-end="url(#arrowhead)" fill="none" />
 
-    <!-- Promote -->
+    
     <g transform="translate(458, 276)">
-      <rect x="0" y="0" width="168" height="68" rx="10" fill="#FFFFFF" stroke="#2E7D32" stroke-width="2"/>
+      <rect x="0" y="0" width="200" height="85" rx="10" fill="#FFFFFF" stroke="#2E7D32" stroke-width="2" />
       <g transform="translate(18, 16)">
-        <circle r="14" fill="#2E7D32"/>
-        <use href="#icon-promote" x="-10" y="-10" width="20" height="20" fill="#FFFFFF"/>
+        <circle r="14" fill="#2E7D32" />
+        <use href="#icon-promote" x="-10" y="-10" width="20" height="20" fill="#FFFFFF" />
       </g>
-      <text x="44" y="23" font-family="system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#1A1A1A">PROMOTE</text>
-      <text x="44" y="41" font-family="system-ui, sans-serif" font-size="9.5" fill="#5A5A5A">archive + commit</text>
-      <text x="152" y="36" font-family="system-ui, sans-serif" font-size="9" font-weight="700" fill="#1A7F2B" text-anchor="end">2</text>
+      <text x="44" y="23" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#1A1A1A">PROMOTE</text>
+      <text x="44" y="41" font-family="system-ui, sans-serif" font-size="14" fill="#5A5A5A">archive + commit</text>
+      <text x="152" y="36" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#1A7F2B" text-anchor="end">2</text>
     </g>
   </g>
 
-  <!-- Right: Canonical Catalog -->
+  
   <g transform="translate(1100, 28)">
     <text x="0" y="0" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#1A1A1A" letter-spacing="1.2">CANONICAL CATALOG</text>
 
     <g transform="translate(0, 36)">
-      <rect x="0" y="0" width="200" height="340" rx="12" fill="#FFFFFF" stroke="#2E7D32" stroke-width="2"/>
+      <rect x="0" y="0" width="200" height="340" rx="12" fill="#FFFFFF" stroke="#2E7D32" stroke-width="2" />
 
-      <rect x="0" y="0" width="200" height="50" rx="12" fill="#2E7D32" opacity="0.10"/>
+      <rect x="0" y="0" width="200" height="50" rx="12" fill="#2E7D32" opacity="0.10" />
       <text x="100" y="32" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#1A7F2B" text-anchor="middle">VERIFIED SKILLS</text>
 
-      <!-- Skill 1 -->
+      
       <g transform="translate(16, 66)">
-        <rect x="0" y="0" width="168" height="94" rx="8" fill="#FAFAFA" stroke="#2E7D32" stroke-width="1.5"/>
-        <use href="#icon-check" x="12" y="18" width="18" height="18" fill="#2E7D32"/>
+        <rect x="0" y="0" width="168" height="94" rx="8" fill="#FAFAFA" stroke="#2E7D32" stroke-width="1.5" />
+        <use href="#icon-check" x="12" y="18" width="18" height="18" fill="#2E7D32" />
         <text x="36" y="28" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#1A7F2B">survivor</text>
-        <text x="14" y="52" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#1A1A1A">canonical-commit-message</text>
-        <text x="14" y="68" font-family="system-ui, sans-serif" font-size="9.5" fill="#5A5A5A">merged from 3 sources</text>
-        <text x="14" y="82" font-family="system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#1A7F2B">SHA-256 verified ✓</text>
+        <text x="14" y="52" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#1A1A1A">canonical-commit-message</text>
+        <text x="14" y="68" font-family="system-ui, sans-serif" font-size="14" fill="#5A5A5A">merged from 3 sources</text>
+        <text x="14" y="82" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#1A7F2B">SHA-256 verified ✓</text>
       </g>
 
-      <!-- Skill 2 -->
+      
       <g transform="translate(16, 172)">
-        <rect x="0" y="0" width="168" height="82" rx="8" fill="#FAFAFA" stroke="#2E7D32" stroke-width="1.5"/>
-        <use href="#icon-check" x="12" y="18" width="18" height="18" fill="#2E7D32"/>
+        <rect x="0" y="0" width="168" height="82" rx="8" fill="#FAFAFA" stroke="#2E7D32" stroke-width="1.5" />
+        <use href="#icon-check" x="12" y="18" width="18" height="18" fill="#2E7D32" />
         <text x="36" y="28" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#1A7F2B">survivor</text>
-        <text x="14" y="52" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#1A1A1A">ce-commit-executor</text>
-        <text x="14" y="66" font-family="system-ui, sans-serif" font-size="9.5" fill="#5A5A5A">recategorized, kept separate</text>
-        <text x="14" y="80" font-family="system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#1A7F2B">SHA-256 verified ✓</text>
+        <text x="14" y="52" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#1A1A1A">ce-commit-executor</text>
+        <text x="14" y="66" font-family="system-ui, sans-serif" font-size="14" fill="#5A5A5A">recategorized, kept separate</text>
+        <text x="14" y="80" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#1A7F2B">SHA-256 verified ✓</text>
       </g>
 
-      <!-- Archived -->
+      
       <g transform="translate(16, 266)">
-        <rect x="0" y="0" width="168" height="56" rx="8" fill="#FAFAFA" stroke="#8B949E" stroke-width="1" stroke-dasharray="5,4"/>
+        <rect x="0" y="0" width="168" height="56" rx="8" fill="#FAFAFA" stroke="#8B949E" stroke-width="1" stroke-dasharray="5,4" />
         <text x="84" y="24" font-family="system-ui, sans-serif" font-size="11.5" font-weight="600" fill="#1A1A1A" text-anchor="middle">191 archived</text>
-        <text x="84" y="40" font-family="system-ui, sans-serif" font-size="9.5" fill="#5A5A5A" text-anchor="middle">moved to skills-archive/</text>
+        <text x="84" y="40" font-family="system-ui, sans-serif" font-size="14" fill="#5A5A5A" text-anchor="middle">moved to skills-archive/</text>
       </g>
 
-      <!-- Bottom note -->
-      <text x="100" y="355" font-family="system-ui, sans-serif" font-size="9.5" fill="#5A5A5A" text-anchor="middle">non-destructive moves · never deletes</text>
+      
+      <text x="100" y="355" font-family="system-ui, sans-serif" font-size="14" fill="#5A5A5A" text-anchor="middle">non-destructive moves · never deletes</text>
     </g>
   </g>
 
-  <!-- Bottom summary bar -->
+  
   <g transform="translate(60, 530)">
-    <rect x="0" y="0" width="1320" height="34" rx="8" fill="#FFFFFF" stroke="#E0E0E0"/>
+    <rect x="0" y="0" width="1320" height="34" rx="8" fill="#FFFFFF" stroke="#E0E0E0" />
     <text x="660" y="22" font-family="system-ui, sans-serif" font-size="11.5" font-weight="500" fill="#1A1A1A" text-anchor="middle">
       <tspan fill="#2D7FF9" font-weight="700">211</tspan> skills discovered →
       <tspan fill="#B78626" font-weight="700"> 19</tspan> candidate families →
