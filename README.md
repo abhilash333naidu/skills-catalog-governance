@@ -25,6 +25,39 @@ Discover, consolidate, verify, and safely promote canonical skills across AI-age
   </picture>
 </div>
 
+<!-- Architecture pipeline fallback (Mermaid) -->
+```mermaid
+graph LR
+    subgraph SOURCES["Agent Skill Sources"]
+        H[Hermes<br/>73 skills]
+        C[Claude Code<br/>41 skills]
+        O[OpenCode<br/>36 skills]
+        X[Codex<br/>28 skills]
+        E[Other<br/>33 skills]
+    end
+
+    subgraph PIPELINE["Governance Pipeline (M1–M6)"]
+        D[Discover<br/>211 found]
+        G[Group<br/>19 families]
+        K[Council<br/>MERGE]
+        L[Consolidate]
+        V[Loss Check<br/>PASS]
+        J[Golden Gate<br/>6/6]
+        B[Benchmark<br/>36/36]
+        P[Approval<br/>✓]
+        R[Promote<br/>2 survivors]
+    end
+
+    subgraph OUTPUT["Canonical Catalog"]
+        S[VERIFIED SKILLS]
+        A[191 archived]
+    end
+
+    H & C & O & X & E --> D --> G --> K --> L --> V --> J --> B --> P --> R
+    R --> S
+    S -.-> A
+```
+
 **Skills Catalog Governance** is an **agent-agnostic governance pipeline** for discovering, consolidating, verifying, benchmarking, and safely promoting AI-agent skills across coding harnesses — package-integrity checked, hash-bound, and non-destructive.
 
 ---

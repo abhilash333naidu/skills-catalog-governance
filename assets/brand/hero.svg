@@ -191,7 +191,7 @@
   </g>
 
   <!-- Right: Canonical Catalog -->
-  <g transform="translate(1184, 32)">
+  <g transform="translate(1164, 32)">
     <text x="0" y="0" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#e6edf3" letter-spacing="1.5">CANONICAL CATALOG</text>
 
     <g transform="translate(0, 44)" filter="url(#nodeShadow)">
@@ -234,9 +234,9 @@
   </g>
 
   <!-- Bottom summary bar -->
-  <g transform="translate(80, 520)">
-    <rect x="0" y="0" width="1240" height="36" rx="9" fill="#161b22" stroke="#30363d" filter="url(#nodeShadow)"/>
-    <text x="620" y="24" font-family="system-ui, sans-serif" font-size="12" font-weight="500" fill="#e6edf3" text-anchor="middle">
+  <g transform="translate(80, 518)">
+    <rect x="0" y="0" width="1280" height="36" rx="9" fill="#161b22" stroke="#30363d" filter="url(#nodeShadow)"/>
+    <text x="640" y="24" font-family="system-ui, sans-serif" font-size="12" font-weight="500" fill="#e6edf3" text-anchor="middle">
       <tspan fill="#7cc0ff" font-weight="700">211</tspan> skills discovered →
       <tspan fill="#eec03c" font-weight="700">19</tspan> candidate families →
       <tspan fill="#d3b3ff" font-weight="700">Council</tspan> verdict →

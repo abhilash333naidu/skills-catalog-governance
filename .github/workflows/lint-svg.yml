@@ -1,0 +1,55 @@
+name: Lint SVGs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-svg:
+    name: SVG validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate SVG XML
+        run: |
+          for svg in assets/brand/*.svg; do
+            echo "Validating $svg"
+            xmllint --noout "$svg"
+          done
+
+      - name: Check SVG viewBox
+        run: |
+          for svg in assets/brand/*.svg; do
+            if ! grep -q 'viewBox=' "$svg"; then
+              echo "ERROR: $svg missing viewBox attribute"
+              exit 1
+            fi
+          done
+
+      - name: Check SVG not clipped
+        run: |
+          # Check that all SVG content fits within viewBox
+          for svg in assets/brand/*.svg; do
+            # Extract viewBox dimensions
+            viewBox=$(grep -oP 'viewBox="\d+\s+\d+\s+\K\d+' "$svg")
+            height=$(grep -oP 'viewBox="\d+\s+\d+\s+\d+\s+\K\d+' "$svg")
+            
+            # Check for elements outside viewBox
+            if grep -P 'transform="translate\(\K\d+' "$svg" | awk -v w="$viewBox" -v h="$height" '
+              {
+                split($0, a, " ")
+                x = a[1]
+                y = a[2]
+                if (x > w || y > h) exit 1
+              }
+            '; then
+              echo "OK: $svg"
+            else
+              echo "WARNING: $svg may have elements outside viewBox"
+            fi
+          done
