@@ -1,211 +1,43 @@
-<?xml version='1.0' encoding='utf-8'?>
-<ns0:svg xmlns:ns0="http://www.w3.org/2000/svg" viewBox="0 0 1100 580" width="1100" height="580" role="img" aria-labelledby="diff-title diff-desc">
-  <ns0:title id="diff-title">Why This Is Different: Traditional vs Governance Approach</ns0:title>
-  <ns0:desc id="diff-desc">Side-by-side comparison showing traditional blind LLM merge vs Skills Catalog Governance evidence-based pipeline</ns0:desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" role="img" aria-labelledby="diff-title diff-desc">
+  <title id="diff-title">Why This Is Different (Dark)</title>
   
-  <ns0:defs>
-    <ns0:linearGradient id="bgGrad4" x1="0%" y1="0%" x2="100%" y2="100%">
-      <ns0:stop offset="0%" stop-color="#0d1117" />
-      <ns0:stop offset="100%" stop-color="#161b22" />
-    </ns0:linearGradient>
-    
-    <ns0:linearGradient id="badGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <ns0:stop offset="0%" stop-color="#2d1b1b" />
-      <ns0:stop offset="100%" stop-color="#1a0d0d" />
-    </ns0:linearGradient>
-    
-    <ns0:linearGradient id="goodGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <ns0:stop offset="0%" stop-color="#142d14" />
-      <ns0:stop offset="100%" stop-color="#0a1a0a" />
-    </ns0:linearGradient>
-    
-    <ns0:filter id="cardShadow4" x="-10%" y="-10%" width="120%" height="120%">
-      <ns0:feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000" flood-opacity="0.5" />
-    </ns0:filter>
-    
-    <ns0:filter id="textGlow" x="-50%" y="-50%" width="200%" height="200%">
-      <ns0:feGaussianBlur stdDeviation="2" result="blur" />
-      <ns0:feMerge>
-        <ns0:feMergeNode in="blur" />
-        <ns0:feMergeNode in="SourceGraphic" />
-      </ns0:feMerge>
-    </ns0:filter>
-  </ns0:defs>
-  
-  <ns0:rect width="1100" height="580" fill="url(#bgGrad4)" />
-  
-  
-  <ns0:text x="550" y="40" font-family="system-ui, sans-serif" font-size="24" font-weight="700" fill="#e6edf3" text-anchor="middle">WHY THIS IS DIFFERENT</ns0:text>
-  <ns0:text x="550" y="64" font-family="system-ui, sans-serif" font-size="14" fill="#8b949e" text-anchor="middle" font-weight="500">
-    <ns0:tspan fill="#f85149">Traditional approach</ns0:tspan>  →  <ns0:tspan fill="#3fb950">Skills Catalog Governance</ns0:tspan>
-  </ns0:text>
-  
-  
-  <ns0:g transform="translate(40, 90)">
-    
-    <ns0:rect x="0" y="0" width="480" height="56" rx="10" fill="url(#badGrad)" stroke="#f85149" stroke-width="2" filter="url(#cardShadow4)" />
-    <ns0:text x="240" y="36" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#f85149" text-anchor="middle" filter="url(#textGlow)">⚠ TRADITIONAL APPROACH</ns0:text>
-    
-    
-    <ns0:g class="traditional-steps">
+  <defs>
+    <filter id="glassShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="24" flood-color="#000000" flood-opacity="0.8"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="640" fill="#050505"/>
+
+  <!-- Header -->
+  <g transform="translate(60, 60)">
+    <text y="0" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#58A6FF" letter-spacing="0.1em">COMPARISON</text>
+    <text y="40" font-family="system-ui, sans-serif" font-size="32" font-weight="800" fill="#E6EDF3" letter-spacing="-0.03em">WHY THIS IS DIFFERENT</text>
+  </g>
+
+  <!-- LEFT: TRADITIONAL -->
+  <g transform="translate(60, 140)">
+    <rect width="480" height="440" rx="32" fill="#0D1117" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1"/>
+    <text x="32" y="44" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#8B949E" letter-spacing="0.05em">TRADITIONAL APPROACH</text>
+    <g transform="translate(32, 100)">
+       <text y="20" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#E6EDF3">Blind LLM Merge</text>
+       <text y="340" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#FF7B72">18 REGRESSIONS IN PILOT</text>
+    </g>
+  </g>
+
+  <!-- RIGHT: GOVERNANCE -->
+  <g transform="translate(660, 100)">
+    <rect width="480" height="520" rx="32" fill="#0D1117" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1" filter="url(#glassShadow)"/>
+    <rect x="4" y="4" width="472" height="512" rx="28" fill="#0D1117" stroke="rgba(255, 255, 255, 0.05)" stroke-width="1"/>
+    <g transform="translate(32, 44)">
+      <text font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#58A6FF" letter-spacing="0.05em">EVIDENCE-BASED PIPELINE</text>
+      <text y="36" font-family="system-ui, sans-serif" font-size="24" font-weight="800" fill="#E6EDF3" letter-spacing="-0.02em">Governance Gates</text>
       
-      <ns0:g transform="translate(20, 80)">
-        <ns0:circle cx="30" cy="30" r="28" fill="#f85149" opacity="0.15" stroke="#f85149" stroke-width="2" />
-        <ns0:text x="30" y="36" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#f85149" text-anchor="middle">1</ns0:text>
-        
-        <ns0:rect x="70" y="10" width="390" height="80" rx="8" fill="#161b22" stroke="#f85149" stroke-width="1" opacity="0.5" />
-        <ns0:text x="90" y="34" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#f85149">Find similar skills</ns0:text>
-        <ns0:text x="90" y="58" font-family="system-ui, sans-serif" font-size="12" fill="#8b949e">grep / semantic search / eyeball it</ns0:text>
-        <ns0:text x="90" y="76" font-family="system-ui, sans-serif" font-size="11" fill="#6e7681">→ produces candidate list, no verification</ns0:text>
-      </ns0:g>
-      
-      
-      <ns0:path d="M 260 190 V 220" stroke="#f85149" stroke-width="2" stroke-dasharray="4,4" fill="none" marker-end="url(#badArrow)" />
-      <ns0:defs>
-        <ns0:marker id="badArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
-          <ns0:path d="M0,0 L10,5 L0,10 Z" fill="#f85149" />
-        </ns0:marker>
-      </ns0:defs>
-      
-      
-      <ns0:g transform="translate(20, 240)">
-        <ns0:circle cx="30" cy="30" r="28" fill="#f85149" opacity="0.15" stroke="#f85149" stroke-width="2" />
-        <ns0:text x="30" y="36" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#f85149" text-anchor="middle">2</ns0:text>
-        
-        <ns0:rect x="70" y="10" width="390" height="80" rx="8" fill="#161b22" stroke="#f85149" stroke-width="1" opacity="0.5" />
-        <ns0:text x="90" y="34" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#f85149">LLM merge</ns0:text>
-        <ns0:text x="90" y="58" font-family="system-ui, sans-serif" font-size="12" fill="#8b949e">"merge these into one skill"</ns0:text>
-        <ns0:text x="90" y="76" font-family="system-ui, sans-serif" font-size="11" fill="#6e7681">→ single-pass, no content audit, no behaviour test</ns0:text>
-      </ns0:g>
-      
-      
-      <ns0:path d="M 260 350 V 380" stroke="#f85149" stroke-width="2" stroke-dasharray="4,4" fill="none" marker-end="url(#badArrow)" />
-      
-      
-      <ns0:g transform="translate(20, 400)">
-        <ns0:circle cx="30" cy="30" r="28" fill="#f85149" opacity="0.15" stroke="#f85149" stroke-width="2" />
-        <ns0:text x="30" y="36" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#f85149" text-anchor="middle">3</ns0:text>
-        
-        <ns0:rect x="70" y="10" width="390" height="80" rx="8" fill="#161b22" stroke="#f85149" stroke-width="1" opacity="0.5" />
-        <ns0:text x="90" y="34" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#f85149">Test suite verification</ns0:text>
-        <ns0:text x="90" y="58" font-family="system-ui, sans-serif" font-size="12" fill="#8b949e">run existing tests → staged rollout if pass</ns0:text>
-        <ns0:text x="90" y="76" font-family="system-ui, sans-serif" font-size="11" fill="#6e7681">→ coverage gaps, untested interactions, slow feedback</ns0:text>
-      </ns0:g>
-      
-      
-      <ns0:g transform="translate(20, 540)">
-        <ns0:rect x="0" y="0" width="440" height="50" rx="8" fill="#2d1b1b" stroke="#f85149" stroke-width="2" />
-        <ns0:text x="220" y="32" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#f85149" text-anchor="middle">RESULT: 18 test regressions  •  Manual rollback  •  Lost 2 weeks</ns0:text>
-      </ns0:g>
-    <ns0:g transform="translate(20, 480)"><ns0:rect x="0" y="0" width="440" height="50" rx="8" fill="#3d2f00" stroke="#d29922" stroke-width="2" opacity="0.9" /><ns0:text x="220" y="22" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#d29922" text-anchor="middle">PILOT BASELINE</ns0:text><ns0:text x="220" y="38" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#e6edf3" text-anchor="middle">18 regressions detected in post-merge testing</ns0:text></ns0:g></ns0:g>
-  </ns0:g>
-  
-  
-  <ns0:g transform="translate(580, 90)">
-    
-    <ns0:rect x="0" y="0" width="480" height="56" rx="10" fill="url(#goodGrad)" stroke="#3fb950" stroke-width="2" filter="url(#cardShadow4)" />
-    <ns0:text x="240" y="36" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#3fb950" text-anchor="middle" filter="url(#textGlow)">✓ SKILLS CATALOG GOVERNANCE</ns0:text>
-    
-    
-    <ns0:g class="governance-steps">
-      
-      <ns0:g transform="translate(20, 80)">
-        <ns0:circle cx="30" cy="30" r="28" fill="#58a6ff" opacity="0.15" stroke="#58a6ff" stroke-width="2" />
-        <ns0:text x="30" y="36" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#58a6ff" text-anchor="middle">1</ns0:text>
-        
-        <ns0:rect x="70" y="10" width="390" height="60" rx="8" fill="#161b22" stroke="#58a6ff" stroke-width="1" />
-        <ns0:text x="90" y="34" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#58a6ff">Discover</ns0:text>
-        <ns0:text x="90" y="56" font-family="system-ui, sans-serif" font-size="12" fill="#8b949e">detect-skills  →  211 skills, SHA-256 fingerprinted</ns0:text>
-      </ns0:g>
-      
-      
-      <ns0:path d="M 260 160 V 185" stroke="#58a6ff" stroke-width="2" fill="none" marker-end="url(#goodArrow)" />
-      <ns0:defs>
-        <ns0:marker id="goodArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
-          <ns0:path d="M0,0 L10,5 L0,10 Z" fill="#58a6ff" />
-        </ns0:marker>
-      </ns0:defs>
-      
-      
-      <ns0:g transform="translate(20, 205)">
-        <ns0:circle cx="30" cy="30" r="28" fill="#d29922" opacity="0.15" stroke="#d29922" stroke-width="2" />
-        <ns0:text x="30" y="36" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#d29922" text-anchor="middle">2</ns0:text>
-        
-        <ns0:rect x="70" y="10" width="390" height="60" rx="8" fill="#161b22" stroke="#d29922" stroke-width="1" />
-        <ns0:text x="90" y="34" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#d29922">Group</ns0:text>
-        <ns0:text x="90" y="56" font-family="system-ui, sans-serif" font-size="12" fill="#8b949e">detect-groups  →  19 candidate families (strong-pair)</ns0:text>
-      </ns0:g>
-      
-      <ns0:path d="M 260 285 V 310" stroke="#d29922" stroke-width="2" fill="none" marker-end="url(#goodArrow)" />
-      
-      
-      <ns0:g transform="translate(20, 330)">
-        <ns0:circle cx="30" cy="30" r="28" fill="#a371f7" opacity="0.15" stroke="#a371f7" stroke-width="2" />
-        <ns0:text x="30" y="36" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#a371f7" text-anchor="middle">3</ns0:text>
-        
-        <ns0:rect x="70" y="10" width="390" height="60" rx="8" fill="#161b22" stroke="#a371f7" stroke-width="1" />
-        <ns0:text x="90" y="34" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#a371f7">Council</ns0:text>
-        <ns0:text x="90" y="56" font-family="system-ui, sans-serif" font-size="12" fill="#8b949e">5 advisors → 5 reviews → 1 verdict (MERGE/SPLIT)</ns0:text>
-      </ns0:g>
-      
-      <ns0:path d="M 260 410 V 435" stroke="#a371f7" stroke-width="2" fill="none" marker-end="url(#goodArrow)" />
-      
-      
-      <ns0:g transform="translate(20, 455)">
-        <ns0:circle cx="30" cy="30" r="28" fill="#3fb950" opacity="0.15" stroke="#3fb950" stroke-width="2" />
-        <ns0:text x="30" y="36" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#3fb950" text-anchor="middle">4</ns0:text>
-        
-        <ns0:rect x="70" y="10" width="390" height="60" rx="8" fill="#161b22" stroke="#3fb950" stroke-width="1" />
-        <ns0:text x="90" y="34" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#3fb950">Verify</ns0:text>
-        <ns0:text x="90" y="56" font-family="system-ui, sans-serif" font-size="12" fill="#8b949e">loss-check + golden-gate (6/6 match) + benchmark (36/36)</ns0:text>
-      </ns0:g>
-      
-      <ns0:path d="M 260 535 V 560" stroke="#3fb950" stroke-width="2" fill="none" marker-end="url(#goodArrow)" />
-      
-      
-      <ns0:g transform="translate(20, 580)">
-        <ns0:circle cx="30" cy="30" r="28" fill="#3fb950" opacity="0.2" stroke="#3fb950" stroke-width="3" />
-        <ns0:text x="30" y="36" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#3fb950" text-anchor="middle">5</ns0:text>
-        
-        <ns0:rect x="70" y="10" width="390" height="60" rx="8" fill="#161b22" stroke="#3fb950" stroke-width="2" />
-        <ns0:text x="90" y="34" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#3fb950">Promote</ns0:text>
-        <ns0:text x="90" y="56" font-family="system-ui, sans-serif" font-size="12" fill="#8b949e">hash-bound approval → archive → commit (2 survivors)</ns0:text>
-      </ns0:g>
-      
-      
-      <ns0:g transform="translate(20, 660)">
-        <ns0:rect x="0" y="0" width="440" height="50" rx="8" fill="#142d14" stroke="#3fb950" stroke-width="2" />
-        <ns0:text x="220" y="32" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#3fb950" text-anchor="middle">RESULT: Verified skill  •  Full provenance  •  Rollback ready</ns0:text>
-      </ns0:g>
-    </ns0:g>
-  </ns0:g>
-  
-  
-  <ns0:g transform="translate(440, 280)">
-    <ns0:rect x="0" y="0" width="220" height="160" rx="16" fill="#161b22" stroke="#3fb950" stroke-width="2" filter="url(#cardShadow4)" />
-    
-    <ns0:text x="110" y="30" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#8b949e" text-anchor="middle">CORE DIFFERENTIATOR</ns0:text>
-    
-    <ns0:text x="110" y="60" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#e6edf3" text-anchor="middle" filter="url(#textGlow)">
-      Similarity
-    </ns0:text>
-    <ns0:text x="110" y="82" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#d29922" text-anchor="middle">
-      generates
-    </ns0:text>
-    <ns0:text x="110" y="104" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#58a6ff" text-anchor="middle">
-      candidates
-    </ns0:text>
-    
-    <ns0:path d="M 30 120 H 190" stroke="#30363d" stroke-width="1" />
-    
-    <ns0:text x="110" y="136" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#58a6ff" text-anchor="middle">
-      Evidence
-    </ns0:text>
-    <ns0:text x="110" y="158" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#a371f7" text-anchor="middle">
-      determines
-    </ns0:text>
-    <ns0:text x="110" y="180" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#3fb950" text-anchor="middle">
-      promotion
-    </ns0:text>
-  </ns0:g>
-</ns0:svg>
+      <g transform="translate(0, 380)">
+        <rect width="416" height="60" rx="16" fill="#58A6FF"/>
+        <text x="208" y="36" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#050505" text-anchor="middle">VERIFIED SURVIVORS ONLY</text>
+      </g>
+    </g>
+  </g>
+
+</svg>
