@@ -2,13 +2,14 @@
 
 # 🛡️ Skills Catalog Governance
 
-**Turn skill sprawl into a verified canonical catalog**
+**Turn skill sprawl into a SHA-256 verified canonical catalog**
 
-Evidence-driven consolidation pipeline for AI-agent skills — SHA-256 verified, gate-gated, non-destructive.
+Gated governance pipeline for AI-agent skills — discover, consolidate, verify, benchmark, and safely promote.
 
 [![CI](https://github.com/abhilash333naidu/skills-catalog-governance/actions/workflows/ci.yml/badge.svg)](https://github.com/abhilash333naidu/skills-catalog-governance/actions/workflows/ci.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue?logo=python)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Code Style: Ruff](https://img.shields.io/badge/code_style-ruff-black.svg?logo=ruff&logoColor=white)](https://astral.sh/ruff/)
 [![Platform](https://img.shields.io/badge/platform-windows%20%7C%20macos%20%7C%20linux-lightgrey)]()
 [![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)]()
 
@@ -17,7 +18,7 @@ Evidence-driven consolidation pipeline for AI-agent skills — SHA-256 verified,
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/brand/hero.svg">
-    <img src="assets/brand/hero-light.svg" alt="Skills Catalog Governance — governed pipeline from agent skill sources through discovery, grouping, council review, consolidation, loss-check, golden-gate, benchmark, approval, and promotion into verified canonical catalog" width="92%">
+    <img src="assets/brand/hero-light.svg" alt="Skills Catalog Governance — agent skill sources flow through governance stages into verified canonical catalog" width="92%">
   </picture>
 </div>
 
@@ -25,11 +26,11 @@ Evidence-driven consolidation pipeline for AI-agent skills — SHA-256 verified,
 
 ## What It Is
 
-AI coding agents accumulate skills at a frightening pace — Hermes profiles, Claude Code directories, OpenCode stores, Codex plugins. Each harness maintains its own `skills/` folder. Left ungoverned, that growth produces **overlapping, contradictory, and unverifiable skill families**.
+AI coding agents accumulate skills at a frightening pace. Hermes profiles, Claude Code directories, OpenCode stores, Codex plugins — each harness maintains its own `skills/` folder. Left ungoverned, that growth produces **overlapping, contradictory, and unverifiable skill families**.
 
 **Skills Catalog Governance** treats skill consolidation as a **gated engineering process** — not a blind merge. Every decision, verification, and promotion is auditable.
 
-## What It Does Differently
+## Why It's Different
 
 <div align="center">
   <picture>
@@ -42,14 +43,14 @@ AI coding agents accumulate skills at a frightening pace — Hermes profiles, Cl
 
 Traditional mergers collapse duplicates blindly. This pipeline gates every consolidation with loss-checks, output reproduction, benchmarks, and hash-bound approvals.
 
-## Proof — Real Pilot Run
+## Pilot Evidence — Real Run Results
 
 **2026-08-10 end-to-end run:**
 
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/evidence/pilot-result.svg">
-    <img src="assets/evidence/pilot-result-light.svg" alt="211 skills cataloged, 19 candidate families identified, commit-message family evaluated → 2 active governed skills promoted" width="100%">
+    <img src="assets/evidence/pilot-result-light.svg" alt="211 skills cataloged, 19 candidate families, commit-message family evaluated → 2 active governed skills promoted" width="100%">
   </picture>
 </div>
 
@@ -58,7 +59,7 @@ GLOBAL INVENTORY
   └─ 211 skills across 5 local stores (0 parse errors)
   └─ 19 candidate overlap families identified
 
-COMMIT-MESSAGE FAMILY PILOT (3 related skills)
+COMMIT-MESSAGE FAMILY (3 related skills evaluated)
   ├─ caveman-commit (formatter/terse)
   ├─ writing-commit-messages (formatter/subsystem)
   └─ ce-commit (git executor)
@@ -66,7 +67,7 @@ COMMIT-MESSAGE FAMILY PILOT (3 related skills)
 VERIFICATION OUTCOME
   ├─ Golden Gate: 6/6 byte-for-byte match
   ├─ G2 Benchmark: 36/36 cells PASS
-  └─ Promotion: 2 active governed skills
+  └─ Final: 2 active governed skills promoted
 ```
 
 | Phase | Command | Result |
@@ -78,13 +79,31 @@ VERIFICATION OUTCOME
 | M5 Benchmark | `benchmark` | **GO** — 36/36 cells PASS |
 | M6 Promotion | `verify-approval` + `apply-moves` | **PROMOTED** — 2 skills |
 
+<details>
+<summary><b>📊 Full pilot transcript</b></summary>
+
+```text
+COUNCIL & VERIFICATION OUTCOME
+  ├─ Group 1 (Generator): caveman-commit + writing-commit-messages
+  │   └─ Consolidated generator retained canonically
+  ├─ Group 2 (Executor): ce-commit
+  │   └─ Reclassified & retained separately (1 active executor)
+  ├─ Golden Gate: 6 / 6 test cases matched byte-for-byte
+  └─ G2 Benchmark: 36 / 36 benchmark cells PASS
+
+FINAL PILOT OUTCOME
+  └─ 2 active governed skills:
+       1 consolidated generator + 1 git executor retained separately
+```
+
 Full transcripts: [`docs/`](docs/) · [`artifacts/pilot-commit-family/`](artifacts/pilot-commit-family/)
+</details>
 
 ---
 
 ## How It Works
 
-**Six gated phases (M1–M6)** — each produces a deterministic artifact consumed by the next:
+**Six gated phases (M1–M6)** — each produces a deterministic artifact:
 
 <div align="center">
   <picture>
@@ -152,6 +171,31 @@ python3 scripts/catalog_governance.py check-package --root .
     <img src="assets/demo/check-package-output.png" alt="Real CLI output showing PASS with all required package files verified" width="100%">
   </picture>
 </div>
+
+<details>
+<summary><b>▶ Real check-package output</b></summary>
+
+```json
+{
+  "invalid_files": [],
+  "message": "all required package files are present and valid",
+  "missing_files": [],
+  "required_files": [
+    "references/…",
+    "schemas/approval.schema.json",
+    "schemas/benchmark.schema.json",
+    "schemas/council-verdict.schema.json",
+    "schemas/golden.schema.json",
+    "schemas/loss-check.schema.json",
+    "schemas/manifest.schema.json",
+    "schemas/provenance.schema.json",
+    "scripts/catalog_governance.py"
+  ],
+  "skill_sha256": "5fc37716…",
+  "status": "PASS"
+}
+```
+</details>
 
 ### Run the Pipeline
 
