@@ -36,11 +36,11 @@ try:
     # Try to find a monospace font
     FONT = ImageFont.truetype("C:/Windows/Fonts/consola.ttf", FONT_SIZE)
     FONT_BOLD = ImageFont.truetype("C:/Windows/Fonts/consolab.ttf", FONT_SIZE)
-except Exception:
+except (OSError, ValueError):
     try:
         FONT = ImageFont.truetype("C:/Windows/Fonts/CascadiaCode.ttf", FONT_SIZE)
         FONT_BOLD = ImageFont.truetype("C:/Windows/Fonts/CascadiaCode.ttf", FONT_SIZE)
-    except Exception:
+    except (OSError, ValueError):
         FONT = ImageFont.load_default()
         FONT_BOLD = ImageFont.load_default()
 

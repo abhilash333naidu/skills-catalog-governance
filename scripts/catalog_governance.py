@@ -16,15 +16,16 @@ import math
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
-from collections import Counter
-from datetime import datetime, timezone
 import time
-import stat
 import uuid
+from collections import Counter
+from collections.abc import Iterable
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 MIN_PYTHON = (3, 10)
 
@@ -473,18 +474,18 @@ def load_group_inventory(path: Path) -> list[dict[str, Any]]:
             raise ValueError("inventory report contains errors")
         inventory = payload["inventory"]
     else:
-        raise ValueError("inventory must be a JSON list or an object with an inventory list")
+        raise ValueError("inventory must be a JSON list or an object with an inventory list")  # noqa: TRY004 - ValueError is the established CLI error contract
 
     validated: list[dict[str, Any]] = []
     for index, entry in enumerate(inventory):
         if not isinstance(entry, dict):
-            raise ValueError(f"inventory[{index}] must be an object")
+            raise ValueError(f"inventory[{index}] must be an object")  # noqa: TRY004 - ValueError is the established CLI error contract
         for field in ("name", "path"):
             if not isinstance(entry.get(field), str) or not entry[field].strip():
                 raise ValueError(f"inventory[{index}] missing valid {field}")
         description = entry.get("description", "")
         if not isinstance(description, str):
-            raise ValueError(f"inventory[{index}].description must be a string")
+            raise ValueError(f"inventory[{index}].description must be a string")  # noqa: TRY004 - ValueError is the established CLI error contract
         validated.append({"name": entry["name"], "path": entry["path"], "description": description})
     return validated
 
@@ -1122,9 +1123,7 @@ def process_is_alive(pid: int) -> bool:
     except PermissionError:
         return True
     except OSError as exc:
-        if exc.errno in {errno.ESRCH, errno.ENOENT}:
-            return False
-        return True
+        return exc.errno not in {errno.ESRCH, errno.ENOENT}
     return True
 
 
@@ -1224,7 +1223,7 @@ def cmd_apply_moves(args: argparse.Namespace) -> int:
             with journal_path.open("a", encoding="utf-8") as journal:
                 journal.write(json.dumps(record, sort_keys=True) + "\n")
             moved.append(record)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - intentional rollback safety net for move loop
         return fail(f"move stopped after {len(moved)} successful move(s): {exc}", [f"journal: {journal_path}"])
     finally:
         try:
@@ -1251,7 +1250,7 @@ def fenced_commands(text: str) -> set[str]:
         if line.strip().startswith("```"):
             fenced = not fenced
             continue
-        if fenced and re.match(r"\s*(?:[$>#]|python\s|find\s|git\s|test\s|sha256|python3\s)", line, re.I):
+        if fenced and re.match(r"\s*(?:[$>#]|python\s|find\s|git\s|test\s|sha256|python3\s)", line, re.IGNORECASE):
             cleaned = re.sub(r"^\s*[$>#]\s*", "", line).strip()
             if cleaned:
                 commands.add(cleaned)
@@ -1492,13 +1491,12 @@ def master_report(draft: Path, dir_name: str | None = None) -> dict[str, Any]:
             g1_flagged.append(pattern.pattern)
     for dep_file in ("package.json", "requirements.txt"):
         candidate = root / dep_file
-        if candidate.is_file():
-            if re.search(r'["\']\^|["\']~', candidate.read_text(encoding="utf-8")):
-                g1_flagged.append(f"unpinned dependency range in {dep_file}")
+        if candidate.is_file() and re.search(r'["\']\^|["\']~', candidate.read_text(encoding="utf-8")):
+            g1_flagged.append(f"unpinned dependency range in {dep_file}")
 
     # G3 — version discipline (quoted string, semver-ish) + merged-from provenance
     fm = _frontmatter_region(text)
-    version_match = re.search(r"^version\s*:\s*(.*?)\s*$", fm, re.M)
+    version_match = re.search(r"^version\s*:\s*(.*?)\s*$", fm, re.MULTILINE)
     if not version_match:
         g3.append("version missing from frontmatter")
     else:
@@ -1507,9 +1505,9 @@ def master_report(draft: Path, dir_name: str | None = None) -> dict[str, Any]:
             g3.append(f"version must be a QUOTED string (YAML float trap): {raw!r}")
         elif not re.fullmatch(r"\d+\.\d+(?:\.\d+)?(?:[-+][0-9A-Za-z.-]+)?", raw[1:-1]):
             g3.append(f"version not valid semver-ish: {raw!r}")
-    if re.search(r"^merged-from\s*:", fm, re.M):
-        after = fm[re.search(r"^merged-from\s*:", fm, re.M).end():]
-        if not re.search(r"^\s+-\s+.+", after, re.M):
+    if re.search(r"^merged-from\s*:", fm, re.MULTILINE):
+        after = fm[re.search(r"^merged-from\s*:", fm, re.MULTILINE).end():]
+        if not re.search(r"^\s+-\s+.+", after, re.MULTILINE):
             g3.append("merged-from must be a non-empty list of source paths")
 
     g0_status = "PASS" if not g0 else "FAIL"
@@ -1848,9 +1846,10 @@ def cmd_repair(args: argparse.Namespace) -> int:
         allowed_sources = set(args.source)
         filtered_checks = []
         for c in checks:
-            if isinstance(c, dict) and "source" in c:
-                if any(s in c["source"] or c["source"].endswith(s) for s in allowed_sources):
-                    filtered_checks.append(c)
+            if isinstance(c, dict) and "source" in c and any(
+                s in c["source"] or c["source"].endswith(s) for s in allowed_sources
+            ):
+                filtered_checks.append(c)
         if not filtered_checks:
             errors.append("no matching sources found in loss-report checks")
             return _repair_emit_fail(errors, args)
@@ -1913,8 +1912,7 @@ def cmd_repair(args: argparse.Namespace) -> int:
                 poll_seconds = float(os.environ.get("CATALOG_GOVERNANCE_REPAIR_POLL_SECONDS", "2.0"))
             except ValueError:
                 poll_seconds = 2.0
-            if poll_seconds < 0:
-                poll_seconds = 0
+            poll_seconds = max(poll_seconds, 0)
             iterations = max(1, int(poll_seconds * 10))
             for _ in range(iterations):
                 time.sleep(0.1)
@@ -2064,7 +2062,7 @@ def v2_validate_proposal(skill_path: Path, provenance_path: Path, active_root: P
     except ValueError as exc:
         raise ValueError(f"invalid proposal provenance: {exc}") from exc
     if not isinstance(payload, dict):
-        raise ValueError("proposal provenance must be an object")
+        raise ValueError("proposal provenance must be an object")  # noqa: TRY004 - ValueError is the established CLI error contract
     if payload.get("schema") != V2_PROPOSAL_SCHEMA:
         raise ValueError("proposal schema must be skill-proposal-1")
     proposal_id = v2_safe_id(payload.get("proposal_id"), "proposal_id")
@@ -2089,7 +2087,7 @@ def v2_validate_proposal(skill_path: Path, provenance_path: Path, active_root: P
         raise ValueError("proposal hash (skill_sha256) does not match exact SKILL.md bytes")
     target = payload.get("target")
     if not isinstance(target, dict):
-        raise ValueError("proposal target must be an object")
+        raise ValueError("proposal target must be an object")  # noqa: TRY004 - ValueError is the established CLI error contract
     if target.get("kind") != "new_skill":
         raise ValueError("V2.0 CREATE target kind must be new_skill")
     target_name = target.get("name")
@@ -2176,13 +2174,13 @@ def cmd_check_policy(args: argparse.Namespace) -> int:
 def v2_capture_usage_record(usage_path: Path, skill_name: str) -> dict[str, Any]:
     usage = load_json(usage_path)
     if not isinstance(usage, dict):
-        raise ValueError("Hermes usage file must be an object")
+        raise ValueError("Hermes usage file must be an object")  # noqa: TRY004 - ValueError is the established CLI error contract
     record = usage.get(skill_name)
     if not isinstance(record, dict):
         skills = usage.get("skills")
         record = skills.get(skill_name) if isinstance(skills, dict) else None
     if not isinstance(record, dict):
-        raise ValueError(f"Hermes usage record is missing for skill: {skill_name}")
+        raise ValueError(f"Hermes usage record is missing for skill: {skill_name}")  # noqa: TRY004 - ValueError is the established CLI error contract
     if record.get("created_by") != "agent" and record.get("agent_created") is not True:
         raise ValueError("Hermes usage record is not marked agent-created")
     return record
@@ -2191,7 +2189,7 @@ def v2_capture_usage_record(usage_path: Path, skill_name: str) -> dict[str, Any]
 def v2_capture_metadata(metadata_path: Path) -> dict[str, Any]:
     metadata = load_json(metadata_path)
     if not isinstance(metadata, dict):
-        raise ValueError("Hermes capture metadata must be an object")
+        raise ValueError("Hermes capture metadata must be an object")  # noqa: TRY004 - ValueError is the established CLI error contract
     required = ("schema", "hermes_version", "hermes_commit", "source_session", "captured_at_utc")
     missing = [key for key in required if key not in metadata]
     if missing:
@@ -2362,7 +2360,7 @@ def v2_detect_capabilities(text: str) -> tuple[set[str], list[str]]:
     detected: set[str] = set()
     reasons: list[str] = []
     for capability, pattern, reason in signals:
-        if re.search(pattern, text, re.I | re.S):
+        if re.search(pattern, text, re.IGNORECASE | re.DOTALL):
             detected.add(capability)
             reasons.append(f"{capability}: {reason}")
     return detected, sorted(reasons)
@@ -2436,7 +2434,7 @@ def v2_scan_file_roots(roots: list[str], skill_name: str) -> tuple[list[str], li
                 content = path.read_text(encoding="utf-8")
             except (OSError, UnicodeDecodeError):
                 continue
-            if re.search(rf"\b{re.escape(skill_name)}\b", content, re.I):
+            if re.search(rf"\b{re.escape(skill_name)}\b", content, re.IGNORECASE):
                 findings.append({"kind": "ACTIVE_CONSUMER_FOUND", "path": str(path.resolve()), "match": skill_name})
     return sorted(set(searched)), sorted(set(unscanned)), findings
 
@@ -2446,7 +2444,7 @@ def cmd_impact_report(args: argparse.Namespace) -> int:
     try:
         data = load_json(proposal_dir / "proposal.json")
         if not isinstance(data, dict):
-            raise ValueError("proposal.json must be an object")
+            raise ValueError("proposal.json must be an object")  # noqa: TRY004 - ValueError is the established CLI error contract
         target = data.get("target", {})
         skill_name = target.get("name")
         roots = list(args.scan_root or [])
@@ -2489,7 +2487,7 @@ def cmd_decide(args: argparse.Namespace) -> int:
             raise ValueError("decision text must be non-empty")
         policy = load_json(policy_path)
         if not isinstance(policy, dict):
-            raise ValueError("policy must be an object")
+            raise ValueError("policy must be an object")  # noqa: TRY004 - ValueError is the established CLI error contract
         policy_sha = sha256_file(policy_path)
         if policy.get("schema") != V2_POLICY_SCHEMA:
             raise ValueError("policy schema must be skill-policy-1")
@@ -2562,7 +2560,7 @@ def cmd_decide(args: argparse.Namespace) -> int:
 def v2_load_decision(path: Path, proposal_dir: Path, policy_path: Path) -> tuple[dict[str, Any], str]:
     decision = load_json(path)
     if not isinstance(decision, dict):
-        raise ValueError("decision must be an object")
+        raise ValueError("decision must be an object")  # noqa: TRY004 - ValueError is the established CLI error contract
     if decision.get("schema") != "skill-decision-1" or decision.get("decision") != "APPROVE":
         raise ValueError("activation requires a skill-decision-1 APPROVE record")
     if decision.get("proposal_id") != proposal_dir.name:
@@ -2942,9 +2940,8 @@ def extract_output_block(skill_text: str) -> str | None:
         elif in_fence:
             content_lines.append(line)
     
-    if in_fence:
-        if found_output_block:
-            raise ValueError("unclosed_fence")
+    if in_fence and found_output_block:
+        raise ValueError("unclosed_fence")
     
     if output_content is None:
         raise ValueError("no_output_block")

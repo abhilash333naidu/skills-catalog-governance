@@ -9,9 +9,8 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from unittest.mock import patch
 from pathlib import Path
-
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 TOOL = ROOT / "scripts" / "catalog_governance.py"
@@ -67,7 +66,7 @@ class GovernanceCliTests(unittest.TestCase):
             "    print('GUARD_EXIT', exc.code)\n"
             "    raise\n"
         )
-        result = subprocess.run([sys.executable, "-c", probe], cwd=ROOT, capture_output=True, text=True)
+        result = subprocess.run([sys.executable, "-c", probe], cwd=ROOT, capture_output=True, text=True, check=False)
         self.assertEqual(result.returncode, 1)
         self.assertIn("GUARD_EXIT 1", result.stdout)
         report = json.loads(result.stdout.split("GUARD_EXIT")[0].strip())
@@ -124,7 +123,7 @@ class GovernanceCliTests(unittest.TestCase):
 
     def test_unsafe_move_shapes_fail_closed(self):
         with tempfile.TemporaryDirectory() as raw:
-            catalog, archive, source, manifest = self.make_catalog(raw)
+            catalog, archive, _source, manifest = self.make_catalog(raw)
             nested_archive = catalog / "inside-archive"
             report = self.run_cli(
                 "preflight-moves", "--root", catalog, "--archive", nested_archive,
@@ -1590,7 +1589,7 @@ class V2LifecycleCliTests(GovernanceCliTests):
     def test_decide_requires_human_and_binds_evidence_hashes(self):
         with tempfile.TemporaryDirectory() as raw:
             base = Path(raw)
-            governance_root, active_root, proposal, policy = self.prepare_evaluated_proposal(base)
+            governance_root, _active_root, proposal, policy = self.prepare_evaluated_proposal(base)
             decision = base / "decision.json"
             report = self.run_cli(
                 "decide", "--proposal", proposal, "--root", governance_root, "--policy", policy,
@@ -1715,7 +1714,7 @@ class RepairCliTests(unittest.TestCase):
         self.assertEqual(
             result.returncode,
             expected,
-            "stdout=%s stderr=%s" % (result.stdout, result.stderr),
+            f"stdout={result.stdout} stderr={result.stderr}",
         )
         return json.loads(result.stdout)
 
@@ -1816,19 +1815,21 @@ class RepairCliTests(unittest.TestCase):
             return original_read_text(self_obj, *args, **kwargs)
 
         call_count = {}
-        with patch("scripts.catalog_governance.Path.read_text", autospec=True, side_effect=side_effect):
-            with patch("time.sleep"):  # Skip actual sleeping
-                # Capture stdout to parse JSON result
-                import io
-                from contextlib import redirect_stdout
-                f = io.StringIO()
-                with redirect_stdout(f):
-                    status_code = GOVERNANCE.cmd_repair(args)
-                
-                report = json.loads(f.getvalue())
-                self.assertEqual(status_code, 0)
-                self.assertEqual(report["status"], "PASS")
-                self.assertEqual(report["rounds_run"], 2)
+        with (
+            patch("scripts.catalog_governance.Path.read_text", autospec=True, side_effect=side_effect),
+            patch("time.sleep"),  # Skip actual sleeping
+        ):
+            # Capture stdout to parse JSON result
+            import io
+            from contextlib import redirect_stdout
+            f = io.StringIO()
+            with redirect_stdout(f):
+                status_code = GOVERNANCE.cmd_repair(args)
+
+            report = json.loads(f.getvalue())
+            self.assertEqual(status_code, 0)
+            self.assertEqual(report["status"], "PASS")
+            self.assertEqual(report["rounds_run"], 2)
 
     def test_repair_refuses_when_draft_hash_changed_without_flag(self):
         source = self.base / "source.md"
