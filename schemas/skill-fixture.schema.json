@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skill-fixture.schema.json",
+  "title": "Skills Catalog Governance — Skill Fixture",
+  "description": "Test fixture for grade-skill. Exactly one of expect_exact_output / expected_tools MUST be present.",
+  "type": "object",
+  "required": ["fixture_id", "input"],
+  "properties": {
+    "fixture_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier within the fixture set"
+    },
+    "input": {
+      "type": "object",
+      "required": ["prompt"],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The prompt / invocation context to supply to the skill"
+        },
+        "context": {
+          "type": "object",
+          "description": "Optional additional context (files, env, etc.)"
+        }
+      }
+    },
+    "expect_exact_output": {
+      "type": "string",
+      "description": "Expected exact output text (after normalization per REQ-B2). Mutually exclusive with expected_tools."
+    },
+    "expected_tools": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 1,
+      "description": "Expected tool names (subset of frontmatter allowed-tools). Mutually exclusive with expect_exact_output."
+    },
+    "case_sensitive": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether exact-output comparison is case-sensitive (REQ-B2)"
+    }
+  },
+  "oneOf": [
+    {"required": ["expect_exact_output"]},
+    {"required": ["expected_tools"]}
+  ],
+  "additionalProperties": false
+}

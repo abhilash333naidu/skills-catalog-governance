@@ -252,6 +252,30 @@ Run `python3 scripts/catalog_governance.py --help` for full details.
 
 ---
 
+## Security & Quality Gates
+
+### scan-security (V2.1+)
+Static heuristic scan for dangerous patterns (OWASP-aligned tripwires):
+```bash
+# Scan a skill directory; exit 1 if any HIGH finding
+python3 scripts/catalog_governance.py scan-security --path ./skill-dir --fail-on high
+
+# Severity thresholds: none | low | medium | high
+python3 scripts/catalog_governance.py scan-security --path ./skill-dir --fail-on medium
+```
+> **Note:** Findings are labeled **tripwires, not boundaries**. Regex scanning cannot see obfuscation or semantic injection. It catches low-hanging fruit (pipe-to-shell, `rm -rf /`, credential exfil, `eval`, unpinned `npx`/`pip`, prompt-injection phrasing). A PASS does not prove absence of malicious behavior.
+
+### grade-skill (V2.2+)
+Structural grader against deterministic fixtures (no LLM execution):
+```bash
+python3 scripts/catalog_governance.py grade-skill --path ./skill-dir --fixtures ./fixtures.json
+```
+- `expect_exact_output` fixtures: byte-comparison against a fenced `output:` block in SKILL.md (normalization: strip trailing whitespace per line, CRLF→LF)
+- `expected_tools` fixtures: requires non-empty intersection AND all listed tools present in frontmatter `allowed-tools`
+- Reports carry explicit labeling: `"scope": "structural grading only"`, `"behavioral_claims": "advisory"`
+
+---
+
 ## Architecture
 
 **Stdlib-only Python 3.10+.** One file, zero runtime dependencies.

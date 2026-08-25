@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Council Report: Evolution Strategy for Skills Catalog Governance</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --border: #334155;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --success: #34d399;
+    --warning: #fbbf24;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  h1, h2, h3 { color: #fff; }
+  .badge {
+    background: rgba(56, 189, 248, 0.15);
+    color: var(--accent);
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .verdict-header {
+    border-left: 4px solid var(--accent);
+    padding-left: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .advisor-card {
+    background: #182234;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  .advisor-title {
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  details {
+    background: #131c2e;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+  }
+  summary {
+    font-weight: 600;
+    cursor: pointer;
+    color: #e2e8f0;
+  }
+  ul { padding-left: 1.25rem; }
+  li { margin-bottom: 0.5rem; }
+</style>
+</head>
+<body>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+  <h1>🛡️ Council Report: Repo Evolution Strategy</h1>
+  <span class="badge">LLM Council Synthesis · 2026-08-25</span>
+</div>
+
+<div class="card">
+  <div class="verdict-header">
+    <h2>Chairman's Executive Verdict</h2>
+    <p style="color: var(--muted);">Synthesized across 5 Advisors (Contrarian, First Principles, Expansionist, Outsider, Executor)</p>
+  </div>
+  
+  <h3>1. Positioning Consensus</h3>
+  <p>Do <strong>NOT</strong> attempt to compete with Vercel or SkillsGate as an interactive UI marketplace or broad downloader CLI. Position <strong><code>skills-catalog-governance</code></strong> as the <strong>Linter, Verifier & Certification Pipeline</strong> for the entire Agent Skills ecosystem (The "Cargo Check + SemVer Linter + SonarQube" of AI skills).</p>
+
+  <h3>2. Core Architectural Pillars to Adapt</h3>
+  <div class="grid">
+    <div class="advisor-card">
+      <div class="advisor-title">🛡️ Security & Supply Chain (OWASP)</div>
+      <ul>
+        <li>Static taint analysis in M1/M4.</li>
+        <li>Detection of hallucinated <code>npx</code>/binary executions.</li>
+        <li>ASVS / Prompt-injection verification gates.</li>
+      </ul>
+    </div>
+    <div class="advisor-card">
+      <div class="advisor-title">🧪 Unit Evaluation (Skillgrade / Block)</div>
+      <ul>
+        <li>Automate M3.5 Golden Gate with standard fixture tests.</li>
+        <li>Tool-call fidelity verification before approval.</li>
+      </ul>
+    </div>
+    <div class="advisor-card">
+      <div class="advisor-title">🌐 Multi-Harness Compatibility (Vercel / ASPM)</div>
+      <ul>
+        <li>Parse multi-manifest standards (<code>aspub.yaml</code>, <code>allowed-tools</code>, <code>ai-catalog.json</code>).</li>
+        <li>Export lockfiles and verified bundle digests.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 1.5rem;">3. Immediate Concrete Next Step</h3>
+  <p><strong>Add OWASP Static Security Scanning (G0-Sec Gate)</strong> directly into <code>scripts/catalog_governance.py</code> to detect dangerous patterns (<code>curl | sh</code>, unquoted evals, path traversal, untyped environment injections) alongside SHA-256 fingerprinting.</p>
+</div>
+
+<h2>Advisor Perspectives</h2>
+<div class="grid">
+  <div class="advisor-card">
+    <div class="advisor-title">The First Principles Thinker</div>
+    <p>A package manager installs bytes; a governance engine verifies correctness. Own the verification layer and export standardized lockfiles to downstream tools.</p>
+  </div>
+  <div class="advisor-card">
+    <div class="advisor-title">The Contrarian</div>
+    <p>Avoid building a marketplace or GUI wrapper. If you try to support 50 harnesses natively without a standard IR, you will drown in maintenance debt.</p>
+  </div>
+  <div class="advisor-card">
+    <div class="advisor-title">The Expansionist</div>
+    <p>Become the universal CI certification badge: "Verified by Skills-Catalog-Governance" (OWASP compliant + Golden Gate certified + zero regression).</p>
+  </div>
+</div>
+
+<h2 style="margin-top: 2rem;">Full Details & Transcripts</h2>
+<details>
+  <summary>View Complete Council Transcript Reference</summary>
+  <p style="margin-top: 0.5rem;">Transcript saved locally: <code>council-transcript-20260825_153349.md</code></p>
+</details>
+
+</body>
+</html>

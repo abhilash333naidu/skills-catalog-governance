@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skills-catalog-active-record-1",
+  "type": "object",
+  "required": ["schema", "proposal_id", "active_root", "active_path", "skill_sha256", "snapshot_id", "decision_sha256", "policy_sha256"],
+  "properties": {
+    "schema": {"const": "skill-active-record-1"},
+    "proposal_id": {"type": "string", "minLength": 1},
+    "active_root": {"type": "string", "minLength": 1},
+    "active_path": {"type": "string", "minLength": 1},
+    "skill_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "snapshot_id": {"type": "string", "minLength": 1},
+    "decision_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "policy_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "status": {"enum": ["ACTIVE", "DRIFTED", "RESTORED"]}
+  },
+  "additionalProperties": true
+}

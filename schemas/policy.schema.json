@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skills-catalog-policy-1",
+  "type": "object",
+  "required": ["schema", "default_state"],
+  "properties": {
+    "schema": {"const": "skill-policy-1"},
+    "default_state": {"const": "QUARANTINED"},
+    "allow_low_risk_auto_approval": {"const": false},
+    "require_human_for_low_risk": {"const": true},
+    "require_human_for_medium_risk": {"const": true},
+    "require_human_for_high_risk": {"const": true},
+    "block_auto_activation_for_critical": {"const": true},
+    "require_snapshot_before_activation": {"const": true},
+    "require_rollback_test": {"const": true},
+    "allow_automatic_merge": {"const": false}
+  },
+  "additionalProperties": true
+}

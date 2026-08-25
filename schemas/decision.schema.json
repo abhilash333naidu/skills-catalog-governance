@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skills-catalog-decision-1",
+  "type": "object",
+  "required": ["schema", "decision_id", "proposal_id", "decision", "actor", "proposal_sha256", "policy_sha256", "evidence_sha256", "decision_text", "decided_at_utc"],
+  "properties": {
+    "schema": {"const": "skill-decision-1"},
+    "decision_id": {"type": "string", "minLength": 1},
+    "proposal_id": {"type": "string", "minLength": 1},
+    "decision": {"enum": ["APPROVE", "REJECT", "BLOCK", "REQUIRES_REVIEW"]},
+    "actor": {"type": "string", "minLength": 1},
+    "proposal_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "policy_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "evidence_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "decision_text": {"type": "string", "minLength": 1},
+    "decided_at_utc": {"type": "string", "format": "date-time"}
+  },
+  "additionalProperties": true
+}

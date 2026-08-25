@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "security-audit.schema.json",
+  "title": "Skills Catalog Governance — Security Audit Report",
+  "description": "Static, heuristic security/supply-chain scan report for a skill directory. Content is never executed.",
+  "type": "object",
+  "required": ["status", "scanned_root", "tree_sha256", "files_scanned", "findings"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["PASS", "FAIL"],
+      "description": "PASS when no findings at or above the fail-on threshold; FAIL otherwise."
+    },
+    "fail_on": {
+      "type": "string",
+      "enum": ["high", "medium", "low", "none"]
+    },
+    "scanned_root": { "type": "string" },
+    "tree_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "files_scanned": { "type": "integer", "minimum": 0 },
+    "files_skipped": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Files not scanned (binary, oversize, unreadable) with reasons."
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "severity", "path", "line", "rule", "description", "owasp_ref"],
+        "properties": {
+          "id": { "type": "string" },
+          "severity": { "type": "string", "enum": ["high", "medium", "low"] },
+          "path": { "type": "string" },
+          "line": { "type": "integer", "minimum": 1 },
+          "column": { "type": "integer", "minimum": 1 },
+          "rule": { "type": "string" },
+          "description": { "type": "string" },
+          "owasp_ref": { "type": "string" },
+          "match": { "type": "string", "description": "Redacted matched text snippet." }
+        }
+      }
+    },
+    "heuristic_notice": {
+      "type": "string",
+      "description": "Statement that the scan is static and heuristic and cannot prove absence of malicious behavior."
+    }
+  }
+}

@@ -1,4 +1,6 @@
-<svg role="img" aria-labelledby="hero-title" <title id="hero-title">Skills Catalog Governance — Agent Skill Pipeline (Light)</title> <desc id="hero-title-desc">High-end visualization showing AI agent skill sources (Hermes, Claude Code, OpenCode) flowing through governance stages (discover, group, council, consolidate, loss check, golden gate, benchmark, approval, promote) into a canonical verified catalog.</desc> xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 640">
+<svg role="img" aria-labelledby="hero-title" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 640">
+  <title id="hero-title">Skills Catalog Governance — Agent Skill Pipeline (Light)</title>
+  <desc id="hero-title-desc">High-end visualization showing AI agent skill sources flowing through governance stages into a canonical verified catalog.</desc>
   
   
 
@@ -34,7 +36,7 @@
 
   <!-- Section Headers (Eyebrow Tags) -->
   <g transform="translate(80, 60)">
-    <rect width="140" height="24" rx="12" fill="#2563EB" opacity="0.1"/>
+    <rect width="120" height="28" rx="14" fill="#2563EB" opacity="0.12"/>
     <text x="70" y="16" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#2563EB" text-anchor="middle" letter-spacing="0.1em">SOURCES</text>
   </g>
 
@@ -94,35 +96,35 @@
   <g transform="translate(420, 100)">
     <!-- Stage 1: Discover -->
     <g transform="translate(0, 0)">
-      <rect width="180" height="120" rx="24" fill="#FFFFFF" stroke="rgba(15, 23, 42, 0.08)" stroke-width="1" filter="url(#ambientShadow)"/>
-      <rect x="4" y="4" width="172" height="112" rx="20" fill="#FFFFFF" stroke="rgba(15, 23, 42, 0.04)" stroke-width="1"/>
+      <rect width="200" height="140" rx="24" fill="#FFFFFF" stroke="rgba(15, 23, 42, 0.08)" stroke-width="1" filter="url(#ambientShadow)"/>
+      <rect x="4" y="4" width="192" height="132" rx="20" fill="#FFFFFF" stroke="rgba(15, 23, 42, 0.04)" stroke-width="1"/>
       <g transform="translate(24, 30)">
         <use href="#icon-search" width="20" height="20" color="#2563EB"/>
       </g>
-      <text x="24" y="70" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#E6EDF3" letter-spacing="-0.01em">DISCOVER</text>
-      <text x="24" y="90" font-family="system-ui, sans-serif" font-size="12" fill="#F1F5F9">211 candidates</text>
+      <text x="24" y="70" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#E6EDF3" letter-spacing="-0.01em">DISCOVER</text>
+      <text x="24" y="90" font-family="system-ui, sans-serif" font-size="14" fill="#F1F5F9">211 candidates</text>
     </g>
 
     <!-- Stage 2: Group -->
     <g transform="translate(200, 0)">
-      <rect width="180" height="120" rx="24" fill="#FFFFFF" stroke="rgba(15, 23, 42, 0.08)" stroke-width="1" filter="url(#ambientShadow)"/>
-      <rect x="4" y="4" width="172" height="112" rx="20" fill="#FFFFFF" stroke="rgba(15, 23, 42, 0.04)" stroke-width="1"/>
+      <rect width="200" height="140" rx="24" fill="#FFFFFF" stroke="rgba(15, 23, 42, 0.08)" stroke-width="1" filter="url(#ambientShadow)"/>
+      <rect x="4" y="4" width="192" height="132" rx="20" fill="#FFFFFF" stroke="rgba(15, 23, 42, 0.04)" stroke-width="1"/>
       <g transform="translate(24, 30)">
         <use href="#icon-users" width="20" height="20" color="#D97706"/>
       </g>
-      <text x="24" y="70" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#E6EDF3" letter-spacing="-0.01em">GROUP</text>
-      <text x="24" y="90" font-family="system-ui, sans-serif" font-size="12" fill="#F1F5F9">19 families</text>
+      <text x="24" y="70" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#E6EDF3" letter-spacing="-0.01em">GROUP</text>
+      <text x="24" y="90" font-family="system-ui, sans-serif" font-size="14" fill="#F1F5F9">19 families</text>
     </g>
 
     <!-- Stage 3: Council -->
     <g transform="translate(400, 0)">
-      <rect width="180" height="120" rx="24" fill="#FFFFFF" stroke="rgba(15, 23, 42, 0.08)" stroke-width="1" filter="url(#ambientShadow)"/>
-      <rect x="4" y="4" width="172" height="112" rx="20" fill="#FFFFFF" stroke="rgba(15, 23, 42, 0.04)" stroke-width="1"/>
+      <rect width="200" height="140" rx="24" fill="#FFFFFF" stroke="rgba(15, 23, 42, 0.08)" stroke-width="1" filter="url(#ambientShadow)"/>
+      <rect x="4" y="4" width="192" height="132" rx="20" fill="#FFFFFF" stroke="rgba(15, 23, 42, 0.04)" stroke-width="1"/>
       <g transform="translate(24, 30)">
         <use href="#icon-shield" width="20" height="20" color="#7C3AED"/>
       </g>
-      <text x="24" y="70" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#E6EDF3" letter-spacing="-0.01em">COUNCIL</text>
-      <text x="24" y="90" font-family="system-ui, sans-serif" font-size="12" fill="#F1F5F9">Consensus verdict</text>
+      <text x="24" y="70" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#E6EDF3" letter-spacing="-0.01em">COUNCIL</text>
+      <text x="24" y="90" font-family="system-ui, sans-serif" font-size="14" fill="#F1F5F9">Consensus verdict</text>
     </g>
 
     <!-- Pipeline Horizontal Rule -->
@@ -159,14 +161,14 @@
      <!-- Skill Entry 1 -->
      <g transform="translate(24, 80)">
        <text x="0" y="20" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#E6EDF3">commit-message</text>
-       <text x="0" y="40" font-family="system-ui, sans-serif" font-size="12" fill="#F1F5F9">SHA-256: 8f2c... verified</text>
+       <text x="0" y="40" font-family="system-ui, sans-serif" font-size="14" fill="#F1F5F9">SHA-256: 8f2c... verified</text>
        <rect y="50" width="232" height="1" fill="rgba(15, 23, 42, 0.08)"/>
      </g>
 
      <!-- Skill Entry 2 -->
      <g transform="translate(24, 150)">
        <text x="0" y="20" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#E6EDF3">git-workflow</text>
-       <text x="0" y="40" font-family="system-ui, sans-serif" font-size="12" fill="#F1F5F9">SHA-256: 3a1e... verified</text>
+       <text x="0" y="40" font-family="system-ui, sans-serif" font-size="14" fill="#F1F5F9">SHA-256: 3a1e... verified</text>
      </g>
 
      <!-- Scale Indicator -->

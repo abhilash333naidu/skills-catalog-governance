@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skills-catalog-hermes-receipt-1",
+  "type": "object",
+  "required": ["schema", "proposal_id", "skill_sha256", "usage_sha256", "metadata_sha256", "proposal_sha256", "provenance_status"],
+  "properties": {
+    "schema": {"const": "hermes-capture-receipt-1"},
+    "proposal_id": {"type": "string", "minLength": 1},
+    "skill_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "usage_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "metadata_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "proposal_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "provenance_status": {"const": "ASSERTED_FROM_USAGE"}
+  },
+  "additionalProperties": true
+}

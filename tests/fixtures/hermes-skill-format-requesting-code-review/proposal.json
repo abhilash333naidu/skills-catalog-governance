@@ -1,0 +1,27 @@
+{
+  "schema": "skill-proposal-1",
+  "proposal_id": "hermes-generated-requesting-code-review-1",
+  "generated_by": "hermes",
+  "generator_version": "upstream-fixture-adapter",
+  "generated_at_utc": "2026-08-23T12:00:00Z",
+  "source_session": "hermes-fixture-session-1",
+  "source_task": "requesting-code-review",
+  "skill_sha256": "7ffc09e7135928967e19550bd311270aee7fe5d7ebf169cfcaeff1cf11765a21",
+  "declared_capabilities": [
+    "read_repository",
+    "execute_process",
+    "mutate_git",
+    "access_network"
+  ],
+  "requested_action": "CREATE",
+  "target": {
+    "kind": "new_skill",
+    "name": "requesting-code-review",
+    "active_root": "ACTIVE_ROOT_PLACEHOLDER"
+  },
+  "hermes_provenance": {
+    "created_by": "agent",
+    "write_origin": "background_review",
+    "source": "upstream-hermes-skill-format-fixture"
+  }
+}
