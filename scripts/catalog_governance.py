@@ -982,9 +982,11 @@ def build_move_entries(manifest: dict[str, Any], root: Path, archive: Path) -> l
     if errors:
         raise ValueError("; ".join(errors))
     result: list[dict[str, str]] = []
+    root_resolved = root.resolve(strict=False)
     for label, source in entries:
-        relative = source.relative_to(root)
-        result.append({"label": label, "source": str(source), "destination": str(archive / relative)})
+        source_resolved = source.resolve(strict=False)
+        relative = source_resolved.relative_to(root_resolved)
+        result.append({"label": label, "source": str(source_resolved), "destination": str(archive.resolve(strict=False) / relative)})
     return result
 
 
