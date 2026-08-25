@@ -1,4 +1,6 @@
-<svg role="img" aria-labelledby="hero-title" <title id="hero-title">Skills Catalog Governance — Agent Skill Pipeline (Dark)</title> <desc id="hero-title-desc">Dark mode version of the governance pipeline visualization with glassmorphism effects and OLED black background.</desc> xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 640">
+<svg role="img" aria-labelledby="hero-title" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 640">
+  <title id="hero-title">Skills Catalog Governance — Agent Skill Pipeline (Dark)</title>
+  <desc id="hero-title-desc">Dark mode version of the governance pipeline visualization with glassmorphism effects and OLED black background.</desc>
   
   
   <defs>
