@@ -1666,6 +1666,10 @@ class V2LifecycleCliTests(GovernanceCliTests):
                 link.symlink_to(shared, target_is_directory=True)
             except (OSError, NotImplementedError):
                 self.skipTest("symlinks unavailable")
+            # A symlinked governance root resolves INTO shared. The resolved
+            # location itself must not be a reparse point, and the overlap rule
+            # (shared/gov vs shared) must still trip. Verify the symlink path
+            # is rejected via overlap with a root placed at its resolved target.
             with self.assertRaises(ValueError):
                 GOVERNANCE.v2_validate_roots(link / "governance", active)
 

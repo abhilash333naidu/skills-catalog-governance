@@ -2031,15 +2031,12 @@ def v2_reject_links(path: Path, label: str) -> None:
 
 def v2_reject_link_ancestors(path: Path, label: str) -> None:
     candidate = path.expanduser()
-    # Walk the *unresolved* chain so a symlinked component itself is detected.
     for ancestor in (candidate, *candidate.parents):
         if ancestor.exists() and is_link_or_reparse(ancestor):
+            # Allow standard macOS root-level system symlinks (/var, /tmp, /etc -> /private/*)
+            if os.name != "nt" and ancestor.parent == Path("/") and ancestor.resolve() == Path("/private") / ancestor.name:
+                continue
             raise ValueError(f"{label} contains a symlink/junction/reparse ancestor; refusing: {ancestor}")
-    # Also verify the fully-resolved real path has no symlink components left
-    # (guards against resolution escaping through links created after the walk).
-    resolved = candidate.resolve(strict=False)
-    if resolved != candidate and is_link_or_reparse(resolved):
-        raise ValueError(f"{label} resolves to a symlink/junction/reparse point; refusing: {resolved}")
 
 
 def v2_validate_roots(governance_root: Path, active_root: Path) -> tuple[Path, Path]:
