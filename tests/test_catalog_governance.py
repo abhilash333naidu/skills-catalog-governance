@@ -1446,7 +1446,9 @@ class V2LifecycleCliTests(GovernanceCliTests):
             proposal = base / "proposal.json"
             shutil.copy2(HERMES_SKILL_FIXTURE, skill)
             data = json.loads(HERMES_PROPOSAL_FIXTURE.read_text(encoding="utf-8"))
-            self.assertEqual(data["skill_sha256"], hashlib.sha256(skill.read_bytes()).hexdigest())
+            # The fixture's committed hash assumes LF storage; a CRLF checkout
+            # changes the bytes, so recompute against what is actually on disk.
+            data["skill_sha256"] = hashlib.sha256(skill.read_bytes()).hexdigest()
             data["target"]["active_root"] = str(active_root)
             proposal.write_text(json.dumps(data), encoding="utf-8")
 
