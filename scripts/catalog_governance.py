@@ -45,6 +45,8 @@ def require_python_version(minimum: tuple[int, int] = MIN_PYTHON) -> None:
 
 require_python_version()
 
+__version__ = "2.2.0"
+
 SCHEMA_VERSION = "1"
 REF_RE = re.compile(r"`(references/[^`]+)`")
 HEADING_RE = re.compile(r"^#{1,6}\s+(.+?)\s*$")

@@ -12,3 +12,9 @@ E2E_TEST_RUN/
 htmlcov/
 .mermaid_tmp/
 puppeteer.config.json
+
+# pip / setuptools build artifacts
+build/
+dist/
+*.egg-info/
+.venv/
