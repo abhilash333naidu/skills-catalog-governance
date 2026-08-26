@@ -1169,7 +1169,16 @@ def recover_stale_lock(lock: Path) -> bool:
 
 
 def move_tree(source: Path, destination: Path, expected_digest: str) -> None:
-    """Move atomically on one device, or verify a staged copy across devices."""
+    """Move atomically on one device, or verify a staged copy across devices.
+
+    Known non-atomicity: the cross-device staged-copy path (errno.EXDEV) is NOT
+    atomic under concurrent mutation of the source tree. Files copied early can
+    be modified or removed by another writer before the staging rename lands,
+    yielding a destination that mixes pre- and post-mutation content even though
+    the digest check passed at read time. Single-device os.rename stays atomic.
+    Callers that need strict atomicity must hold the campaign move lock so no
+    concurrent writer touches the source for the duration of the move.
+    """
     try:
         os.rename(source, destination)
         return
@@ -1449,16 +1458,18 @@ G1_BLOCK_RE = [
     re.compile(r"(?i)base64\s+-d\b"),
 ]
 G1_FLAG_RE = [
-    re.compile(r"subprocess"),
-    re.compile(r"os\.system"),
-    re.compile(r"eval\s*\("),
-    re.compile(r"exec\s*\("),
-    re.compile(r"curl\s"),
-    re.compile(r"wget\s"),
-    re.compile(r"powershell\s+-enc\b"),
-    re.compile(r"os\.environ"),
-    re.compile(r"process\.env"),
-    re.compile(r"\.aws"),
+    # re.IGNORECASE everywhere: a case-sensitive scan let "Subprocess", "OS.Environ"
+    # and ".AWS" evade the G1 security flag list entirely.
+    re.compile(r"subprocess", re.IGNORECASE),
+    re.compile(r"os\.system", re.IGNORECASE),
+    re.compile(r"eval\s*\(", re.IGNORECASE),
+    re.compile(r"exec\s*\(", re.IGNORECASE),
+    re.compile(r"curl\s", re.IGNORECASE),
+    re.compile(r"wget\s", re.IGNORECASE),
+    re.compile(r"powershell\s+-enc\b", re.IGNORECASE),
+    re.compile(r"os\.environ", re.IGNORECASE),
+    re.compile(r"process\.env", re.IGNORECASE),
+    re.compile(r"\.aws", re.IGNORECASE),
 ]
 
 

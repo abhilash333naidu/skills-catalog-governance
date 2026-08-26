@@ -1,0 +1,31 @@
+# Coverage configuration for skills-catalog-governance.
+#
+# The test suite drives the CLI through subprocesses (sys.executable
+# scripts/catalog_governance.py ...), so plain `pytest --cov` only measures the
+# in-process import and reports a falsely low number (~22%). These settings make
+# coverage see inside those subprocesses:
+#
+#   parallel = True          each process writes its own .coverage.<host>.<pid> shard
+#   sigterm = True           shards are flushed if a process is torn down early
+#   concurrency = multiprocessing   play nicely with any mp-spawned helpers
+#   [run] source = scripts   measure exactly what we ship
+#
+# Workflow (what CI does):
+#   coverage run --rcfile=.coveragerc -m pytest tests/ -q
+#   coverage combine     # merges all .coverage.* shards into .coverage
+#   coverage report --rcfile=.coveragerc --fail-under=72
+
+[run]
+branch = False
+parallel = True
+sigterm = True
+concurrency = multiprocessing
+source = scripts
+data_file = .coverage
+
+[report]
+precision = 2
+exclude_lines =
+    pragma: no cover
+    if TYPE_CHECKING:
+    raise NotImplementedError

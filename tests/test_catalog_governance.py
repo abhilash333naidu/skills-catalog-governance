@@ -1020,6 +1020,26 @@ gates_passed:
             self.assertEqual(report["gates"]["G1"]["status"], "PASS")
             self.assertEqual(report["gates"]["G3"]["status"], "PASS")
 
+    def test_check_master_g1_flag_is_case_insensitive(self):
+        # Regression: G1_FLAG_RE patterns were case-sensitive, so "Subprocess",
+        # "OS.Environ" and ".AWS" evaded the security scanner entirely.
+        with tempfile.TemporaryDirectory() as raw:
+            skill_dir = Path(raw) / "mixed-case-master"
+            (skill_dir / "references").mkdir(parents=True)
+            (skill_dir / "references" / "format.md").write_text("rules\n", encoding="utf-8")
+            (skill_dir / "SKILL.md").write_text(
+                "---\nname: mixed-case-master\ndescription: Uses Subprocess and OS.Environ and reads .AWS config.\n"
+                "version: \"1.0.0\"\n---\n"
+                "# mixed-case-master\nSee `references/format.md`.\n"
+                "Run via Subprocess with OS.Environ; credentials under .AWS.\n",
+                encoding="utf-8",
+            )
+            report = self.run_cli("check-master", "--draft", skill_dir / "SKILL.md")
+            flagged = " ".join(report["gates"]["G1"]["flagged"]).lower()
+            self.assertIn("subprocess", flagged)
+            self.assertIn("os\\.environ", flagged)
+            self.assertIn("\\.aws", flagged)
+
     def test_check_master_rejects_name_mismatch_unquoted_version_and_long_desc(self):
         with tempfile.TemporaryDirectory() as raw:
             skill_dir = Path(raw) / "dir-name"
