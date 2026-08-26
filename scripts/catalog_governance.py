@@ -818,6 +818,29 @@ def backup_destination(destination: Path) -> Path:
 
 def cmd_install(args: argparse.Namespace) -> int:
     source_root = Path(__file__).resolve().parent.parent
+    # Fail-closed guard: the pip wheel layout is not the repo tree. scripts/
+    # alone is shipped in site-packages, so source_root there resolves to
+    # site-packages and INSTALL_DIRS/INSTALL_FILES would not exist. Refuse
+    # instead of copying from the wrong root. Editable installs and the
+    # curl-bash/irm-iex whitelisted copy both resolve source_root to the repo,
+    # so this only trips for non-editable (wheel) installs.
+    module_rel = Path("scripts") / "catalog_governance.py"
+    tree = source_root / module_rel
+    if not (source_root / "SKILL.md").is_file() or not tree.is_file():
+        return emit({
+            "status": "FAIL",
+            "installed": [],
+            "check_package": {},
+            "errors": [
+                (
+                    "the `install` command requires the repository tree on disk "
+                    "(SKILL.md, references/, schemas/, scripts/, tests/). A pip wheel "
+                    "install ships only the standalone module and cannot reinstall the "
+                    "catalog harness; use the curl-bash/irm-iex installer or an editable "
+                    "install (pip install -e .) instead."
+                )
+            ],
+        }, args.output)
     errors: list[str] = []
     installed: list[dict[str, Any]] = []
     checks: list[dict[str, Any]] = []
