@@ -185,6 +185,60 @@ disclosure). Bindings kept here — these are the hard boundaries:
   reports all live under `run-record/`. A prose claim without its evidence artifact is not
   a verified claim.
 
+## Command Reference (authoritative CLI)
+
+Every subcommand of `scripts/catalog_governance.py`. The drift check
+(`scripts/check_docs_drift.py`) fails CI if a command is implemented but not listed here
+as a literal invocation, or vice versa. Lifecycle plumbing messages (`capture-hermes`,
+`intake`, `inspect-proposal`, `check-policy`, `evaluate-proposal`, `impact-report`,
+`decide`, `activate`, `verify-active`, `rollback`) are exempt: they act on a proposal JSON
+payload via the lifecycle engine, not on a skill catalog an operator types against, so they
+are documented as a directed pipeline (see `docs/lifecycle.md` and `docs/v2.2/`), not as
+per-command invocation blocks.
+
+```bash
+# Discovery & grouping (M1/M2)
+python scripts/catalog_governance.py detect-skills --output inventory.json
+python scripts/catalog_governance.py detect-groups --inventory inventory.json --threshold 0.30 --overlap-threshold 0.50
+
+# Package integrity
+python scripts/catalog_governance.py check-package --root .
+
+# Install / dist
+python scripts/catalog_governance.py install --target "<skills-dir>" --yes
+
+# Manifest validation
+python scripts/catalog_governance.py validate-manifest --root . --manifest manifest.json
+
+# Moves (preflight + apply)
+python scripts/catalog_governance.py preflight-moves --root ./skills --archive ./archive --manifest manifest.json --plan plan.json
+python scripts/catalog_governance.py apply-moves --plan plan.json --apply --yes
+
+# Loss-check (merge safety; draft vs every source)
+python scripts/catalog_governance.py loss-check --draft <draft.SKILL.md> --source <src1.SKILL.md> --source <src2.SKILL.md>
+
+# Council + approval verification
+python scripts/catalog_governance.py validate-council-verdict --verdict council-verdict.json
+python scripts/catalog_governance.py verify-approval --draft <draft.SKILL.md> --approval approval.json --loss-report loss-check.json
+
+# Master build + golden-output (M3.5/M4)
+python scripts/catalog_governance.py check-master --draft <master.SKILL.md>
+python scripts/catalog_governance.py golden-gate --manifest golden.json --workdir ./work
+
+# Benchmark (M5/G2)
+python scripts/catalog_governance.py benchmark --bundle docs/benchmark.json
+
+# Repair dispatch (closed-defect-list)
+python scripts/catalog_governance.py repair --loss-report loss-check.json --draft <draft.SKILL.md> --source <src1.SKILL.md>
+
+# Grading + security scan (v2.2)
+python scripts/catalog_governance.py grade-skill --path ./skill-dir --fixtures ./fixtures.json
+python scripts/catalog_governance.py scan-security --path ./skill-dir --fail-on medium
+```
+
+Every `--output` variant writes a JSON report to the given path. Run
+`python scripts/catalog_governance.py --help` for full argument details.
+
 ## When to Use
 
 - Executing a skills-catalog cleanup plan (`.audit_plan.md` + `.audit_manifest.json` style artifacts).

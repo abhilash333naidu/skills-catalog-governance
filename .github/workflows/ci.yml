@@ -34,6 +34,9 @@ jobs:
       - name: Verify package integrity
         run: python scripts/catalog_governance.py check-package --root .
 
+      - name: Check docs/implementation drift
+        run: python scripts/check_docs_drift.py .
+
   lint:
     name: lint (ruff)
     runs-on: ubuntu-latest
