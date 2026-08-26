@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Council Report: Hermes Validation Authenticity</title>
+<style>
+:root { color-scheme: light; --ink:#17202a; --muted:#5d6875; --line:#dfe5ea; --panel:#f7f9fb; --accent:#2457a6; --warn:#8a5a00; --bad:#a33b32; --good:#236b49; }
+* { box-sizing:border-box; }
+body { margin:0; background:#fff; color:var(--ink); font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+main { max-width:980px; margin:0 auto; padding:48px 24px 64px; }
+.kicker { color:var(--accent); font-size:.78rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+h1 { margin:.35rem 0 1rem; font-size:clamp(2rem,5vw,3.3rem); line-height:1.08; letter-spacing:0; }
+h2 { margin:2rem 0 .7rem; font-size:1.35rem; }
+p { max-width:78ch; }
+.verdict { border:1px solid #c8d8ed; border-left:6px solid var(--accent); background:#f4f8fd; padding:22px 24px; margin:24px 0; }
+.verdict strong { color:var(--accent); font-size:1.25rem; }
+.grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:16px 0; }
+.card { border:1px solid var(--line); background:var(--panel); padding:16px; }
+.card h3 { margin:0 0 .35rem; font-size:1rem; }
+.pass { color:var(--good); font-weight:700; }
+.partial { color:var(--warn); font-weight:700; }
+.fail { color:var(--bad); font-weight:700; }
+table { width:100%; border-collapse:collapse; margin:14px 0; }
+th,td { border-bottom:1px solid var(--line); padding:10px 8px; text-align:left; vertical-align:top; }
+th { color:var(--muted); font-size:.86rem; }
+code { background:#eef1f4; padding:.12em .3em; border-radius:3px; font-size:.92em; }
+details { border-top:1px solid var(--line); padding:12px 0; }
+summary { cursor:pointer; font-weight:650; }
+footer { margin-top:44px; padding-top:16px; border-top:1px solid var(--line); color:var(--muted); font-size:.88rem; }
+@media (max-width:680px) { main { padding:32px 16px 48px; } .grid { grid-template-columns:1fr; } th,td { padding:8px 4px; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="kicker">LLM Council Review · 23 Aug 2026</div>
+  <h1>Hermes validation authenticity</h1>
+  <p>The council examined whether the prior Freebuff validation proved a real Hermes-generated skill and live adapter integration, or only governance compatibility with Hermes-formatted content.</p>
+
+  <section class="verdict">
+    <strong>PARTIAL PASS, NOT FULL AUTHENTICATION</strong>
+    <p>The prior validation genuinely proves that the V2 intake path accepts the tested upstream Hermes <code>SKILL.md</code> shape, preserves exact bytes and supplied provenance, quarantines the proposal, and performs conservative capability escalation. It does not prove Hermes generated the exact file or that a live Hermes adapter path works.</p>
+  </section>
+
+  <h2>Claim-by-claim result</h2>
+  <table>
+    <thead><tr><th>Claim</th><th>Verdict</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr><td>Valid Hermes skill format</td><td class="pass">PASS</td><td>Upstream Hermes <code>SKILL.md</code>; exact SHA-256 checked.</td></tr>
+      <tr><td>V2 proposal intake compatibility</td><td class="pass">PASS</td><td>Real CLI test returned <code>QUARANTINED</code>; active root untouched.</td></tr>
+      <tr><td>Hermes generated this exact file</td><td class="fail">UNPROVEN</td><td>Envelope was locally authored; session/task and agent provenance are assertions.</td></tr>
+      <tr><td>Live Hermes adapter integration</td><td class="fail">UNPROVEN</td><td>No native hook or captured Hermes-to-governance adapter run was tested.</td></tr>
+      <tr><td>Supporting-file package compatibility</td><td class="partial">LIMITED</td><td>V2 currently rejects non-empty payloads; only single-file content was tested.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>What the council agreed</h2>
+  <div class="grid">
+    <div class="card"><h3>Real governance evidence</h3><p>Hash binding, quarantine, byte preservation, and no active-root mutation were exercised by the actual CLI.</p></div>
+    <div class="card"><h3>Provenance is not authentication</h3><p><code>created_by: agent</code> and <code>write_origin: background_review</code> were supplied by the fixture and preserved, not independently verified.</p></div>
+    <div class="card"><h3>Risk result is heuristic</h3><p><code>CRITICAL</code> reflects textual detection of credential-related language, not demonstrated credential access.</p></div>
+    <div class="card"><h3>Documentation is mostly honest</h3><p>The existing V2 docs already state that native Hermes admission and real adapter fixtures remain unverified.</p></div>
+  </div>
+
+  <h2>Recommendation</h2>
+  <p>Accept the result as <strong>V2 intake compatibility verified against upstream Hermes skill-format content</strong>. Do not present it as proof of real Hermes generation or production Hermes integration.</p>
+  <p>The first next step is one reproducible Hermes capture bundle containing an actual agent-created <code>SKILL.md</code>, its Hermes <code>.usage.json</code> record, Hermes version/commit, and a generated proposal receipt. Run that receipt through the unchanged V2 intake CLI.</p>
+
+  <details><summary>Review limitation</summary><p>This council was executed as five adversarial lenses in one model context because five independent sub-agent executions were not available in the environment. It is not statistically independent multi-model evidence.</p></details>
+  <details><summary>Full transcript</summary><p>See <code>council-transcript-20260823_161500.md</code> for advisor responses, peer reviews, mapping, and synthesis.</p></details>
+
+  <footer>Timestamp: 2026-08-23 16:15 UTC · Subject: authenticity of V2 Hermes proposal-contract validation</footer>
+</main>
+</body>
+</html>

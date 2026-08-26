@@ -4,6 +4,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+
 from PIL import Image, ImageDraw, ImageFont
 
 WIDTH = 840
@@ -12,14 +13,14 @@ BG = "#0d1117"
 try:
     FONT = ImageFont.truetype("C:/Windows/Fonts/consola.ttf", 13)
     FONT_BOLD = ImageFont.truetype("C:/Windows/Fonts/consolab.ttf", 13)
-except Exception:
+except OSError:
     FONT = ImageFont.load_default()
     FONT_BOLD = FONT
 
 root = Path(__file__).resolve().parents[1]
 result = subprocess.run(
     [sys.executable, str(root / "scripts" / "catalog_governance.py"), "check-package", "--root", "."],
-    capture_output=True, text=True, cwd=str(root),
+    capture_output=True, text=True, cwd=str(root), check=False,
 )
 output = result.stdout.strip()
 data = json.loads(output)

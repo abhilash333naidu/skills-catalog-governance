@@ -1,0 +1,17 @@
+{
+  "counts": {
+    "external": 1
+  },
+  "inventory": [
+    {
+      "description": "Pre-commit review: security scan, quality gates, auto-fix.",
+      "name": "requesting-code-review",
+      "path": "tests/fixtures/hermes-skill-format-requesting-code-review",
+      "read_only": true,
+      "sha256": "7ffc09e7135928967e19550bd311270aee7fe5d7ebf169cfcaeff1cf11765a21",
+      "store": "external"
+    }
+  ],
+  "status": "PASS",
+  "total": 1
+}

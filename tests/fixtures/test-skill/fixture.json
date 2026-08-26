@@ -1,0 +1,6 @@
+{
+  "fixture_id": "test-1",
+  "input": {"prompt": "say hello"},
+  "expect_exact_output": "Hello, world!",
+  "case_sensitive": true
+}

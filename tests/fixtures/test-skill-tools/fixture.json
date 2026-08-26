@@ -1,0 +1,6 @@
+{
+  "fixture_id": "tools-1",
+  "input": {"prompt": "say hello"},
+  "expected_tools": ["read", "write"],
+  "case_sensitive": true
+}

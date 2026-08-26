@@ -16,14 +16,16 @@ import math
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
-from collections import Counter
 import time
-import stat
 import uuid
+from collections import Counter
+from collections.abc import Iterable
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 MIN_PYTHON = (3, 10)
 
@@ -472,18 +474,18 @@ def load_group_inventory(path: Path) -> list[dict[str, Any]]:
             raise ValueError("inventory report contains errors")
         inventory = payload["inventory"]
     else:
-        raise ValueError("inventory must be a JSON list or an object with an inventory list")
+        raise ValueError("inventory must be a JSON list or an object with an inventory list")  # noqa: TRY004 - ValueError is the established CLI error contract
 
     validated: list[dict[str, Any]] = []
     for index, entry in enumerate(inventory):
         if not isinstance(entry, dict):
-            raise ValueError(f"inventory[{index}] must be an object")
+            raise ValueError(f"inventory[{index}] must be an object")  # noqa: TRY004 - ValueError is the established CLI error contract
         for field in ("name", "path"):
             if not isinstance(entry.get(field), str) or not entry[field].strip():
                 raise ValueError(f"inventory[{index}] missing valid {field}")
         description = entry.get("description", "")
         if not isinstance(description, str):
-            raise ValueError(f"inventory[{index}].description must be a string")
+            raise ValueError(f"inventory[{index}].description must be a string")  # noqa: TRY004 - ValueError is the established CLI error contract
         validated.append({"name": entry["name"], "path": entry["path"], "description": description})
     return validated
 
@@ -625,6 +627,13 @@ def package_report(root: Path) -> dict[str, Any]:
         "schemas/council-verdict.schema.json",
         "schemas/golden.schema.json",
         "schemas/benchmark.schema.json",
+        "schemas/proposal.schema.json",
+        "schemas/policy.schema.json",
+        "schemas/decision.schema.json",
+        "schemas/lifecycle.schema.json",
+        "schemas/active-record.schema.json",
+        "schemas/hermes-capture.schema.json",
+        "schemas/hermes-receipt.schema.json",
     ]
     required_files = sorted(set(references + required_payload))
     missing = [relative for relative in required_files if not (root / relative).is_file()]
@@ -973,9 +982,11 @@ def build_move_entries(manifest: dict[str, Any], root: Path, archive: Path) -> l
     if errors:
         raise ValueError("; ".join(errors))
     result: list[dict[str, str]] = []
+    root_resolved = root.resolve(strict=False)
     for label, source in entries:
-        relative = source.relative_to(root)
-        result.append({"label": label, "source": str(source), "destination": str(archive / relative)})
+        source_resolved = source.resolve(strict=False)
+        relative = source_resolved.relative_to(root_resolved)
+        result.append({"label": label, "source": str(source_resolved), "destination": str(archive.resolve(strict=False) / relative)})
     return result
 
 
@@ -1114,9 +1125,7 @@ def process_is_alive(pid: int) -> bool:
     except PermissionError:
         return True
     except OSError as exc:
-        if exc.errno in {errno.ESRCH, errno.ENOENT}:
-            return False
-        return True
+        return exc.errno not in {errno.ESRCH, errno.ENOENT}
     return True
 
 
@@ -1216,7 +1225,7 @@ def cmd_apply_moves(args: argparse.Namespace) -> int:
             with journal_path.open("a", encoding="utf-8") as journal:
                 journal.write(json.dumps(record, sort_keys=True) + "\n")
             moved.append(record)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - intentional rollback safety net for move loop
         return fail(f"move stopped after {len(moved)} successful move(s): {exc}", [f"journal: {journal_path}"])
     finally:
         try:
@@ -1243,7 +1252,7 @@ def fenced_commands(text: str) -> set[str]:
         if line.strip().startswith("```"):
             fenced = not fenced
             continue
-        if fenced and re.match(r"\s*(?:[$>#]|python\s|find\s|git\s|test\s|sha256|python3\s)", line, re.I):
+        if fenced and re.match(r"\s*(?:[$>#]|python\s|find\s|git\s|test\s|sha256|python3\s)", line, re.IGNORECASE):
             cleaned = re.sub(r"^\s*[$>#]\s*", "", line).strip()
             if cleaned:
                 commands.add(cleaned)
@@ -1484,13 +1493,12 @@ def master_report(draft: Path, dir_name: str | None = None) -> dict[str, Any]:
             g1_flagged.append(pattern.pattern)
     for dep_file in ("package.json", "requirements.txt"):
         candidate = root / dep_file
-        if candidate.is_file():
-            if re.search(r'["\']\^|["\']~', candidate.read_text(encoding="utf-8")):
-                g1_flagged.append(f"unpinned dependency range in {dep_file}")
+        if candidate.is_file() and re.search(r'["\']\^|["\']~', candidate.read_text(encoding="utf-8")):
+            g1_flagged.append(f"unpinned dependency range in {dep_file}")
 
     # G3 — version discipline (quoted string, semver-ish) + merged-from provenance
     fm = _frontmatter_region(text)
-    version_match = re.search(r"^version\s*:\s*(.*?)\s*$", fm, re.M)
+    version_match = re.search(r"^version\s*:\s*(.*?)\s*$", fm, re.MULTILINE)
     if not version_match:
         g3.append("version missing from frontmatter")
     else:
@@ -1499,9 +1507,9 @@ def master_report(draft: Path, dir_name: str | None = None) -> dict[str, Any]:
             g3.append(f"version must be a QUOTED string (YAML float trap): {raw!r}")
         elif not re.fullmatch(r"\d+\.\d+(?:\.\d+)?(?:[-+][0-9A-Za-z.-]+)?", raw[1:-1]):
             g3.append(f"version not valid semver-ish: {raw!r}")
-    if re.search(r"^merged-from\s*:", fm, re.M):
-        after = fm[re.search(r"^merged-from\s*:", fm, re.M).end():]
-        if not re.search(r"^\s+-\s+.+", after, re.M):
+    if re.search(r"^merged-from\s*:", fm, re.MULTILINE):
+        after = fm[re.search(r"^merged-from\s*:", fm, re.MULTILINE).end():]
+        if not re.search(r"^\s+-\s+.+", after, re.MULTILINE):
             g3.append("merged-from must be a non-empty list of source paths")
 
     g0_status = "PASS" if not g0 else "FAIL"
@@ -1840,9 +1848,10 @@ def cmd_repair(args: argparse.Namespace) -> int:
         allowed_sources = set(args.source)
         filtered_checks = []
         for c in checks:
-            if isinstance(c, dict) and "source" in c:
-                if any(s in c["source"] or c["source"].endswith(s) for s in allowed_sources):
-                    filtered_checks.append(c)
+            if isinstance(c, dict) and "source" in c and any(
+                s in c["source"] or c["source"].endswith(s) for s in allowed_sources
+            ):
+                filtered_checks.append(c)
         if not filtered_checks:
             errors.append("no matching sources found in loss-report checks")
             return _repair_emit_fail(errors, args)
@@ -1905,8 +1914,7 @@ def cmd_repair(args: argparse.Namespace) -> int:
                 poll_seconds = float(os.environ.get("CATALOG_GOVERNANCE_REPAIR_POLL_SECONDS", "2.0"))
             except ValueError:
                 poll_seconds = 2.0
-            if poll_seconds < 0:
-                poll_seconds = 0
+            poll_seconds = max(poll_seconds, 0)
             iterations = max(1, int(poll_seconds * 10))
             for _ in range(iterations):
                 time.sleep(0.1)
@@ -1960,6 +1968,1258 @@ def _repair_emit_fail(errors: list[str], args: argparse.Namespace) -> int:
         "errors": errors,
     }
     return emit(report, args.output)
+
+V2_SUCCESS_STATUSES = {
+    "PASS", "PLANNED", "ESCALATE", "QUARANTINED", "EVALUATED", "APPROVED",
+    "ACTIVE", "CLEAN", "RESTORED", "REJECTED", "BLOCKED", "REQUIRES_REVIEW", "CAPTURED",
+}
+V2_PROPOSAL_SCHEMA = "skill-proposal-1"
+V2_POLICY_SCHEMA = "skill-policy-1"
+V2_CREATE_ACTION = "CREATE"
+V2_AUTO_APPROVAL_FIELDS = {"allow_low_risk_auto_approval", "allow_automatic_merge"}
+V2_CAPABILITIES = {
+    "read_repository", "write_filesystem", "mutate_git", "execute_process",
+    "access_network", "access_credentials", "modify_harness_config",
+    "modify_skill_catalog", "invoke_other_skills",
+}
+V2_RISK_ORDER = {"LOW": 0, "MEDIUM": 1, "HIGH": 2, "CRITICAL": 3}
+V2_STATUS_TRANSITIONS = {
+    "RECEIVED": {"QUARANTINED"},
+    "QUARANTINED": {"EVALUATING"},
+    "EVALUATING": {"REQUIRES_REVIEW", "APPROVED", "REJECTED", "BLOCKED"},
+    "REQUIRES_REVIEW": {"APPROVED", "REJECTED", "BLOCKED"},
+    "APPROVED": {"ACTIVATING"},
+    "ACTIVATING": {"ACTIVE", "QUARANTINED"},
+    "ACTIVE": {"ROLLBACK_PENDING", "DRIFTED"},
+    "ROLLBACK_PENDING": {"RESTORED", "ACTIVE"},
+}
+
+
+def v2_timestamp() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def v2_report(report: dict[str, Any], output: str | None = None) -> int:
+    status = report.get("status")
+    exit_code = 0 if status in V2_SUCCESS_STATUSES else 1
+    report = {"exit_code": exit_code, **report}
+    rendered = json.dumps(report, indent=2, sort_keys=True) + "\n"
+    if output:
+        Path(output).parent.mkdir(parents=True, exist_ok=True)
+        Path(output).write_text(rendered, encoding="utf-8", newline="\n")
+    print(rendered, end="")
+    return exit_code
+
+
+def _emit_v2_failure(report: dict[str, Any], output: str | None = None) -> int:
+    rendered = json.dumps(report, indent=2, sort_keys=True) + "\n"
+    if output:
+        Path(output).parent.mkdir(parents=True, exist_ok=True)
+        Path(output).write_text(rendered, encoding="utf-8", newline="\n")
+    print(rendered, end="")
+    return 1
+
+
+def v2_path(path_value: str | Path) -> Path:
+    return Path(path_value).expanduser().resolve(strict=False)
+
+
+def v2_reject_links(path: Path, label: str) -> None:
+    if is_link_or_reparse(path):
+        raise ValueError(f"{label} is a symlink/junction/reparse point; refusing: {path}")
+
+
+def v2_reject_link_ancestors(path: Path, label: str) -> None:
+    candidate = path.expanduser()
+    for ancestor in (candidate, *candidate.parents):
+        if ancestor.exists() and is_link_or_reparse(ancestor):
+            # Allow standard macOS root-level system symlinks (/var, /tmp, /etc -> /private/*)
+            if os.name != "nt" and ancestor.parent == Path("/") and ancestor.resolve() == Path("/private") / ancestor.name:
+                continue
+            raise ValueError(f"{label} contains a symlink/junction/reparse ancestor; refusing: {ancestor}")
+
+
+def v2_validate_roots(governance_root: Path, active_root: Path) -> tuple[Path, Path]:
+    v2_reject_link_ancestors(governance_root, "governance root")
+    v2_reject_link_ancestors(active_root, "active root")
+    governance_root = v2_path(governance_root)
+    active_root = v2_path(active_root)
+    if governance_root == active_root:
+        raise ValueError("governance root and active root must be different")
+    if within(governance_root, active_root) or within(active_root, governance_root):
+        raise ValueError("governance root and active root must not overlap")
+    if governance_root.exists():
+        v2_reject_links(governance_root, "governance root")
+    if active_root.exists():
+        v2_reject_links(active_root, "active root")
+    return governance_root, active_root
+
+
+def v2_safe_id(value: Any, label: str) -> str:
+    if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", value):
+        raise ValueError(f"{label} must be a non-empty safe identifier")
+    return value
+
+
+def v2_validate_proposal(skill_path: Path, provenance_path: Path, active_root: Path) -> tuple[dict[str, Any], bytes, str]:
+    try:
+        payload = load_json(provenance_path)
+    except ValueError as exc:
+        raise ValueError(f"invalid proposal provenance: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("proposal provenance must be an object")  # noqa: TRY004 - ValueError is the established CLI error contract
+    if payload.get("schema") != V2_PROPOSAL_SCHEMA:
+        raise ValueError("proposal schema must be skill-proposal-1")
+    proposal_id = v2_safe_id(payload.get("proposal_id"), "proposal_id")
+    if payload.get("requested_action") != V2_CREATE_ACTION:
+        raise ValueError("V2.0 accepts requested_action CREATE only")
+    required = (
+        "generated_by", "generator_version", "generated_at_utc", "source_session",
+        "source_task", "skill_sha256", "declared_capabilities", "target",
+    )
+    missing = [key for key in required if key not in payload]
+    if missing:
+        raise ValueError(f"proposal missing required fields: {', '.join(missing)}")
+    if not skill_path.is_file():
+        raise ValueError(f"skill file does not exist: {skill_path}")
+    try:
+        skill_bytes = skill_path.read_bytes()
+        skill_text = skill_bytes.decode("utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise ValueError(f"cannot read UTF-8 skill file: {exc}") from exc
+    actual_sha = sha256_bytes(skill_bytes)
+    if payload.get("skill_sha256") != actual_sha:
+        raise ValueError("proposal hash (skill_sha256) does not match exact SKILL.md bytes")
+    target = payload.get("target")
+    if not isinstance(target, dict):
+        raise ValueError("proposal target must be an object")  # noqa: TRY004 - ValueError is the established CLI error contract
+    if target.get("kind") != "new_skill":
+        raise ValueError("V2.0 CREATE target kind must be new_skill")
+    target_name = target.get("name")
+    if not isinstance(target_name, str) or not G0_NAME_RE.fullmatch(target_name):
+        raise ValueError("proposal target name must be lowercase letters, numbers, and hyphens")
+    parsed_name, _ = skill_frontmatter(skill_text)
+    if parsed_name != target_name:
+        raise ValueError("proposal target name does not match SKILL.md frontmatter name")
+    declared = payload.get("declared_capabilities")
+    if not isinstance(declared, list) or not all(isinstance(item, str) and item for item in declared):
+        raise ValueError("declared_capabilities must be a list of non-empty strings")
+    if any(item not in V2_CAPABILITIES for item in declared):
+        unknown = sorted(set(declared) - V2_CAPABILITIES)
+        raise ValueError(f"unknown declared capabilities: {unknown}")
+    if target.get("active_root") is None:
+        raise ValueError("proposal target active root is required")
+    if v2_path(target["active_root"]) != active_root:
+        raise ValueError("proposal target active root does not match --active-root")
+    for key in V2_AUTO_APPROVAL_FIELDS:
+        if payload.get(key) is True:
+            raise ValueError(f"{key}=true is forbidden in V2.0")
+    payload_dir = payload.get("payload_dir")
+    if payload_dir:
+        payload_path = v2_path(payload_dir)
+        if payload_path.exists():
+            try:
+                has_payload = any(payload_path.iterdir())
+            except OSError as exc:
+                raise ValueError(f"cannot inspect proposal payload: {exc}") from exc
+            if has_payload:
+                raise ValueError("non-empty proposal payload is unsupported in V2.0; reject explicitly")
+    return payload, skill_bytes, proposal_id
+
+
+def v2_append_event(root: Path, proposal_id: str, source: str, target: str, actor: str, command: str, input_hashes: list[str] | None = None, artifacts: list[str] | None = None) -> dict[str, Any]:
+    journal = root / "lifecycle.jsonl"
+    journal.parent.mkdir(parents=True, exist_ok=True)
+    event_no = 1
+    if journal.is_file():
+        for line in journal.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                event_no += 1
+    event = {
+        "schema": "skill-lifecycle-1",
+        "event_no": event_no,
+        "proposal_id": proposal_id,
+        "from": source,
+        "to": target,
+        "actor": actor,
+        "command": command,
+        "created_at_utc": v2_timestamp(),
+        "input_sha256": sorted(input_hashes or []),
+        "artifact_paths": sorted(artifacts or []),
+    }
+    with journal.open("a", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(event, sort_keys=True) + "\n")
+    return event
+
+
+def cmd_check_policy(args: argparse.Namespace) -> int:
+    try:
+        policy = load_json(Path(args.policy))
+    except ValueError as exc:
+        return v2_report({"status": "FAIL", "message": str(exc), "errors": [str(exc)]}, args.output)
+    errors: list[str] = []
+    if not isinstance(policy, dict):
+        errors.append("policy must be an object")
+        policy = {}
+    if policy.get("schema") != V2_POLICY_SCHEMA:
+        errors.append("policy schema must be skill-policy-1")
+    if policy.get("default_state") != "QUARANTINED":
+        errors.append("policy default_state must be QUARANTINED")
+    if policy.get("allow_low_risk_auto_approval") is True:
+        errors.append("automatic approval is forbidden in V2.0")
+    if policy.get("allow_automatic_merge") is True:
+        errors.append("automatic merge is forbidden in V2.0")
+    for key in ("require_human_for_low_risk", "require_human_for_medium_risk", "require_human_for_high_risk", "block_auto_activation_for_critical", "require_snapshot_before_activation", "require_rollback_test"):
+        if policy.get(key) is False:
+            errors.append(f"policy cannot disable required V2.0 control: {key}")
+    report = {"schema": "skills-catalog-policy-check-1", "status": "PASS" if not errors else "FAIL", "policy": str(Path(args.policy).resolve()), "policy_sha256": sha256_file(Path(args.policy)), "errors": errors}
+    return v2_report(report, args.output)
+
+
+def v2_capture_usage_record(usage_path: Path, skill_name: str) -> dict[str, Any]:
+    usage = load_json(usage_path)
+    if not isinstance(usage, dict):
+        raise ValueError("Hermes usage file must be an object")  # noqa: TRY004 - ValueError is the established CLI error contract
+    record = usage.get(skill_name)
+    if not isinstance(record, dict):
+        skills = usage.get("skills")
+        record = skills.get(skill_name) if isinstance(skills, dict) else None
+    if not isinstance(record, dict):
+        raise ValueError(f"Hermes usage record is missing for skill: {skill_name}")  # noqa: TRY004 - ValueError is the established CLI error contract
+    if record.get("created_by") != "agent" and record.get("agent_created") is not True:
+        raise ValueError("Hermes usage record is not marked agent-created")
+    return record
+
+
+def v2_capture_metadata(metadata_path: Path) -> dict[str, Any]:
+    metadata = load_json(metadata_path)
+    if not isinstance(metadata, dict):
+        raise ValueError("Hermes capture metadata must be an object")  # noqa: TRY004 - ValueError is the established CLI error contract
+    required = ("schema", "hermes_version", "hermes_commit", "source_session", "captured_at_utc")
+    missing = [key for key in required if key not in metadata]
+    if missing:
+        raise ValueError(f"capture metadata missing required fields: {', '.join(missing)}")
+    if metadata.get("schema") != "hermes-capture-1":
+        raise ValueError("capture metadata schema must be hermes-capture-1")
+    if not re.fullmatch(r"[0-9a-fA-F]{40}", str(metadata["hermes_commit"])):
+        raise ValueError("hermes_commit must be a 40-character hexadecimal commit")
+    if not all(isinstance(metadata[key], str) and metadata[key].strip() for key in ("hermes_version", "source_session", "captured_at_utc")):
+        raise ValueError("Hermes capture identity fields must be non-empty strings")
+    for optional_key in ("source_task", "write_origin"):
+        if optional_key in metadata and not isinstance(metadata[optional_key], str):
+            raise ValueError(f"Hermes capture field must be a string: {optional_key}")
+    try:
+        datetime.fromisoformat(metadata["captured_at_utc"].replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError("captured_at_utc must be an RFC 3339 timestamp") from exc
+    return metadata
+
+
+def cmd_capture_hermes(args: argparse.Namespace) -> int:
+    skill_dir = v2_path(args.skill_dir)
+    usage_path = v2_path(args.usage)
+    metadata_path = v2_path(args.metadata)
+    output_dir = v2_path(args.output)
+    active_root = v2_path(args.active_root)
+    try:
+        v2_reject_link_ancestors(skill_dir, "Hermes skill directory")
+        v2_reject_link_ancestors(output_dir, "capture output")
+        if within(output_dir, active_root) or within(active_root, output_dir):
+            raise ValueError("capture output and active root must not overlap")
+        if not skill_dir.is_dir() or is_link_or_reparse(skill_dir):
+            raise ValueError(f"Hermes skill directory is not a real directory: {skill_dir}")
+        skill_path = skill_dir / "SKILL.md"
+        if not skill_path.is_file() or is_link_or_reparse(skill_path):
+            raise ValueError("Hermes skill directory must contain a regular SKILL.md")
+        supporting = [path for path in skill_dir.rglob("*") if path != skill_path and not is_link_or_reparse(path)]
+        if supporting:
+            raise ValueError("non-empty Hermes skill payload is unsupported in the V2 single-file capture path")
+        skill_text = skill_path.read_text(encoding="utf-8")
+        skill_name, _ = skill_frontmatter(skill_text)
+        if not skill_name:
+            raise ValueError("Hermes SKILL.md must contain a valid name in frontmatter")
+        usage_record = v2_capture_usage_record(usage_path, skill_name)
+        metadata = v2_capture_metadata(metadata_path)
+        skill_sha = sha256_file(skill_path)
+        usage_sha = sha256_file(usage_path)
+        metadata_sha = sha256_file(metadata_path)
+        proposal_id = f"hermes-{skill_name}-{skill_sha[:12]}"
+        proposal = {
+            "schema": V2_PROPOSAL_SCHEMA,
+            "proposal_id": proposal_id,
+            "generated_by": "hermes",
+            "generator_version": metadata["hermes_version"],
+            "generated_at_utc": metadata["captured_at_utc"],
+            "source_session": metadata["source_session"],
+            "source_task": metadata.get("source_task", ""),
+            "skill_sha256": skill_sha,
+            "declared_capabilities": [],
+            "requested_action": V2_CREATE_ACTION,
+            "target": {"kind": "new_skill", "name": skill_name, "active_root": str(active_root)},
+            "hermes_provenance": {
+                "provenance_status": "ASSERTED_FROM_USAGE",
+                "created_by": usage_record.get("created_by", "agent"),
+                "hermes_commit": metadata["hermes_commit"],
+                "usage_sha256": usage_sha,
+                "metadata_sha256": metadata_sha,
+                "capability_source": "not-provided-by-hermes",
+            },
+        }
+        if usage_record.get("agent_created") is not None:
+            proposal["hermes_provenance"]["agent_created"] = usage_record["agent_created"]
+        if metadata.get("write_origin"):
+            proposal["hermes_provenance"]["write_origin"] = metadata["write_origin"]
+        if output_dir.exists():
+            raise ValueError(f"capture output already exists; refusing overwrite: {output_dir}")
+        output_dir.mkdir(parents=True)
+        shutil.copy2(skill_path, output_dir / "SKILL.md")
+        shutil.copy2(usage_path, output_dir / ".usage.json")
+        shutil.copy2(metadata_path, output_dir / "hermes-capture.json")
+        proposal_sha = v2_write_json(output_dir / "proposal.json", proposal)
+        receipt = {
+            "schema": "hermes-capture-receipt-1",
+            "proposal_id": proposal_id,
+            "provenance_status": "ASSERTED_FROM_USAGE",
+            "skill_sha256": skill_sha,
+            "usage_sha256": usage_sha,
+            "metadata_sha256": metadata_sha,
+            "proposal_sha256": proposal_sha,
+            "source_skill": str(skill_path),
+            "source_usage": str(usage_path),
+            "source_metadata": str(metadata_path),
+            "usage_record": usage_record,
+            "hermes_version": metadata["hermes_version"],
+            "hermes_commit": metadata["hermes_commit"],
+        }
+        receipt_sha = v2_write_json(output_dir / "receipt.json", receipt)
+        return v2_report({"schema": "skills-catalog-hermes-capture-1", "status": "CAPTURED", "proposal_id": proposal_id, "output": str(output_dir), "skill_sha256": skill_sha, "proposal_sha256": proposal_sha, "receipt_sha256": receipt_sha, "provenance_status": "ASSERTED_FROM_USAGE"}, args.output_report)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        return v2_report({"schema": "skills-catalog-hermes-capture-1", "status": "FAIL", "message": str(exc), "errors": [str(exc)]}, args.output_report)
+
+
+def cmd_intake(args: argparse.Namespace) -> int:
+    skill_path = v2_path(args.skill)
+    provenance_path = v2_path(args.provenance)
+    try:
+        governance_root, active_root = v2_validate_roots(Path(args.root), Path(args.active_root))
+        payload, skill_bytes, proposal_id = v2_validate_proposal(skill_path, provenance_path, active_root)
+        quarantine = governance_root / "quarantine" / proposal_id
+        existing_skill = quarantine / "SKILL.md"
+        existing_provenance = quarantine / "proposal.json"
+        if quarantine.exists():
+            if not existing_skill.is_file() or not existing_provenance.is_file():
+                raise ValueError("proposal ID already exists with incomplete quarantine record")
+            if sha256_file(existing_skill) != payload["skill_sha256"] or sha256_file(existing_provenance) != sha256_file(provenance_path):
+                raise ValueError("proposal ID collision with different content")
+            return v2_report({"schema": "skills-catalog-intake-1", "status": "QUARANTINED", "proposal_id": proposal_id, "idempotent": True, "quarantine": str(quarantine.resolve()), "active_root": str(active_root)}, args.output)
+        staging = governance_root / f".intake-{proposal_id}-{uuid.uuid4().hex}"
+        staging.mkdir(parents=True, exist_ok=False)
+        try:
+            (staging / "SKILL.md").write_bytes(skill_bytes)
+            shutil.copy2(provenance_path, staging / "proposal.json")
+            record = {
+                "schema": "skills-catalog-intake-1",
+                "proposal_id": proposal_id,
+                "status": "QUARANTINED",
+                "active_root": str(active_root),
+                "skill_sha256": payload["skill_sha256"],
+                "proposal_sha256": sha256_file(provenance_path),
+                "received_at_utc": v2_timestamp(),
+            }
+            (staging / "intake.json").write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            quarantine.parent.mkdir(parents=True, exist_ok=True)
+            staging.rename(quarantine)
+        except Exception:
+            shutil.rmtree(staging, ignore_errors=True)
+            raise
+        event = v2_append_event(governance_root, proposal_id, "RECEIVED", "QUARANTINED", args.actor, "intake", [payload["skill_sha256"], record["proposal_sha256"]], [str(quarantine / "intake.json")])
+        return v2_report({"schema": "skills-catalog-intake-1", "status": "QUARANTINED", "proposal_id": proposal_id, "idempotent": False, "quarantine": str(quarantine.resolve()), "active_root": str(active_root), "event_no": event["event_no"]}, args.output)
+    except (OSError, ValueError) as exc:
+        return v2_report({"schema": "skills-catalog-intake-1", "status": "FAIL", "message": str(exc), "errors": [str(exc)]}, args.output)
+
+
+def cmd_inspect_proposal(args: argparse.Namespace) -> int:
+    proposal_dir = v2_path(args.proposal)
+    try:
+        data = load_json(proposal_dir / "proposal.json")
+        skill = proposal_dir / "SKILL.md"
+        if not isinstance(data, dict) or not skill.is_file():
+            raise ValueError("quarantine record must contain proposal.json and SKILL.md")
+        return v2_report({"schema": "skills-catalog-inspection-1", "status": "PASS", "proposal_id": data.get("proposal_id"), "skill_sha256": sha256_file(skill), "proposal_sha256": sha256_file(proposal_dir / "proposal.json"), "declared_capabilities": data.get("declared_capabilities", []), "target": data.get("target")}, args.output)
+    except (OSError, ValueError) as exc:
+        return v2_report({"schema": "skills-catalog-inspection-1", "status": "FAIL", "message": str(exc), "errors": [str(exc)]}, args.output)
+
+
+def v2_detect_capabilities(text: str) -> tuple[set[str], list[str]]:
+    signals: list[tuple[str, str, str]] = [
+        ("write_filesystem", r"\b(write|modify|edit|create|delete|remove)\b.*\b(file|folder|directory|path)s?\b", "filesystem mutation language"),
+        ("mutate_git", r"\bgit\s+(commit|push|reset|checkout|merge|rebase)\b", "git mutation command"),
+        ("execute_process", r"\b(subprocess|shell|exec|run a command|execute)\b", "process execution language"),
+        ("access_network", r"\b(curl|wget|http://|https://|network|web request)\b", "network language or URL"),
+        ("access_credentials", r"\b(password|secret|token|api[_ -]?key|credential)\b", "credential language"),
+        ("modify_harness_config", r"\b(AGENTS\.md|CLAUDE\.md|hook|harness config|policy)\b", "harness/configuration language"),
+        ("modify_skill_catalog", r"\b(skill catalog|skill store|activate|quarantine|promote)\b", "skill catalog control language"),
+        ("invoke_other_skills", r"\b(invoke|delegate|call)\b.*\bskill\b", "skill invocation language"),
+        ("read_repository", r"\b(read|inspect|scan|search|find)\b.*\b(repository|repo|file|code)\b", "repository read language"),
+    ]
+    detected: set[str] = set()
+    reasons: list[str] = []
+    for capability, pattern, reason in signals:
+        if re.search(pattern, text, re.IGNORECASE | re.DOTALL):
+            detected.add(capability)
+            reasons.append(f"{capability}: {reason}")
+    return detected, sorted(reasons)
+
+
+def v2_effective_risk(declared: list[str], detected: set[str]) -> str:
+    capabilities = set(declared) | detected
+    if capabilities & {"access_credentials", "modify_harness_config", "modify_skill_catalog"}:
+        return "CRITICAL"
+    if capabilities & {"write_filesystem", "mutate_git", "execute_process", "access_network", "invoke_other_skills"}:
+        return "HIGH"
+    if capabilities & {"read_repository"}:
+        return "MEDIUM"
+    return "LOW"
+
+
+def v2_write_json(path: Path, payload: dict[str, Any]) -> str:
+    rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(rendered, encoding="utf-8")
+    return sha256_file(path)
+
+
+def cmd_evaluate_proposal(args: argparse.Namespace) -> int:
+    proposal_dir = v2_path(args.proposal)
+    governance_root = v2_path(args.root)
+    active_root = v2_path(args.active_root)
+    try:
+        data = load_json(proposal_dir / "proposal.json")
+        skill_path = proposal_dir / "SKILL.md"
+        if not isinstance(data, dict) or not skill_path.is_file():
+            raise ValueError("quarantine record must contain proposal.json and SKILL.md")
+        if data.get("requested_action") != V2_CREATE_ACTION:
+            raise ValueError("V2.0 evaluation accepts CREATE proposals only")
+        if v2_path(data.get("target", {}).get("active_root")) != active_root:
+            raise ValueError("proposal active root does not match --active-root")
+        text = skill_path.read_text(encoding="utf-8")
+        declared = data.get("declared_capabilities", [])
+        detected, reasons = v2_detect_capabilities(text)
+        undeclared = sorted(detected - set(declared))
+        effective = v2_effective_risk(declared, detected)
+        skill_sha = sha256_file(skill_path)
+        validation = {"schema": "skills-catalog-validation-1", "status": "PASS", "proposal_id": data["proposal_id"], "skill_sha256": skill_sha, "evaluated_skill_sha256": skill_sha, "frontmatter": skill_frontmatter(text)[0] is not None, "limits": "Package and frontmatter validation do not establish behavior or safety."}
+        capabilities = {"schema": "skills-catalog-capabilities-1", "status": "PASS", "proposal_id": data["proposal_id"], "declared": sorted(declared), "detected": sorted(detected), "undeclared": undeclared, "effective": effective, "reasons": reasons, "limits": "Heuristic textual signal detection; it cannot prove runtime behavior or absence of prompt injection."}
+        validation_sha = v2_write_json(proposal_dir / "validation.json", validation)
+        capabilities_sha = v2_write_json(proposal_dir / "capabilities.json", capabilities)
+        event = v2_append_event(governance_root, data["proposal_id"], "QUARANTINED", "EVALUATING", args.actor, "evaluate-proposal", [sha256_file(skill_path), sha256_file(proposal_dir / "proposal.json")], [str(proposal_dir / "validation.json"), str(proposal_dir / "capabilities.json")])
+        return v2_report({"schema": "skills-catalog-evaluation-1", "status": "EVALUATED", "proposal_id": data["proposal_id"], "validation_sha256": validation_sha, "capabilities_sha256": capabilities_sha, "capabilities": capabilities, "event_no": event["event_no"]}, args.output)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        return v2_report({"schema": "skills-catalog-evaluation-1", "status": "FAIL", "message": str(exc), "errors": [str(exc)]}, args.output)
+
+
+def v2_scan_file_roots(roots: list[str], skill_name: str) -> tuple[list[str], list[str], list[dict[str, Any]]]:
+    searched: list[str] = []
+    unscanned: list[str] = []
+    findings: list[dict[str, Any]] = []
+    for raw_root in roots:
+        root = v2_path(raw_root)
+        if not root.is_dir() or is_link_or_reparse(root):
+            unscanned.append(str(root))
+            continue
+        searched.append(str(root))
+        try:
+            files = sorted(path for path in root.rglob("*") if path.is_file() and not is_link_or_reparse(path))
+        except OSError:
+            unscanned.append(str(root))
+            searched.remove(str(root))
+            continue
+        for path in files:
+            try:
+                content = path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                continue
+            if re.search(rf"\b{re.escape(skill_name)}\b", content, re.IGNORECASE):
+                findings.append({"kind": "ACTIVE_CONSUMER_FOUND", "path": str(path.resolve()), "match": skill_name})
+    return sorted(set(searched)), sorted(set(unscanned)), findings
+
+
+def cmd_impact_report(args: argparse.Namespace) -> int:
+    proposal_dir = v2_path(args.proposal)
+    try:
+        data = load_json(proposal_dir / "proposal.json")
+        if not isinstance(data, dict):
+            raise ValueError("proposal.json must be an object")  # noqa: TRY004 - ValueError is the established CLI error contract
+        target = data.get("target", {})
+        skill_name = target.get("name")
+        roots = list(args.scan_root or [])
+        if not roots:
+            roots = [str(v2_path(args.active_root))]
+        searched, unscanned, findings = v2_scan_file_roots(roots, str(skill_name))
+        report = {"schema": "skills-catalog-impact-1", "status": "PASS", "proposal_id": data.get("proposal_id"), "active_root": str(v2_path(args.active_root)), "searched_roots": searched, "unscanned_roots": unscanned, "complete": not unscanned, "findings": sorted(findings, key=lambda item: (item["kind"], item["path"], item["match"]))}
+        report_sha = v2_write_json(proposal_dir / "impact.json", report)
+        return v2_report({**report, "impact_sha256": report_sha}, args.output)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        return v2_report({"schema": "skills-catalog-impact-1", "status": "FAIL", "message": str(exc), "errors": [str(exc)]}, args.output)
+
+
+def v2_evidence_hash(proposal_dir: Path) -> str:
+    paths = [proposal_dir / name for name in ("validation.json", "capabilities.json", "impact.json")]
+    missing = [str(path) for path in paths if not path.is_file()]
+    if missing:
+        raise ValueError(f"missing evaluation evidence: {', '.join(missing)}")
+    digest = hashlib.sha256()
+    for path in paths:
+        digest.update(path.name.encode("utf-8"))
+        digest.update(sha256_file(path).encode("ascii"))
+    return digest.hexdigest()
+
+
+def cmd_decide(args: argparse.Namespace) -> int:
+    proposal_dir = v2_path(args.proposal)
+    governance_root = v2_path(args.root)
+    policy_path = v2_path(args.policy)
+    decision_path = v2_path(args.output) if args.output else governance_root / "decisions" / f"{proposal_dir.name}.json"
+    try:
+        proposal = load_json(proposal_dir / "proposal.json")
+        if not isinstance(proposal, dict) or proposal.get("requested_action") != V2_CREATE_ACTION:
+            raise ValueError("decision accepts CREATE proposals only")
+        if args.decision not in {"APPROVE", "REJECT", "BLOCK", "REQUIRES_REVIEW"}:
+            raise ValueError("decision must be APPROVE, REJECT, BLOCK, or REQUIRES_REVIEW")
+        if not isinstance(args.actor, str) or not args.actor.strip():
+            raise ValueError("actor must be non-empty")
+        if not isinstance(args.text, str) or not args.text.strip():
+            raise ValueError("decision text must be non-empty")
+        policy = load_json(policy_path)
+        if not isinstance(policy, dict):
+            raise ValueError("policy must be an object")  # noqa: TRY004 - ValueError is the established CLI error contract
+        policy_sha = sha256_file(policy_path)
+        if policy.get("schema") != V2_POLICY_SCHEMA:
+            raise ValueError("policy schema must be skill-policy-1")
+        if policy.get("allow_low_risk_auto_approval") is True or policy.get("allow_automatic_merge") is True:
+            raise ValueError("automatic approval or merge is forbidden in V2.0")
+        proposal_sha = sha256_file(proposal_dir / "proposal.json")
+        evidence_sha = v2_evidence_hash(proposal_dir)
+        
+        # REQ-A2/A3: For APPROVE, enforce re-evaluation on drift and HIGH findings block
+        evaluated_skill_sha = None
+        current_skill_sha = None
+        high_findings = 0
+        if args.decision == "APPROVE":
+            # Load evaluation record to get evaluated_skill_sha256
+            validation_path = proposal_dir / "validation.json"
+            if not validation_path.is_file():
+                raise ValueError("missing validation.json; run evaluate-proposal first")
+            validation = load_json(validation_path)
+            evaluated_skill_sha = validation.get("evaluated_skill_sha256")
+            if not evaluated_skill_sha:
+                raise ValueError("validation record missing evaluated_skill_sha256; re-run evaluate-proposal")
+            # Recompute current skill hash
+            skill_path = proposal_dir / "SKILL.md"
+            if not skill_path.is_file():
+                raise ValueError("quarantine record missing SKILL.md")
+            current_skill_sha = sha256_file(skill_path)
+            # Drift check: fail closed if hashes differ
+            if current_skill_sha != evaluated_skill_sha:
+                return v2_report({"schema": "skills-catalog-decision-1", "status": "FAIL", "message": "skill content drift detected", "errors": [f"evaluated_skill_sha256={evaluated_skill_sha}, current_skill_sha256={current_skill_sha}; re-evaluation required"]}, args.output)
+            # HIGH findings block: run scan-security on current bytes
+            scan_report = scan_security_tree(proposal_dir)
+            high_findings = sum(1 for f in scan_report.get("findings", []) if f.get("severity") == "high")
+            if high_findings > 0:
+                return v2_report({"schema": "skills-catalog-decision-1", "status": "FAIL", "message": f"security gate: {high_findings} HIGH finding(s) block APPROVE", "errors": ["run scan-security with --fail-on high to review"]}, args.output)
+        
+        decision = {
+            "schema": "skill-decision-1",
+            "decision_id": f"{proposal_dir.name}-{uuid.uuid4().hex}",
+            "proposal_id": proposal["proposal_id"],
+            "decision": args.decision,
+            "actor": args.actor.strip(),
+            "proposal_sha256": proposal_sha,
+            "policy_sha256": policy_sha,
+            "evidence_sha256": evidence_sha,
+            "decision_text": args.text.strip(),
+            "decided_at_utc": v2_timestamp(),
+        }
+        # REQ-A4: for non-APPROVE decisions on drifted hashes, log both hashes
+        if args.decision != "APPROVE" and evaluated_skill_sha and current_skill_sha and current_skill_sha != evaluated_skill_sha:
+            decision["evaluated_skill_sha256"] = evaluated_skill_sha
+            decision["current_skill_sha256"] = current_skill_sha
+        elif args.decision == "APPROVE":
+            decision["evaluated_skill_sha256"] = evaluated_skill_sha
+            decision["current_skill_sha256"] = current_skill_sha
+            decision["security_high_findings"] = high_findings
+        
+        decision_path.parent.mkdir(parents=True, exist_ok=True)
+        decision_sha = v2_write_json(decision_path, decision)
+        canonical_decision = governance_root / "decisions" / f"{proposal_dir.name}.json"
+        if decision_path.resolve() != canonical_decision.resolve():
+            canonical_decision.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(decision_path, canonical_decision)
+        status = {"APPROVE": "APPROVED", "REJECT": "REJECTED", "BLOCK": "BLOCKED", "REQUIRES_REVIEW": "REQUIRES_REVIEW"}[args.decision]
+        event = v2_append_event(governance_root, proposal["proposal_id"], "EVALUATING", status, args.actor, "decide", [proposal_sha, policy_sha, evidence_sha], [str(canonical_decision)])
+        return v2_report({"schema": "skills-catalog-decision-1", "status": status, "proposal_id": proposal["proposal_id"], "decision": args.decision, "decision_sha256": decision_sha, "event_no": event["event_no"], "decision_path": str(canonical_decision.resolve())}, None)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        return v2_report({"schema": "skills-catalog-decision-1", "status": "FAIL", "message": str(exc), "errors": [str(exc)]}, args.output)
+
+
+def v2_load_decision(path: Path, proposal_dir: Path, policy_path: Path) -> tuple[dict[str, Any], str]:
+    decision = load_json(path)
+    if not isinstance(decision, dict):
+        raise ValueError("decision must be an object")  # noqa: TRY004 - ValueError is the established CLI error contract
+    if decision.get("schema") != "skill-decision-1" or decision.get("decision") != "APPROVE":
+        raise ValueError("activation requires a skill-decision-1 APPROVE record")
+    if decision.get("proposal_id") != proposal_dir.name:
+        raise ValueError("decision proposal_id does not match quarantine proposal")
+    if decision.get("proposal_sha256") != sha256_file(proposal_dir / "proposal.json"):
+        raise ValueError("decision proposal hash does not match quarantined proposal")
+    if decision.get("policy_sha256") != sha256_file(policy_path):
+        raise ValueError("decision policy hash does not match current policy")
+    if decision.get("evidence_sha256") != v2_evidence_hash(proposal_dir):
+        raise ValueError("decision evidence hash does not match current evaluation artifacts")
+    for key in ("actor", "decision_text", "decision_id"):
+        if not isinstance(decision.get(key), str) or not decision[key].strip():
+            raise ValueError(f"decision {key} is missing")
+    return decision, sha256_file(path)
+
+
+def cmd_activate(args: argparse.Namespace) -> int:
+    proposal_dir = v2_path(args.proposal)
+    governance_root = v2_path(args.root)
+    active_root = v2_path(args.active_root)
+    policy_path = v2_path(args.policy)
+    decision_path = v2_path(args.decision)
+    published_target: Path | None = None
+    published_hash: str | None = None
+    created_record_path: Path | None = None
+    proposal_id = proposal_dir.name
+    if not args.apply or not args.yes:
+        return v2_report({"schema": "skills-catalog-activation-1", "status": "FAIL", "message": "activation requires both --apply and --yes", "errors": ["activation requires both --apply and --yes"]}, args.output)
+    try:
+        governance_root, active_root = v2_validate_roots(governance_root, active_root)
+        proposal = load_json(proposal_dir / "proposal.json")
+        if not isinstance(proposal, dict) or proposal.get("requested_action") != V2_CREATE_ACTION:
+            raise ValueError("V2.0 activation accepts CREATE proposals only")
+        target = proposal.get("target", {})
+        if v2_path(target.get("active_root")) != active_root:
+            raise ValueError("proposal active root does not match --active-root")
+        target_name = target.get("name")
+        if not isinstance(target_name, str) or not G0_NAME_RE.fullmatch(target_name):
+            raise ValueError("proposal target name is invalid")
+        target_path = active_root / target_name
+        if target_path.exists() or target_path.is_symlink():
+            raise ValueError(f"activation target already exists: {target_path}")
+        published_target = target_path
+        decision, decision_sha = v2_load_decision(decision_path, proposal_dir, policy_path)
+        snapshot_id = f"{proposal_dir.name}-{uuid.uuid4().hex}"
+        snapshot_dir = governance_root / "snapshots" / snapshot_id
+        snapshot_dir.mkdir(parents=True, exist_ok=False)
+        snapshot = {
+            "schema": "skill-snapshot-1",
+            "snapshot_id": snapshot_id,
+            "proposal_id": proposal["proposal_id"],
+            "active_root": str(active_root),
+            "active_path": str(target_path),
+            "target_existed": False,
+            "target_sha256": None,
+            "decision_sha256": decision_sha,
+            "policy_sha256": sha256_file(policy_path),
+            "scope": "affected target path plus governance metadata",
+            "created_at_utc": v2_timestamp(),
+        }
+        snapshot_sha = v2_write_json(snapshot_dir / "snapshot.json", snapshot)
+        stage = governance_root / f".activation-{proposal_dir.name}-{uuid.uuid4().hex}"
+        stage.mkdir(parents=True, exist_ok=False)
+        try:
+            shutil.copy2(proposal_dir / "SKILL.md", stage / "SKILL.md")
+            if target_path.exists() or target_path.is_symlink():
+                raise ValueError(f"activation target appeared during staging: {target_path}")
+            active_root.mkdir(parents=True, exist_ok=True)
+            stage.rename(target_path)
+        except Exception:
+            shutil.rmtree(stage, ignore_errors=True)
+            raise
+        published_sha = sha256_file(target_path / "SKILL.md")
+        published_hash = published_sha
+        if published_sha != proposal.get("skill_sha256"):
+            shutil.rmtree(target_path, ignore_errors=True)
+            published_target = None
+            raise ValueError("published skill hash does not match proposal")
+        active_record = {
+            "schema": "skill-active-record-1",
+            "proposal_id": proposal["proposal_id"],
+            "active_root": str(active_root),
+            "active_path": str(target_path),
+            "skill_sha256": published_sha,
+            "snapshot_id": snapshot_id,
+            "snapshot_sha256": snapshot_sha,
+            "decision_sha256": decision_sha,
+            "policy_sha256": sha256_file(policy_path),
+            "status": "ACTIVE",
+            "activated_at_utc": v2_timestamp(),
+        }
+        record_path = governance_root / "active-records" / f"{proposal_dir.name}.json"
+        record_path.parent.mkdir(parents=True, exist_ok=True)
+        created_record_path = record_path
+        v2_write_json(record_path, active_record)
+        archive_dir = governance_root / "archive" / proposal_dir.name
+        archive_dir.mkdir(parents=True, exist_ok=False)
+        shutil.copy2(target_path / "SKILL.md", archive_dir / "SKILL.md")
+        event = v2_append_event(governance_root, proposal["proposal_id"], "APPROVED", "ACTIVE", decision["actor"], "activate", [proposal["skill_sha256"], decision_sha, snapshot_sha], [str(record_path), str(snapshot_dir / "snapshot.json")])
+        return v2_report({"schema": "skills-catalog-activation-1", "status": "ACTIVE", "proposal_id": proposal["proposal_id"], "active_path": str(target_path.resolve()), "active_record": str(record_path.resolve()), "snapshot_id": snapshot_id, "snapshot_sha256": snapshot_sha, "event_no": event["event_no"]}, args.output)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        cleanup = "NOT_PUBLISHED"
+        if published_target is not None and published_target.exists() and published_target.is_dir():
+            try:
+                current = published_target / "SKILL.md"
+                if published_hash and current.is_file() and sha256_file(current) == published_hash:
+                    shutil.rmtree(published_target)
+                    cleanup = "REMOVED_PUBLISHED_TARGET"
+                else:
+                    cleanup = "CLEANUP_BLOCKED_TARGET_CHANGED"
+            except OSError:
+                cleanup = "CLEANUP_FAILED"
+        if created_record_path is not None and created_record_path.is_file():
+            try:
+                created_record_path.unlink()
+                cleanup = f"{cleanup}; REMOVED_ACTIVE_RECORD"
+            except OSError:
+                cleanup = f"{cleanup}; ACTIVE_RECORD_CLEANUP_FAILED"
+        try:
+            v2_append_event(governance_root, proposal_id, "ACTIVATING", "QUARANTINED", "local-user", "activate", [published_hash or ""], [cleanup])
+        except OSError:
+            cleanup = f"{cleanup}; JOURNAL_FAILED"
+        failure_record = governance_root / "run-record" / f"{proposal_id}-activation-failed.json"
+        try:
+            v2_write_json(failure_record, {"schema": "skills-catalog-activation-failure-1", "status": "ACTIVATION_FAILED", "proposal_id": proposal_id, "published_hash": published_hash, "cleanup": cleanup, "error": str(exc), "created_at_utc": v2_timestamp()})
+        except OSError:
+            cleanup = f"{cleanup}; FAILURE_RECORD_FAILED"
+        return v2_report({"schema": "skills-catalog-activation-1", "status": "ACTIVATION_FAILED", "message": str(exc), "cleanup": cleanup, "published_hash": published_hash, "failure_record": str(failure_record), "errors": [str(exc)]}, args.output)
+
+
+def cmd_verify_active(args: argparse.Namespace) -> int:
+    try:
+        record_path = v2_path(args.record)
+        record = load_json(record_path)
+        if not isinstance(record, dict) or record.get("schema") != "skill-active-record-1":
+            raise ValueError("invalid active record")
+        active_path = Path(record["active_path"])
+        errors: list[str] = []
+        if not active_path.is_dir() or not (active_path / "SKILL.md").is_file():
+            errors.append("active skill path is missing")
+        else:
+            if sha256_file(active_path / "SKILL.md") != record.get("skill_sha256"):
+                errors.append("active skill hash drift detected")
+        status = "CLEAN" if not errors else "DRIFTED"
+        return v2_report({"schema": "skills-catalog-active-check-1", "status": status, "record": str(record_path), "active_path": str(active_path), "errors": errors}, args.output)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        return v2_report({"schema": "skills-catalog-active-check-1", "status": "FAIL", "message": str(exc), "errors": [str(exc)]}, args.output)
+
+
+def cmd_rollback(args: argparse.Namespace) -> int:
+    record_path = v2_path(args.record)
+    governance_root = v2_path(args.root)
+    if not args.apply or not args.yes:
+        return v2_report({"schema": "skills-catalog-rollback-1", "status": "FAIL", "message": "rollback requires both --apply and --yes", "errors": ["rollback requires both --apply and --yes"]}, args.output)
+    try:
+        record = load_json(record_path)
+        if not isinstance(record, dict) or record.get("schema") != "skill-active-record-1":
+            raise ValueError("invalid active record")
+        active_path = Path(record["active_path"])
+        if not active_path.is_dir() or not (active_path / "SKILL.md").is_file():
+            raise ValueError("active path is missing; rollback cannot verify drift")
+        current_sha = sha256_file(active_path / "SKILL.md")
+        if current_sha != record.get("skill_sha256"):
+            raise ValueError("active skill drift detected; refusing rollback")
+        snapshot_dir = governance_root / "snapshots" / record["snapshot_id"]
+        snapshot = load_json(snapshot_dir / "snapshot.json")
+        if snapshot.get("target_existed") is not False:
+            raise ValueError("unsupported snapshot target state")
+        archive_dir = governance_root / "archive" / record["proposal_id"]
+        archive_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(active_path / "SKILL.md", archive_dir / "SKILL.md")
+        shutil.rmtree(active_path)
+        record["status"] = "RESTORED"
+        record["restored_at_utc"] = v2_timestamp()
+        v2_write_json(record_path, record)
+        event = v2_append_event(governance_root, record["proposal_id"], "ROLLBACK_PENDING", "RESTORED", "local-user", "rollback", [record["skill_sha256"], record.get("snapshot_sha256", "")], [str(record_path), str(archive_dir / "SKILL.md")])
+        return v2_report({"schema": "skills-catalog-rollback-1", "status": "RESTORED", "proposal_id": record["proposal_id"], "record": str(record_path), "event_no": event["event_no"]}, args.output)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        return v2_report({"schema": "skills-catalog-rollback-1", "status": "FAIL", "message": str(exc), "errors": [str(exc)]}, args.output)
+
+
+# --- Security & Supply Chain Scanner (V2.1, OWASP-aligned) -----------------
+#
+# Static heuristic analysis only. Skill content is NEVER executed by this
+# module. Findings are advisory evidence for human decisions; HIGH findings
+# are intended to fail closed in downstream gates.
+
+SECURITY_SCAN_SCHEMA = "skills-catalog-security-audit-1"
+SECURITY_MAX_FILE_BYTES = 1_000_000
+SECURITY_TEXT_SUFFIXES = {
+    ".md", ".markdown", ".txt", ".json", ".yaml", ".yml", ".toml", ".py",
+    ".sh", ".bash", ".ps1", ".js", ".ts", ".rb", ".cfg", ".ini", ".skill",
+}
+
+SECURITY_RULES: tuple[dict[str, Any], ...] = (
+    {
+        "id": "SEC-001",
+        "rule": "pipe-to-shell-install",
+        "severity": "high",
+        "owasp_ref": "OWASP Secure Agent Playbook — Supply Chain / A06:2021",
+        "pattern": re.compile(r"curl\s+[^\n|]*\|\s*(ba)?sh|wget\s+[^\n|]*\|\s*(ba)?sh|irm\s+\S+\s*\|\s*iex", re.IGNORECASE),
+        "description": "Downloads remote content and pipes it directly into a shell interpreter.",
+    },
+    {
+        "id": "SEC-002",
+        "rule": "destructive-recursive-delete",
+        "severity": "high",
+        "owasp_ref": "OWASP Secure Agent Playbook — Dangerous Commands",
+        "pattern": re.compile(r"rm\s+(-[a-zA-Z]*[rf][a-zA-Z]*\s+)+/?(\$\{?[A-Za-z_][A-Za-z0-9_]*}?/)?\s*$|rm\s+-rf\s+/(?:\s|$)|Remove-Item\s+[^\n]*-Recurse\s+[^\n]*-Force\s+/ ", re.IGNORECASE),
+        "description": "Recursive force deletion targeting filesystem root or variable-rooted paths.",
+    },
+    {
+        "id": "SEC-003",
+        "rule": "credential-exfiltration-endpoint",
+        "severity": "high",
+        "owasp_ref": "OWASP Secure Agent Playbook — Data Exfiltration",
+        "pattern": re.compile(r"(curl|wget|Invoke-WebRequest|fetch|requests\.post)[^\n]*(env|printenv|\.env|AWS_ACCESS_KEY|SECRET|TOKEN|PASSWORD)", re.IGNORECASE),
+        "description": "Network command combined with credential/environment references (possible secret exfiltration).",
+    },
+    {
+        "id": "SEC-004",
+        "rule": "eval-exec-usage",
+        "severity": "medium",
+        "owasp_ref": "OWASP Secure Agent Playbook — Code Injection",
+        "pattern": re.compile(r"\b(eval|exec)\s*\(|Invoke-Expression\b|iex\b", re.IGNORECASE),
+        "description": "Dynamic code evaluation construct; review whether input is attacker-influenced.",
+    },
+    {
+        "id": "SEC-005",
+        "rule": "unpinned-remote-fetch",
+        "severity": "medium",
+        "owasp_ref": "OWASP Secure Agent Playbook — Supply Chain / Dependency Pinning",
+        "pattern": re.compile(r"npx\s+(?!@?[A-Za-z0-9.-]+@[A-Za-z0-9.~^_+-])[A-Za-z0-9@./-]+|pip\s+install\s+(?![-\w]+\s*==\s*\d)[^\n|&;]+", re.IGNORECASE),
+        "description": "Package fetch without an explicit version pin; supply-chain integrity cannot be verified.",
+    },
+    {
+        "id": "SEC-006",
+        "rule": "prompt-injection-override",
+        "severity": "medium",
+        "owasp_ref": "OWASP LLM Top-10 — Prompt Injection",
+        "pattern": re.compile(r"ignore\s+(all\s+)?(previous|prior|above)\s+instructions|disregard\s+(your\s+)?(system\s+)?prompt|you\s+are\s+now\s+(a|an)\s+", re.IGNORECASE),
+        "description": "Instruction-override phrasing typical of prompt injection payloads.",
+    },
+    {
+        "id": "SEC-007",
+        "rule": "hidden-exfiltration-tag",
+        "severity": "low",
+        "owasp_ref": "OWASP LLM Top-10 — Sensitive Information Disclosure",
+        "pattern": re.compile(r"<system>|<\|im_start\|>|###\s*system:?|AI:\s*SYSTEM\s*OVERRIDE", re.IGNORECASE),
+        "description": "Markup resembling chat/system role delimiters embedded in skill content.",
+    },
+)
+
+SECURITY_SEVERITY_ORDER = {"none": [], "low": ["high", "medium", "low"], "medium": ["high", "medium"], "high": ["high"]}
+
+
+def scan_security_tree(root: Path) -> dict[str, Any]:
+    """Statically scan a directory tree for dangerous content patterns."""
+    if not root.is_dir():
+        raise ValueError(f"scan root is not a directory: {root}")
+    findings: list[dict[str, Any]] = []
+    files_scanned = 0
+    files_skipped: list[str] = []
+    for item in sorted(root.rglob("*"), key=lambda p: p.relative_to(root).as_posix()):
+        rel = item.relative_to(root).as_posix()
+        if item.is_symlink():
+            files_skipped.append({"path": rel, "reason": "symlink"})
+            continue
+        if item.is_dir() or not item.is_file():
+            continue
+        if item.suffix.lower() not in SECURITY_TEXT_SUFFIXES:
+            files_skipped.append({"path": rel, "reason": "non-text-suffix"})
+            continue
+        try:
+            data = item.read_bytes()
+        except OSError as exc:
+            files_skipped.append({"path": rel, "reason": f"unreadable: {exc}"})
+            continue
+        if len(data) > SECURITY_MAX_FILE_BYTES:
+            files_skipped.append({"path": rel, "reason": "oversize"})
+            continue
+        try:
+            text = data.decode("utf-8")
+        except UnicodeDecodeError:
+            files_skipped.append({"path": rel, "reason": "binary-or-non-utf8"})
+            continue
+        files_scanned += 1
+        for line_no, line in enumerate(text.splitlines(), start=1):
+            for rule_def in SECURITY_RULES:
+                match = rule_def["pattern"].search(line)
+                if match:
+                    snippet = match.group(0)
+                    redacted = snippet if len(snippet) <= 120 else snippet[:117] + "..."
+                    findings.append({
+                        "id": rule_def["id"],
+                        "severity": rule_def["severity"],
+                        "path": rel,
+                        "line": line_no,
+                        "column": match.start() + 1,
+                        "rule": rule_def["rule"],
+                        "description": rule_def["description"],
+                        "owasp_ref": rule_def["owasp_ref"],
+                        "match": redacted,
+                    })
+    return {
+        "scanned_root": str(root),
+        "tree_sha256": tree_digest(root),
+        "files_scanned": files_scanned,
+        "files_skipped": files_skipped,
+        "findings": findings,
+        "heuristic_notice": (
+            "Static heuristic scan only; skill content was never executed. "
+            "A PASS does not prove absence of malicious behavior."
+        ),
+    }
+
+
+# --- grade-skill (V2.2 Phase 3) ---------------------------------------------
+#
+# Static fixture-based grader. NO LLM execution. Skills are evaluated by:
+# - expect_exact_output: byte-comparison against a fenced 'output:' block in SKILL.md
+#   (normalization: strip trailing whitespace per line, CRLF->LF, exact otherwise)
+# - expected_tools: non-empty intersection AND all listed tools present in frontmatter allowed-tools
+#
+# Fixtures conform to schemas/skill-fixture.schema.json
+# Grading is deterministic: same inputs -> byte-identical reports.
+
+GRADE_SCHEMA = "skills-catalog-grade-1"
+OUTPUT_FENCE_RE = re.compile(r"^(`{3,}|~{3,})\s*(\w+)?\s*$", re.MULTILINE)
+
+def extract_output_block(skill_text: str) -> str | None:
+    """Extract the first fenced block whose info string contains 'output'.
+    
+    Grammar:
+    - Only ``` and ~~~ fence markers recognized
+    - Output block = fence whose info string contains 'output' token
+    - First matching block wins
+    - Unclosed fences = explicit FAIL
+    - Nested fences = explicit FAIL (any fence inside an open fence with different marker)
+    - No match = explicit FAIL
+    """
+    lines = skill_text.splitlines()
+    in_fence = False
+    fence_marker = None
+    fence_info = ""
+    content_lines = []
+    found_output_block = False
+    output_content = None
+    
+    for i, line in enumerate(lines):
+        m = OUTPUT_FENCE_RE.match(line)
+        if m:
+            marker = m.group(1)
+            info = m.group(2) or ""
+            if not in_fence:
+                # Opening fence
+                in_fence = True
+                fence_marker = marker
+                fence_info = info.lower()
+                content_lines = []
+                if "output" in fence_info:
+                    found_output_block = True
+            else:
+                # Inside a fence - check if this closes (same marker, empty info) or nests
+                if marker == fence_marker and not info:
+                    # Same marker with empty info = closing fence
+                    in_fence = False
+                    if found_output_block and output_content is None:
+                        output_content = "\n".join(content_lines)
+                    found_output_block = False
+                    fence_marker = None
+                    fence_info = ""
+                    content_lines = []
+                else:
+                    # Different marker or same marker with info = nested fence
+                    raise ValueError("nested_fence")
+        elif in_fence:
+            content_lines.append(line)
+    
+    if in_fence and found_output_block:
+        raise ValueError("unclosed_fence")
+    
+    if output_content is None:
+        raise ValueError("no_output_block")
+    
+    return output_content
+
+
+def normalize_text(text: str) -> str:
+    """Apply normalization per REQ-B2: strip trailing whitespace per line, CRLF->LF."""
+    lines = text.replace("\r\n", "\n").replace("\r", "\n").splitlines()
+    return "\n".join(line.rstrip() for line in lines)
+
+
+def load_fixtures(path: Path) -> list[dict[str, Any]]:
+    """Load fixture(s) from file or directory."""
+    fixtures = []
+    if path.is_file():
+        data = load_json(path)
+        if isinstance(data, list):
+            fixtures.extend(data)
+        else:
+            fixtures.append(data)
+    elif path.is_dir():
+        for item in sorted(path.glob("*.json")):
+            data = load_json(item)
+            if isinstance(data, list):
+                fixtures.extend(data)
+            else:
+                fixtures.append(data)
+    return fixtures
+
+
+def validate_fixture(fixture: dict[str, Any]) -> list[str]:
+    """Validate fixture against schema. Returns list of error strings (empty = valid)."""
+    errors = []
+    if not isinstance(fixture.get("fixture_id"), str) or not fixture["fixture_id"]:
+        errors.append("fixture_id missing or empty")
+    if not isinstance(fixture.get("input"), dict) or not isinstance(fixture["input"].get("prompt"), str):
+        errors.append("input.prompt missing or not a string")
+    has_output = "expect_exact_output" in fixture
+    has_tools = "expected_tools" in fixture
+    if has_output and has_tools:
+        errors.append("both expect_exact_output and expected_tools present; exactly one required")
+    if not has_output and not has_tools:
+        errors.append("neither expect_exact_output nor expected_tools present; exactly one required")
+    if has_tools:
+        tools = fixture["expected_tools"]
+        if not isinstance(tools, list) or not all(isinstance(t, str) for t in tools):
+            errors.append("expected_tools must be array of strings")
+        if len(tools) == 0:
+            errors.append("expected_tools must have at least one element")
+    if has_output and not isinstance(fixture["expect_exact_output"], str):
+        errors.append("expect_exact_output must be a string")
+    if "case_sensitive" in fixture and not isinstance(fixture["case_sensitive"], bool):
+        errors.append("case_sensitive must be boolean")
+    return errors
+
+
+def get_skill_output_block(skill_path: Path) -> str:
+    """Extract output block from SKILL.md; raises ValueError with reason on failure."""
+    text = skill_path.read_text(encoding="utf-8")
+    return extract_output_block(text)
+
+
+def parse_frontmatter_all(text: str) -> dict[str, Any]:
+    """Parse all frontmatter fields (not just name/description). Supports YAML-like lists."""
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return {}
+    end = next((index for index, line in enumerate(lines[1:], 1) if line.strip() == "---"), None)
+    if end is None:
+        raise ValueError("frontmatter opening delimiter has no closing delimiter")
+
+    values: dict[str, Any] = {}
+    current_key: str | None = None
+    continuation: list[str] = []
+
+    def finish_value() -> None:
+        if current_key is None:
+            return
+        value = values.get(current_key, "")
+        if continuation:
+            marker = value.strip()
+            parts = [part.strip() for part in continuation]
+            if marker in {">", ">-", ">+"}:
+                value = " ".join(parts)
+            elif marker in {"|", "|-", "|+"}:
+                value = "\n".join(parts)
+            else:
+                value = " ".join([value.rstrip(), *parts]).strip()
+        # Try to parse as YAML list if it looks like one (whether or not continuation)
+        value = values.get(current_key, "")
+        if isinstance(value, str) and value.startswith("[") and value.endswith("]"):
+            # Parse [a, b, c] -> ["a", "b", "c"]
+            inner = value[1:-1].strip()
+            if inner:
+                value = [v.strip() for v in inner.split(",")]
+            else:
+                value = []
+        values[current_key] = value
+
+    for line in lines[1:end]:
+        if not line.strip():
+            if current_key is not None:
+                continuation.append("")
+            continue
+
+        if line[0].isspace():
+            if current_key is None:
+                raise ValueError(f"malformed frontmatter line: {line}")
+            continuation.append(line.strip())
+            continue
+
+        match = re.match(r"^([A-Za-z_][\w.-]*)\s*:\s*(.*?)\s*$", line)
+        if match:
+            finish_value()
+            current_key = match.group(1)
+            continuation = []
+            values[current_key] = match.group(2)
+            continue
+
+        if line.lstrip().startswith("-"):
+            if current_key is not None:
+                continuation.append(line.strip())
+            continue
+
+        raise ValueError(f"malformed frontmatter line: {line}")
+
+    finish_value()
+    return values
+
+
+def get_skill_allowed_tools(skill_path: Path) -> set[str]:
+    """Extract allowed-tools from SKILL.md frontmatter."""
+    text = skill_path.read_text(encoding="utf-8")
+    fm = parse_frontmatter_all(text)
+    if not fm:
+        return set()
+    allowed = fm.get("allowed-tools")
+    if not allowed:
+        return set()
+    if isinstance(allowed, str):
+        return {allowed.strip()}
+    if isinstance(allowed, list):
+        return {str(t).strip() for t in allowed}
+    return set()
+
+
+def cmd_grade_skill(args: argparse.Namespace) -> int:
+    report: dict[str, Any] = {"schema": GRADE_SCHEMA}
+    try:
+        skill_dir = Path(args.path)
+        if not skill_dir.is_dir():
+            raise ValueError(f"skill path is not a directory: {skill_dir}")
+        skill_md = skill_dir / "SKILL.md"
+        if not skill_md.is_file():
+            raise ValueError(f"skill directory missing SKILL.md: {skill_dir}")
+        
+        fixtures = load_fixtures(Path(args.fixtures))
+        if not fixtures:
+            raise ValueError("no fixtures loaded")
+        
+        # Validate all fixtures first
+        for fx in fixtures:
+            errors = validate_fixture(fx)
+            if errors:
+                raise ValueError(f"fixture {fx.get('fixture_id', '?')}: {', '.join(errors)}")
+        
+        # Pre-extract skill artifacts
+        try:
+            skill_output = get_skill_output_block(skill_md)
+        except ValueError as e:
+            # FAIL reason will be recorded per-fixture
+            skill_output = None
+            skill_output_error = str(e)
+        else:
+            skill_output_error = None
+        
+        skill_tools = get_skill_allowed_tools(skill_md)
+        
+        skill_sha = sha256_file(skill_md)
+        
+        results = []
+        passed = 0
+        failed = 0
+        
+        for fx in fixtures:
+            fx_id = fx["fixture_id"]
+            case_sensitive = fx.get("case_sensitive", True)
+            
+            if "expect_exact_output" in fx:
+                # Exact output comparison
+                expected = fx["expect_exact_output"]
+                if skill_output_error:
+                    results.append({"fixture_id": fx_id, "result": "fail", "reason": f"skill_output_extraction_failed: {skill_output_error}"})
+                    failed += 1
+                    continue
+                
+                if case_sensitive:
+                    actual_norm = normalize_text(skill_output)
+                    expected_norm = normalize_text(expected)
+                else:
+                    actual_norm = normalize_text(skill_output).lower()
+                    expected_norm = normalize_text(expected).lower()
+                
+                if actual_norm == expected_norm:
+                    results.append({"fixture_id": fx_id, "result": "pass", "reason": None})
+                    passed += 1
+                else:
+                    results.append({"fixture_id": fx_id, "result": "fail", "reason": "output_mismatch"})
+                    failed += 1
+                    
+            else:
+                # expected_tools comparison
+                expected_tools = set(fx["expected_tools"])
+                if not skill_tools:
+                    results.append({"fixture_id": fx_id, "result": "fail", "reason": "no_tools_declared"})
+                    failed += 1
+                    continue
+                
+                if not expected_tools & skill_tools:
+                    results.append({"fixture_id": fx_id, "result": "fail", "reason": "empty_intersection"})
+                    failed += 1
+                    continue
+                
+                if not expected_tools <= skill_tools:
+                    missing = expected_tools - skill_tools
+                    results.append({"fixture_id": fx_id, "result": "fail", "reason": f"missing_tools: {sorted(missing)}"})
+                    failed += 1
+                    continue
+                
+                results.append({"fixture_id": fx_id, "result": "pass", "reason": None})
+                passed += 1
+        
+        verdict = "GO" if failed == 0 else "NO-GO"
+        
+        report.update({
+            "skill_sha256": skill_sha,
+            "verdict": verdict,
+            "fixtures": results,
+            "summary": {"passed": passed, "failed": failed},
+            "labeling": {
+                "scope": "structural grading only",
+                "behavioral_claims": "advisory"
+            }
+        })
+        report["status"] = "PASS" if verdict == "GO" else "FAIL"
+        return emit(report, args.output)
+        
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        report.update({"status": "FAIL", "message": str(exc), "errors": [str(exc)]})
+        return emit(report, args.output)
+
+
+def cmd_scan_security(args: argparse.Namespace) -> int:
+    fail_on = args.fail_on
+    if fail_on not in SECURITY_SEVERITY_ORDER:
+        return fail(f"invalid --fail-on value: {fail_on}")
+    report: dict[str, Any] = {"schema": SECURITY_SCAN_SCHEMA}
+    try:
+        result = scan_security_tree(Path(args.path))
+    except (OSError, ValueError) as exc:
+        report.update({"status": "FAIL", "message": str(exc), "errors": [str(exc)]})
+        return emit(report, args.output)
+    blocking = set(SECURITY_SEVERITY_ORDER[fail_on])
+    hits = [f for f in result["findings"] if f["severity"] in blocking]
+    status = "FAIL" if hits else "PASS"
+    report.update(result)
+    report["fail_on"] = fail_on
+    report["blocking_findings"] = len(hits)
+    report["status"] = status
+    return emit(report, args.output)
+
 
 def parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__)
@@ -2044,6 +3304,83 @@ def parser() -> argparse.ArgumentParser:
     repair.add_argument("--allow-draft-change", action="store_true")
     repair.add_argument("--output")
     repair.set_defaults(func=cmd_repair)
+    v2_capture = sub.add_parser("capture-hermes")
+    v2_capture.add_argument("--skill-dir", required=True)
+    v2_capture.add_argument("--usage", required=True)
+    v2_capture.add_argument("--metadata", required=True)
+    v2_capture.add_argument("--active-root", required=True)
+    v2_capture.add_argument("--output", required=True, help="new capture bundle directory")
+    v2_capture.add_argument("--output-report")
+    v2_capture.set_defaults(func=cmd_capture_hermes)
+    v2_intake = sub.add_parser("intake")
+    v2_intake.add_argument("--skill", required=True)
+    v2_intake.add_argument("--provenance", required=True)
+    v2_intake.add_argument("--root", required=True)
+    v2_intake.add_argument("--active-root", required=True)
+    v2_intake.add_argument("--actor", default="local-user")
+    v2_intake.add_argument("--output")
+    v2_intake.set_defaults(func=cmd_intake)
+    v2_inspect = sub.add_parser("inspect-proposal")
+    v2_inspect.add_argument("--proposal", required=True)
+    v2_inspect.add_argument("--output")
+    v2_inspect.set_defaults(func=cmd_inspect_proposal)
+    v2_policy = sub.add_parser("check-policy")
+    v2_policy.add_argument("--policy", required=True)
+    v2_policy.add_argument("--output")
+    v2_policy.set_defaults(func=cmd_check_policy)
+    v2_evaluate = sub.add_parser("evaluate-proposal")
+    v2_evaluate.add_argument("--proposal", required=True)
+    v2_evaluate.add_argument("--root", required=True)
+    v2_evaluate.add_argument("--active-root", required=True)
+    v2_evaluate.add_argument("--actor", default="local-user")
+    v2_evaluate.add_argument("--output")
+    v2_evaluate.set_defaults(func=cmd_evaluate_proposal)
+    v2_impact = sub.add_parser("impact-report")
+    v2_impact.add_argument("--proposal", required=True)
+    v2_impact.add_argument("--active-root", required=True)
+    v2_impact.add_argument("--scan-root", action="append", default=[])
+    v2_impact.add_argument("--output")
+    v2_impact.set_defaults(func=cmd_impact_report)
+    v2_decide = sub.add_parser("decide")
+    v2_decide.add_argument("--proposal", required=True)
+    v2_decide.add_argument("--root", required=True)
+    v2_decide.add_argument("--policy", required=True)
+    v2_decide.add_argument("--decision", required=True)
+    v2_decide.add_argument("--actor", required=True)
+    v2_decide.add_argument("--text", required=True)
+    v2_decide.add_argument("--output")
+    v2_decide.set_defaults(func=cmd_decide)
+    v2_activate = sub.add_parser("activate")
+    v2_activate.add_argument("--proposal", required=True)
+    v2_activate.add_argument("--root", required=True)
+    v2_activate.add_argument("--active-root", required=True)
+    v2_activate.add_argument("--policy", required=True)
+    v2_activate.add_argument("--decision", required=True)
+    v2_activate.add_argument("--apply", action="store_true")
+    v2_activate.add_argument("--yes", action="store_true")
+    v2_activate.add_argument("--output")
+    v2_activate.set_defaults(func=cmd_activate)
+    v2_verify = sub.add_parser("verify-active")
+    v2_verify.add_argument("--record", required=True)
+    v2_verify.add_argument("--output")
+    v2_verify.set_defaults(func=cmd_verify_active)
+    v2_rollback = sub.add_parser("rollback")
+    v2_rollback.add_argument("--record", required=True)
+    v2_rollback.add_argument("--root", required=True)
+    v2_rollback.add_argument("--apply", action="store_true")
+    v2_rollback.add_argument("--yes", action="store_true")
+    v2_rollback.add_argument("--output")
+    v2_rollback.set_defaults(func=cmd_rollback)
+    grade = sub.add_parser("grade-skill")
+    grade.add_argument("--path", required=True, help="skill directory to grade")
+    grade.add_argument("--fixtures", required=True, help="fixture file or directory")
+    grade.add_argument("--output")
+    grade.set_defaults(func=cmd_grade_skill)
+    scan_sec = sub.add_parser("scan-security")
+    scan_sec.add_argument("--path", required=True, help="directory to scan")
+    scan_sec.add_argument("--fail-on", default="high", choices=["none", "low", "medium", "high"])
+    scan_sec.add_argument("--output")
+    scan_sec.set_defaults(func=cmd_scan_security)
     return p
 
 

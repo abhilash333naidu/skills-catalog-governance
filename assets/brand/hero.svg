@@ -1,4 +1,6 @@
-<svg role="img" aria-labelledby="hero-title" <title id="hero-title">Skills Catalog Governance — Agent Skill Pipeline (Dark)</title> <desc id="hero-title-desc">Dark mode version of the governance pipeline visualization with glassmorphism effects and OLED black background.</desc> xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 640">
+<svg role="img" aria-labelledby="hero-title" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 640">
+  <title id="hero-title">Skills Catalog Governance — Agent Skill Pipeline (Dark)</title>
+  <desc id="hero-title-desc">Dark mode version of the governance pipeline visualization with glassmorphism effects and OLED black background.</desc>
   
   
   <defs>
@@ -56,19 +58,19 @@
   <!-- PIPELINE -->
   <g transform="translate(420, 100)">
     <g transform="translate(0, 0)">
-      <rect width="180" height="120" rx="24" fill="#0D1117" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1" filter="url(#glassShadow)"/>
+      <rect width="200" height="140" rx="24" fill="#0D1117" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1" filter="url(#glassShadow)"/>
       <g transform="translate(24, 30)"><use href="#icon-search" width="20" height="20" color="#58A6FF"/></g>
-      <text x="24" y="70" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#E6EDF3">DISCOVER</text>
+      <text x="24" y="70" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#E6EDF3">DISCOVER</text>
     </g>
     <g transform="translate(200, 0)">
-      <rect width="180" height="120" rx="24" fill="#0D1117" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1" filter="url(#glassShadow)"/>
+      <rect width="200" height="140" rx="24" fill="#0D1117" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1" filter="url(#glassShadow)"/>
       <g transform="translate(24, 30)"><use href="#icon-users" width="20" height="20" color="#D29922"/></g>
-      <text x="24" y="70" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#E6EDF3">GROUP</text>
+      <text x="24" y="70" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#E6EDF3">GROUP</text>
     </g>
     <g transform="translate(400, 0)">
-      <rect width="180" height="120" rx="24" fill="#0D1117" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1" filter="url(#glassShadow)"/>
+      <rect width="200" height="140" rx="24" fill="#0D1117" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1" filter="url(#glassShadow)"/>
       <g transform="translate(24, 30)"><use href="#icon-shield" width="20" height="20" color="#BC8CFF"/></g>
-      <text x="24" y="70" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#E6EDF3">COUNCIL</text>
+      <text x="24" y="70" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#E6EDF3">COUNCIL</text>
     </g>
     
     <g transform="translate(0, 180)">
