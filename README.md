@@ -143,6 +143,9 @@ python scripts/catalog_governance.py grade-skill --path ./skill-dir --fixtures .
 ```bash
 # M1 · Discover: Inventory skills across local stores
 python scripts/catalog_governance.py detect-skills --output inventory.json
+# (add `--add-stores PATH...` to scan extra stores on top of the defaults;
+#  `--stores PATH...` replaces the defaults. Output lists `skipped_links` and
+#  `unscanned_default_stores` when anything was not scanned.)
 
 # M2 · Group: Identify near-duplicate overlap families
 python scripts/catalog_governance.py detect-groups --inventory inventory.json --overlap-threshold 0.50

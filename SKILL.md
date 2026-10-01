@@ -75,6 +75,14 @@ python scripts/catalog_governance.py detect-skills --output inventory.json
 - Frontmatter: YAML-style `---` block only. Plain-scalar continuation lines join with a
   single space; `|` literal block scalars preserve `\n` (YAML-spec-conformant — do NOT
   flatten them; downstream consumers must normalize whitespace before comparing).
+  A leading UTF-8 BOM is stripped. Duplicate `name:`/`description:` keys and a stray
+  `-` list line before any key are errors (never a silent fallback).
+- `--stores PATH...` REPLACES the default stores. `--add-stores PATH...` ADDS to the
+  defaults (or to `--stores` if both are given); added paths are tagged `external`.
+- Coverage metadata (additive; emitted only when non-empty; status stays PASS):
+  `skipped_links` = sorted list of skipped symlink/junction paths (what was NOT
+  scanned); `unscanned_default_stores` = `[{store, path}]` for default stores that do
+  not exist. Absence of both keys means nothing was skipped.
 - Fail-closed: unreadable/malformed file → error entry, never a guess. Status FAIL if
   any error, PASS otherwise.
 
