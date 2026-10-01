@@ -570,6 +570,35 @@ gates_passed:
             self.assertEqual(report["counts"], {"external": 1})
             self.assertEqual(report["total"], 1)
 
+    def test_detect_skills_with_tree_digest_covers_supporting_files(self):
+        with tempfile.TemporaryDirectory() as raw:
+            store = Path(raw) / "store"
+            store.mkdir()
+            skill_file = self.make_skill(store, "real")
+            (skill_file.parent / "helper.py").write_text("print(1)\n", encoding="utf-8")
+            plain = self.run_cli("detect-skills", "--stores", store)
+            self.assertNotIn("tree_sha256", plain["inventory"][0])
+            first = self.run_cli("detect-skills", "--stores", store, "--with-tree-digest")
+            (skill_file.parent / "helper.py").write_text("print(2)\n", encoding="utf-8")
+            second = self.run_cli("detect-skills", "--stores", store, "--with-tree-digest")
+            self.assertEqual(first["inventory"][0]["sha256"], second["inventory"][0]["sha256"])
+            self.assertNotEqual(first["inventory"][0]["tree_sha256"], second["inventory"][0]["tree_sha256"])
+
+    def test_detect_skills_strict_links_fails_on_skipped_link(self):
+        with tempfile.TemporaryDirectory() as raw:
+            store = Path(raw) / "store"
+            store.mkdir()
+            self.make_skill(store, "real")
+            mirror = store / "mirror"
+            try:
+                mirror.symlink_to(store / "real", target_is_directory=True)
+            except (OSError, NotImplementedError) as exc:
+                self.skipTest(f"directory links unavailable: {exc}")
+            self.run_cli("detect-skills", "--stores", store)
+            report = self.run_cli("detect-skills", "--stores", store, "--strict-links", expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertEqual(len(report["skipped_links"]), 1)
+
     def test_detect_skills_sha256_is_stable(self):
         with tempfile.TemporaryDirectory() as raw:
             store = Path(raw) / "store"

@@ -452,7 +452,14 @@ def cmd_detect_skills(args: argparse.Namespace) -> int:
                 seen_paths.add(canonical)
                 if usage and entry["name"] in usage:
                     entry["usage"] = usage[entry["name"]]
+                if getattr(args, "with_tree_digest", False):
+                    try:
+                        entry["tree_sha256"] = tree_digest(Path(entry["path"]))
+                    except OSError as exc:
+                        errors.append(f"cannot hash tree {entry['path']}: {exc}")
                 inventory.append(entry)
+    if getattr(args, "strict_links", False) and skipped_links:
+        errors.append(f"--strict-links: {len(skipped_links)} symlink/reparse point(s) skipped; see skipped_links")
     inventory.sort(key=lambda entry: (entry["store"], entry["path"]))
     counts: dict[str, int] = {store: 0 for store, _ in stores}
     for entry in inventory:
@@ -3297,6 +3304,16 @@ def parser() -> argparse.ArgumentParser:
         help="extra stores scanned in addition to the default stores (or to --stores if given)",
     )
     detect.add_argument("--usage-dir", help="optional dir containing .usage.json for usage enrichment")
+    detect.add_argument(
+        "--with-tree-digest",
+        action="store_true",
+        help="add tree_sha256 (whole skill directory digest) to each inventory entry",
+    )
+    detect.add_argument(
+        "--strict-links",
+        action="store_true",
+        help="FAIL if any symlink/reparse point was skipped during scanning",
+    )
     detect.add_argument("--output")
     detect.set_defaults(func=cmd_detect_skills)
     grouping = sub.add_parser("detect-groups")

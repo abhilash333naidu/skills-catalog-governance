@@ -83,6 +83,9 @@ python scripts/catalog_governance.py detect-skills --output inventory.json
   `skipped_links` = sorted list of skipped symlink/junction paths (what was NOT
   scanned); `unscanned_default_stores` = `[{store, path}]` for default stores that do
   not exist. Absence of both keys means nothing was skipped.
+- Opt-in flags: `--with-tree-digest` adds `tree_sha256` (whole skill directory, incl.
+  supporting files; symlinks hashed as link targets) to each entry; `sha256` stays
+  SKILL.md-only. `--strict-links` turns any skipped link into a FAIL.
 - Fail-closed: unreadable/malformed file → error entry, never a guess. Status FAIL if
   any error, PASS otherwise.
 
