@@ -158,6 +158,7 @@ def frontmatter_value(value: str) -> str:
 
 def skill_frontmatter(text: str) -> tuple[str | None, str | None]:
     """Read name and description from the simple YAML frontmatter we support."""
+    text = text.removeprefix("\ufeff")
     lines = text.splitlines()
     if not lines or lines[0].strip() != "---":
         return None, None
@@ -202,13 +203,16 @@ def skill_frontmatter(text: str) -> tuple[str | None, str | None]:
         if match:
             finish_value()
             current_key = match.group(1)
+            if current_key in {"name", "description"} and current_key in values:
+                raise ValueError(f"duplicate key in frontmatter: {current_key}")
             continuation = []
             values[current_key] = frontmatter_value(match.group(2))
             continue
 
         if line.lstrip().startswith("-"):
-            if current_key is not None:
-                continuation.append(line.strip())
+            if current_key is None:
+                raise ValueError(f"malformed frontmatter line: {line}")
+            continuation.append(line.strip())
             continue
 
         raise ValueError(f"malformed frontmatter line: {line}")
@@ -324,8 +328,12 @@ def default_skill_stores() -> list[tuple[str, Path]]:
     return stores
 
 
-def iter_skill_files(root: Path) -> Iterable[Path]:
-    """Yield SKILL.md files while never descending through linked directories."""
+def iter_skill_files(root: Path, skipped_links: list[str] | None = None) -> Iterable[Path]:
+    """Yield SKILL.md files while never descending through linked directories.
+
+    Skipped links/reparse points are recorded in ``skipped_links`` when given, so
+    the report can say what was NOT scanned.
+    """
     pending = [root]
     visited: set[str] = set()
     while pending:
@@ -340,6 +348,8 @@ def iter_skill_files(root: Path) -> Iterable[Path]:
                 for child in children:
                     path = Path(child.path)
                     if is_link_or_reparse(path):
+                        if skipped_links is not None:
+                            skipped_links.append(str(path))
                         continue
                     if child.is_dir(follow_symlinks=False):
                         pending.append(path)
@@ -349,14 +359,16 @@ def iter_skill_files(root: Path) -> Iterable[Path]:
             raise ValueError(f"cannot scan directory {current}: {exc}") from exc
 
 
-def scan_skill_store(store: str, root: Path) -> tuple[list[dict[str, Any]], list[str]]:
+def scan_skill_store(
+    store: str, root: Path, skipped_links: list[str] | None = None
+) -> tuple[list[dict[str, Any]], list[str]]:
     inventory: list[tuple[str, dict[str, Any]]] = []
     errors: list[str] = []
     try:
         scan_root = root.resolve(strict=True)
         if not scan_root.is_dir():
             return [], [f"store is not a directory: {root}"]
-        candidates = iter_skill_files(scan_root)
+        candidates = iter_skill_files(scan_root, skipped_links)
         for skill_file in candidates:
             skill_dir = skill_file.parent
             canonical = os.path.normcase(str(skill_dir.resolve(strict=False)))
@@ -410,11 +422,21 @@ def load_usage_counts(store_root: Path) -> dict[str, int]:
 
 
 def cmd_detect_skills(args: argparse.Namespace) -> int:
+    unscanned_defaults: list[dict[str, str]] = []
     if args.stores:
         raw_stores = [item for group in args.stores for item in group]
         stores = [("external", Path(raw).expanduser()) for raw in raw_stores]
     else:
-        stores = [(tag, path) for tag, path in default_skill_stores() if path.is_dir()]
+        stores = []
+        for tag, path in default_skill_stores():
+            if path.is_dir():
+                stores.append((tag, path))
+            else:
+                unscanned_defaults.append({"store": tag, "path": str(path)})
+    if getattr(args, "add_stores", None):
+        raw_added = [item for group in args.add_stores for item in group]
+        stores.extend(("external", Path(raw).expanduser()) for raw in raw_added)
+    skipped_links: list[str] = []
     usage: dict[str, int] = {}
     if args.usage_dir:
         usage = load_usage_counts(Path(args.usage_dir).expanduser())
@@ -422,7 +444,7 @@ def cmd_detect_skills(args: argparse.Namespace) -> int:
     errors: list[str] = []
     seen_paths: set[str] = set()
     for store, root in stores:
-        entries, store_errors = scan_skill_store(store, root)
+        entries, store_errors = scan_skill_store(store, root, skipped_links)
         errors.extend(store_errors)
         for entry in entries:
             canonical = os.path.normcase(str(Path(entry["path"]).resolve(strict=False)))
@@ -443,6 +465,11 @@ def cmd_detect_skills(args: argparse.Namespace) -> int:
     }
     if errors:
         report["errors"] = errors
+    # Coverage metadata: additive, emitted only when non-empty so existing output is unchanged.
+    if skipped_links:
+        report["skipped_links"] = sorted(skipped_links)
+    if unscanned_defaults:
+        report["unscanned_default_stores"] = unscanned_defaults
     return emit(report, args.output)
 
 
@@ -3262,6 +3289,13 @@ def parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="command", required=True)
     detect = sub.add_parser("detect-skills")
     detect.add_argument("--stores", nargs="+", action="append", metavar="PATH")
+    detect.add_argument(
+        "--add-stores",
+        nargs="+",
+        action="append",
+        metavar="PATH",
+        help="extra stores scanned in addition to the default stores (or to --stores if given)",
+    )
     detect.add_argument("--usage-dir", help="optional dir containing .usage.json for usage enrichment")
     detect.add_argument("--output")
     detect.set_defaults(func=cmd_detect_skills)

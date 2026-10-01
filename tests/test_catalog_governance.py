@@ -476,6 +476,100 @@ gates_passed:
             self.assertEqual(report["inventory"], [])
             self.assertEqual(len(report["errors"]), 1)
 
+    def test_detect_skills_parses_frontmatter_after_utf8_bom(self):
+        with tempfile.TemporaryDirectory() as raw:
+            store = Path(raw) / "store"
+            store.mkdir()
+            self.make_skill(store, "dirname", "\ufeff---\nname: bom-name\ndescription: d\n---\nbody\n")
+            report = self.run_cli("detect-skills", "--stores", store)
+            self.assertEqual(report["inventory"][0]["name"], "bom-name")
+
+    def test_detect_skills_rejects_stray_list_item_before_any_key(self):
+        with tempfile.TemporaryDirectory() as raw:
+            store = Path(raw) / "store"
+            store.mkdir()
+            self.make_skill(store, "stray", "---\n- name: intended\ndescription: d\n---\nbody\n")
+            report = self.run_cli("detect-skills", "--stores", store, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertEqual(report["inventory"], [])
+
+    def test_detect_skills_rejects_duplicate_name_key(self):
+        with tempfile.TemporaryDirectory() as raw:
+            store = Path(raw) / "store"
+            store.mkdir()
+            self.make_skill(store, "dup", "---\nname: a\nname: b\ndescription: d\n---\nbody\n")
+            report = self.run_cli("detect-skills", "--stores", store, expected=1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertIn("duplicate key", report["errors"][0])
+
+    def test_detect_skills_reports_skipped_links(self):
+        with tempfile.TemporaryDirectory() as raw:
+            base = Path(raw)
+            store = base / "store"
+            store.mkdir()
+            self.make_skill(store, "real")
+            mirror = store / "mirror"
+            try:
+                mirror.symlink_to(store / "real", target_is_directory=True)
+            except (OSError, NotImplementedError) as exc:
+                self.skipTest(f"directory links unavailable: {exc}")
+            report = self.run_cli("detect-skills", "--stores", store)
+            self.assertEqual(report["status"], "PASS")
+            self.assertEqual(report["total"], 1)
+            self.assertEqual(len(report["skipped_links"]), 1)
+            self.assertTrue(report["skipped_links"][0].endswith("mirror"))
+
+    def test_detect_skills_omits_coverage_keys_when_clean(self):
+        with tempfile.TemporaryDirectory() as raw:
+            store = Path(raw) / "store"
+            store.mkdir()
+            self.make_skill(store, "real")
+            report = self.run_cli("detect-skills", "--stores", store)
+            self.assertNotIn("skipped_links", report)
+            self.assertNotIn("unscanned_default_stores", report)
+
+    def _home_env(self, home: Path):
+        env = {k: v for k, v in os.environ.items() if not k.upper().startswith("HERMES")}
+        env["HOME"] = str(home)
+        env["USERPROFILE"] = str(home)
+        return env
+
+    def test_detect_skills_reports_unscanned_default_stores(self):
+        with tempfile.TemporaryDirectory() as raw:
+            home = Path(raw) / "home"
+            self.make_skill(home / ".agents" / "skills", "only")
+            report = self.run_cli("detect-skills", env=self._home_env(home))
+            self.assertEqual(report["status"], "PASS")
+            self.assertEqual(report["total"], 1)
+            missing = {item["store"] for item in report["unscanned_default_stores"]}
+            self.assertIn("pi", missing)
+            self.assertNotIn("master", missing)
+
+    def test_detect_skills_add_stores_extends_defaults(self):
+        with tempfile.TemporaryDirectory() as raw:
+            base = Path(raw)
+            home = base / "home"
+            self.make_skill(home / ".agents" / "skills", "default-skill")
+            extra = base / "extra"
+            extra.mkdir()
+            self.make_skill(extra, "extra-skill")
+            report = self.run_cli("detect-skills", "--add-stores", extra, env=self._home_env(home))
+            self.assertEqual(report["counts"].get("master"), 1)
+            self.assertEqual(report["counts"].get("external"), 1)
+            self.assertEqual(report["total"], 2)
+
+    def test_detect_skills_stores_still_replaces_defaults(self):
+        with tempfile.TemporaryDirectory() as raw:
+            base = Path(raw)
+            home = base / "home"
+            self.make_skill(home / ".agents" / "skills", "default-skill")
+            extra = base / "extra"
+            extra.mkdir()
+            self.make_skill(extra, "extra-skill")
+            report = self.run_cli("detect-skills", "--stores", extra, env=self._home_env(home))
+            self.assertEqual(report["counts"], {"external": 1})
+            self.assertEqual(report["total"], 1)
+
     def test_detect_skills_sha256_is_stable(self):
         with tempfile.TemporaryDirectory() as raw:
             store = Path(raw) / "store"
