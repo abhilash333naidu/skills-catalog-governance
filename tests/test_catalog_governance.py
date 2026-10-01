@@ -599,6 +599,24 @@ gates_passed:
             self.assertEqual(report["status"], "FAIL")
             self.assertEqual(len(report["skipped_links"]), 1)
 
+    def test_detect_skills_flags_usage_ambiguous_for_shared_names(self):
+        with tempfile.TemporaryDirectory() as raw:
+            store = Path(raw) / "store"
+            store.mkdir()
+            same = "---\nname: shared\ndescription: d\n---\nbody\n"
+            self.make_skill(store, "one", same)
+            self.make_skill(store, "two", same)
+            self.make_skill(store, "solo", "---\nname: solo\ndescription: d\n---\nbody\n")
+            usage_dir = Path(raw) / "usage"
+            usage_dir.mkdir()
+            self.write_usage(usage_dir, {"shared": 5, "solo": 2})
+            report = self.run_cli("detect-skills", "--stores", store, "--usage-dir", usage_dir)
+            by_dir = {Path(e["path"]).name: e for e in report["inventory"]}
+            self.assertTrue(by_dir["one"]["usage_ambiguous"])
+            self.assertTrue(by_dir["two"]["usage_ambiguous"])
+            self.assertEqual(by_dir["solo"]["usage"], 2)
+            self.assertNotIn("usage_ambiguous", by_dir["solo"])
+
     def test_detect_skills_sha256_is_stable(self):
         with tempfile.TemporaryDirectory() as raw:
             store = Path(raw) / "store"

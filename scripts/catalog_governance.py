@@ -458,6 +458,13 @@ def cmd_detect_skills(args: argparse.Namespace) -> int:
                     except OSError as exc:
                         errors.append(f"cannot hash tree {entry['path']}: {exc}")
                 inventory.append(entry)
+    if usage:
+        # .usage.json is keyed by skill NAME only, so a name shared by several skills
+        # cannot be attributed to one of them; flag instead of silently double-counting.
+        name_counts = Counter(entry["name"] for entry in inventory)
+        for entry in inventory:
+            if "usage" in entry and name_counts[entry["name"]] > 1:
+                entry["usage_ambiguous"] = True
     if getattr(args, "strict_links", False) and skipped_links:
         errors.append(f"--strict-links: {len(skipped_links)} symlink/reparse point(s) skipped; see skipped_links")
     inventory.sort(key=lambda entry: (entry["store"], entry["path"]))

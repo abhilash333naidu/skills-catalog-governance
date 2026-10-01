@@ -86,6 +86,9 @@ python scripts/catalog_governance.py detect-skills --output inventory.json
 - Opt-in flags: `--with-tree-digest` adds `tree_sha256` (whole skill directory, incl.
   supporting files; symlinks hashed as link targets) to each entry; `sha256` stays
   SKILL.md-only. `--strict-links` turns any skipped link into a FAIL.
+- Usage enrichment (`--usage-dir`) matches by skill NAME (the `.usage.json` format has
+  no path). When several inventory entries share a name, each gets
+  `usage_ambiguous: true` instead of a silently double-counted figure.
 - Fail-closed: unreadable/malformed file → error entry, never a guess. Status FAIL if
   any error, PASS otherwise.
 
